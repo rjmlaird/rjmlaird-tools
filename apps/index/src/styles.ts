@@ -1,4 +1,5 @@
 import { globalCss } from "./global-css";
+import { calloutCss } from "./callout-styles";
 
 const pageCss = `
 .hero{padding:clamp(3rem,9vw,5.5rem) 0 clamp(2rem,5vw,3rem)}
@@ -58,4 +59,4 @@ select:hover{border-color:rgba(0,194,168,.35)}
 .footer a:hover{color:var(--teal)}
 `;
 
-export const css = globalCss + pageCss;
+export const css = globalCss + pageCss + calloutCss;

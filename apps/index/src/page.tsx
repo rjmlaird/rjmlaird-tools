@@ -3,6 +3,8 @@ import { css } from "./styles";
 import { script } from "./script";
 import { GROUPS, REPO, STATUS, TOOLS } from "./tools";
 import type { Tool } from "./tools";
+import { Callout } from "./Callout";
+import { calloutCss } from "./callout-styles"; 
 
 const byUpdatedDesc = (a: Tool, b: Tool) =>
   b.updated.localeCompare(a.updated) || a.title.localeCompare(b.title);
@@ -157,6 +159,7 @@ export const IndexPage: FC = () => (
         <p class="no-results" id="no-results" hidden role="status">
           No tools match those filters. Try changing a selection or clear the filters.
         </p>
+      <Callout />
       </main>
 
       <footer class="wrap footer">

@@ -18,9 +18,6 @@ head_sampling_rate = 1
 [observability.logs]
 invocation_logs = true
 
-[observability]
-enabled = true
-
 [dev]
 port = 8789
 inspector_port = 9231
