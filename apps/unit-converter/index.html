@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unit Converter</title>
+<style>
+  :root {
+    --bg: #f3f5f8; --panel: #ffffff; --ink: #14202e; --muted: #475567; --line: #6b7a8c;
+    --accent: #0a5a9c; --accent-ink: #ffffff; --err: #9d1218; --err-bg: #fdeceb; --focus: #c25e00;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 1rem/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 40rem; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+  h1 { font-size: clamp(1.6rem, 6vw, 2.2rem); line-height: 1.15; margin: 0 0 .4rem; }
+  h2 { font-size: 1.1rem; margin: 0 0 .5rem; }
+  p { margin: 0 0 .75rem; }
+  .intro, .note p { color: var(--muted); }
+
+  form, .note, .common { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+  form { display: grid; gap: .9rem; margin-top: 1.25rem; }
+  .field { display: grid; gap: .25rem; }
+  label { font-weight: 600; }
+  select, input, button { font: inherit; color: var(--ink); min-height: 44px; border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: .4rem .6rem; width: 100%; }
+  input[aria-invalid="true"] { border: 2px solid var(--err); }
+  button { cursor: pointer; width: auto; }
+  :is(select, input, button, a):focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  .units { display: grid; gap: .75rem; grid-template-columns: 1fr; }
+  #swap { justify-self: center; font-weight: 700; padding: .4rem 1rem; background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  @media (min-width: 40rem) { .units { grid-template-columns: 1fr auto 1fr; align-items: end; } }
+
+  .result { background: var(--panel); border: 1px solid var(--line); border-left: 8px solid var(--accent); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; min-height: 5.5rem; }
+  .result .sub { color: var(--muted); }
+  .result .big { font-size: clamp(1.5rem, 7vw, 2.2rem); font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+  .result.error { border-left-style: dashed; border-color: var(--err); background: var(--err-bg); color: var(--err); font-weight: 600; }
+
+  .common ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+  .common button { background: #fff; color: var(--accent); border-color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Unit converter</h1>
+  <p class="intro">Convert a value between common units of length, mass, temperature, volume, area, time and speed.</p>
+
+  <form id="form" novalidate>
+    <div class="field">
+      <label for="category">Category</label>
+      <select id="category"></select>
+    </div>
+    <div class="field">
+      <label for="amount">Amount</label>
+      <input id="amount" type="text" inputmode="decimal" autocomplete="off" aria-describedby="result" value="5">
+    </div>
+    <div class="units">
+      <div class="field"><label for="from">From</label><select id="from"></select></div>
+      <button type="button" id="swap" aria-label="Swap the From and To units">⇄ Swap</button>
+      <div class="field"><label for="to">To</label><select id="to"></select></div>
+    </div>
+  </form>
+
+  <div id="result" class="result" aria-live="polite" aria-atomic="true"></div>
+
+  <section class="common" aria-labelledby="common-h">
+    <h2 id="common-h">Common conversions</h2>
+    <ul id="common"></ul>
+  </section>
+
+  <section class="note" aria-labelledby="how-h">
+    <h2 id="how-h">How it works</h2>
+    <p>Each value is converted through a base unit for its category (for example metres for length, kelvin for temperature). Results shown on screen are rounded to at most 8 significant digits, but the calculation itself is not rounded first.</p>
+    <p>US and Imperial gallons are different sizes: 1 US gallon is about 3.785 litres, while 1 Imperial gallon is about 4.546 litres. Temperature conversions are for temperature readings, not for differences between two temperatures.</p>
+  </section>
+</main>
+
+<script>
+"use strict";
+
+/* ===================== Conversion data & logic (no DOM) ===================== */
+
+// Linear units: `factor` is how many base units are in one of this unit.
+// toBase / fromBase are explicit functions so every category works the same way.
+const linear = (label, symbol, factor) =>
+  ({ label, symbol, toBase: v => v * factor, fromBase: v => v / factor });
+
+// Each category has a base (canonical) unit; all conversions go unit -> base -> unit.
+const CATEGORIES = {
+  length: { label: "Length", /* base: metre */ units: {
+    m: linear("Metres", "m", 1), km: linear("Kilometres", "km", 1000),
+    cm: linear("Centimetres", "cm", 0.01), mm: linear("Millimetres", "mm", 0.001),
+    ft: linear("Feet", "ft", 0.3048), in: linear("Inches", "in", 0.0254),
+    mi: linear("Miles", "mi", 1609.344) } },
+  mass: { label: "Mass", /* base: gram */ units: {
+    g: linear("Grams", "g", 1), kg: linear("Kilograms", "kg", 1000),
+    oz: linear("Ounces", "oz", 28.349523125), lb: linear("Pounds", "lb", 453.59237) } },
+  temperature: { label: "Temperature", /* base: kelvin */ units: {
+    // Temperature scales have different zero points, so a simple multiplier is wrong.
+    // Each unit converts a temperature READING to and from kelvin with an explicit formula.
+    // (These are not for temperature differences: a change of 10 °C equals 10 K, or 18 °F.)
+    c: { label: "Celsius", symbol: "°C", toBase: v => v + 273.15, fromBase: k => k - 273.15 },
+    f: { label: "Fahrenheit", symbol: "°F", toBase: v => (v - 32) * 5 / 9 + 273.15, fromBase: k => (k - 273.15) * 9 / 5 + 32 },
+    k: { label: "Kelvin", symbol: "K", toBase: v => v, fromBase: k => k } } },
+  volume: { label: "Volume", /* base: litre */ units: {
+    L: linear("Litres", "L", 1), mL: linear("Millilitres", "mL", 0.001),
+    usgal: linear("US gallons", "US gal", 3.785411784),
+    impgal: linear("Imperial gallons", "Imp gal", 4.54609) } },
+  area: { label: "Area", /* base: square metre */ units: {
+    m2: linear("Square metres", "m²", 1), ft2: linear("Square feet", "ft²", 0.09290304),
+    acre: linear("Acres", "ac", 4046.8564224) } },
+  time: { label: "Time", /* base: second */ units: {
+    s: linear("Seconds", "s", 1), min: linear("Minutes", "min", 60),
+    h: linear("Hours", "h", 3600), day: linear("Days", "d", 86400) } },
+  speed: { label: "Speed", /* base: metre per second */ units: {
+    ms: linear("Metres per second", "m/s", 1), kmh: linear("Kilometres per hour", "km/h", 1 / 3.6),
+    mph: linear("Miles per hour", "mph", 0.44704) } }
+};
+
+// Units are looked up only inside the chosen category, so cross-category conversion is impossible.
+function convert(categoryKey, fromKey, toKey, value) {
+  const cat = Object.hasOwn(CATEGORIES, categoryKey) ? CATEGORIES[categoryKey] : null;
+  if (!cat) throw new Error("Unknown category.");
+  const from = Object.hasOwn(cat.units, fromKey) ? cat.units[fromKey] : null;
+  const to = Object.hasOwn(cat.units, toKey) ? cat.units[toKey] : null;
+  if (!from || !to) throw new Error("Both units must belong to the selected category.");
+  const base = from.toBase(value);
+  // Small tolerance so exactly absolute zero (e.g. -459.67 °F) is not rejected by float error.
+  if (categoryKey === "temperature" && base < -1e-9) throw new RangeError("That temperature is below absolute zero.");
+  return to.fromBase(base);
+}
+
+const NUMBER_RE = /^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i;
+function parseAmount(text) {
+  const t = text.trim();
+  if (!t) return { error: "Enter an amount to convert." };
+  if (!NUMBER_RE.test(t)) return { error: `"${t}" is not a valid number. Use digits only, for example 12.5 or 1e3.` };
+  const n = Number(t);
+  if (!Number.isFinite(n)) return { error: "That number is too large to use." };
+  return { value: n };
+}
+
+// Display only: the raw Number stays untouched. Returns null for non-finite values.
+function formatNumber(n, digits = 8) {
+  if (!Number.isFinite(n)) return null;
+  const useSci = n !== 0 && (Math.abs(n) >= 1e15 || Math.abs(n) < 1e-6);
+  const fmt = new Intl.NumberFormat(undefined, { maximumSignificantDigits: digits, ...(useSci && { notation: "scientific" }) });
+  const parts = fmt.formatToParts(n);
+  // Avoid "-0": drop the minus sign when every displayed digit is zero.
+  const allZero = !parts.some(p => (p.type === "integer" || p.type === "fraction") && /[1-9]/.test(p.value));
+  return parts.filter(p => !(allZero && p.type === "minusSign")).map(p => p.value).join("");
+}
+
+const COMMON = [
+  { label: "100 °C to °F", category: "temperature", from: "c", to: "f", amount: "100" },
+  { label: "72 °F to °C", category: "temperature", from: "f", to: "c", amount: "72" },
+  { label: "5 km to miles", category: "length", from: "km", to: "mi", amount: "5" },
+  { label: "1 US gallon to litres", category: "volume", from: "usgal", to: "L", amount: "1" },
+  { label: "150 lb to kg", category: "mass", from: "lb", to: "kg", amount: "150" },
+  { label: "60 mph to km/h", category: "speed", from: "mph", to: "kmh", amount: "60" }
+];
+
+/* ============================== DOM rendering ============================== */
+
+const $ = id => document.getElementById(id);
+const els = { category: $("category"), amount: $("amount"), from: $("from"), to: $("to"), swap: $("swap"), result: $("result"), common: $("common") };
+
+function option(value, text) { const o = document.createElement("option"); o.value = value; o.textContent = text; return o; }
+
+// Rebuild BOTH unit selectors for a category and pick defaults (or the given units).
+function fillUnits(categoryKey, fromKey, toKey) {
+  const entries = Object.entries(CATEGORIES[categoryKey].units);
+  for (const sel of [els.from, els.to]) {
+    sel.replaceChildren(...entries.map(([k, u]) => option(k, `${u.label} (${u.symbol})`)));
+  }
+  els.from.value = fromKey ?? entries[0][0];
+  els.to.value = toKey ?? entries[1][0];
+}
+
+function show(className, ...nodes) { els.result.className = "result " + className; els.result.replaceChildren(...nodes); }
+function line(cls, text) { const d = document.createElement("div"); d.className = cls; d.textContent = text; return d; }
+
+function showError(message) {
+  els.amount.setAttribute("aria-invalid", "true");
+  show("error", line("", "⚠ Error: " + message));
+}
+
+function update() {
+  const parsed = parseAmount(els.amount.value);
+  if (parsed.error) return showError(parsed.error);
+  let result;
+  try { result = convert(els.category.value, els.from.value, els.to.value, parsed.value); }
+  catch (e) { return showError(e.message); }
+  const shown = formatNumber(result);
+  if (shown === null) return showError("The result is too large to display.");
+  els.amount.removeAttribute("aria-invalid");
+  const units = CATEGORIES[els.category.value].units;
+  show("ok",
+    line("sub", `${formatNumber(parsed.value, 12)} ${units[els.from.value].symbol} =`),
+    line("big", `${shown} ${units[els.to.value].symbol}`));
+}
+
+function init() {
+  els.category.replaceChildren(...Object.entries(CATEGORIES).map(([k, c]) => option(k, c.label)));
+  els.category.value = "length";
+  fillUnits("length", "km", "mi");
+
+  els.common.replaceChildren(...COMMON.map(c => {
+    const li = document.createElement("li"), b = document.createElement("button");
+    b.type = "button"; b.textContent = c.label;
+    b.addEventListener("click", () => {
+      els.category.value = c.category; fillUnits(c.category, c.from, c.to);
+      els.amount.value = c.amount; update();
+    });
+    li.append(b); return li;
+  }));
+
+  $("form").addEventListener("submit", e => e.preventDefault());
+  els.amount.addEventListener("input", update);
+  els.from.addEventListener("change", update);
+  els.to.addEventListener("change", update);
+  els.category.addEventListener("change", () => { fillUnits(els.category.value); update(); });
+  els.swap.addEventListener("click", () => { [els.from.value, els.to.value] = [els.to.value, els.from.value]; update(); });
+  update();
+}
+init();
+</script>
+</body>
+</html>

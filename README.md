@@ -29,4 +29,6 @@ Each app is its own Worker bound to `tools.rjmlaird.co.uk/<name>*`. Alternativel
 
 ## Local ports
 Each app has its own `[dev]` ports in `wrangler.toml` so `pnpm dev` can run them together: orbital-calc `8787`, unit-converter `8788`. Give new apps the next free pair (e.g. `8789` / `9231`). To run one app: `pnpm --filter @rjmlaird/unit-converter dev`.
-# rjmlaird-tools
+
+## Index page
+`apps/index` serves `tools.rjmlaird.co.uk/` (port `8789`). Add a tool to `apps/index/src/tools.ts` and it appears on the index with filters. Route: `tools.rjmlaird.co.uk/*`; the more specific app routes still win.

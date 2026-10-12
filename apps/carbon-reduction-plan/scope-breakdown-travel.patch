@@ -1,0 +1,475 @@
+diff --git a/packages/carbon-reduction-plan/src/App.jsx b/packages/carbon-reduction-plan/src/App.jsx
+index 1fd80eef..66727be9 100644
+--- a/packages/carbon-reduction-plan/src/App.jsx
++++ b/packages/carbon-reduction-plan/src/App.jsx
+@@ -25,14 +25,46 @@ const FACTORS = {
+     { key: "waste_landfill_t", label: "General waste to landfill (tonnes)", unit: "tonnes", factor: 467.05, group: "waste" },
+     { key: "waste_recycled_t", label: "Waste — mixed recycling (tonnes)", unit: "tonnes", factor: 21.28, group: "waste" },
+     { key: "waste_combustion_t", label: "Waste — combustion / energy recovery (tonnes)", unit: "tonnes", factor: 21.39, group: "waste" },
+-    { key: "car_business_km", label: "Business travel — car, avg (km)", unit: "km", factor: 0.1702, group: "business_travel" },
+-    { key: "rail_business_km", label: "Business travel — national rail (km)", unit: "km", factor: 0.03546, group: "business_travel" },
+-    { key: "flight_short_business_km", label: "Business travel — short-haul flight (km)", unit: "km", factor: 0.15102, group: "business_travel" },
+-    { key: "taxi_business_km", label: "Business travel — taxi (km)", unit: "km", factor: 0.18661, group: "business_travel" },
+-    { key: "car_commute_km", label: "Employee commuting — car, avg (km)", unit: "km", factor: 0.1702, group: "commuting" },
+-    { key: "rail_commute_km", label: "Employee commuting — rail (km)", unit: "km", factor: 0.03546, group: "commuting" },
+-    { key: "bus_commute_km", label: "Employee commuting — local bus (km)", unit: "km", factor: 0.10312, group: "commuting" },
+-    { key: "wfh_days", label: "Employee commuting — home-working (employee-days)", unit: "days", factor: 0.68, group: "commuting" },
++    { key: "car_business_km", label: "Car — unknown fuel/size, average (km)", unit: "km", factor: 0.1702, group: "business_travel", mode: "car" },
++    { key: "car_petrol_small_business_km", label: "Car — petrol, small (≤1.7L) (km)", unit: "km", factor: 0.17987, group: "business_travel", mode: "car" },
++    { key: "car_petrol_medium_business_km", label: "Car — petrol, medium (1.7–2.0L) (km)", unit: "km", factor: 0.22768, group: "business_travel", mode: "car" },
++    { key: "car_petrol_large_business_km", label: "Car — petrol, large (2.0L+) (km)", unit: "km", factor: 0.34796, group: "business_travel", mode: "car" },
++    { key: "car_diesel_small_business_km", label: "Car — diesel, small (≤1.4L) (km)", unit: "km", factor: 0.17323, group: "business_travel", mode: "car" },
++    { key: "car_diesel_medium_business_km", label: "Car — diesel, medium (1.7–2.0L) (km)", unit: "km", factor: 0.20795, group: "business_travel", mode: "car" },
++    { key: "car_diesel_large_business_km", label: "Car — diesel, large (2.0L+) (km)", unit: "km", factor: 0.25959, group: "business_travel", mode: "car" },
++    { key: "car_hybrid_business_km", label: "Car — hybrid, average (km)", unit: "km", factor: 0.15007, group: "business_travel", mode: "car" },
++    { key: "car_electric_business_km", label: "Car — electric, average (km)", unit: "km", factor: 0.06695, group: "business_travel", mode: "car" },
++    { key: "car_lpg_business_km", label: "Car — LPG, average (km)", unit: "km", factor: 0.22043, group: "business_travel", mode: "car" },
++    { key: "motorbike_business_km", label: "Motorbike, average (km)", unit: "km", factor: 0.14324, group: "business_travel", mode: "motorbike" },
++    { key: "rail_business_km", label: "Rail — UK national rail (km)", unit: "km", factor: 0.04443, group: "business_travel", mode: "rail" },
++    { key: "rail_international_business_km", label: "Rail — international rail (km)", unit: "km", factor: 0.00563, group: "business_travel", mode: "rail" },
++    { key: "underground_business_km", label: "Rail — underground/metro (km)", unit: "km", factor: 0.03508, group: "business_travel", mode: "rail" },
++    { key: "light_rail_business_km", label: "Rail — light rail/tram (km)", unit: "km", factor: 0.03609, group: "business_travel", mode: "rail" },
++    { key: "flight_domestic_business_km", label: "Flight — domestic (km)", unit: "km", factor: 0.30608, group: "business_travel", mode: "flight" },
++    { key: "flight_short_economy_business_km", label: "Flight — short-haul, economy (km)", unit: "km", factor: 0.20536, group: "business_travel", mode: "flight" },
++    { key: "flight_short_business_km", label: "Flight — short-haul, business class (km)", unit: "km", factor: 0.30803, group: "business_travel", mode: "flight" },
++    { key: "flight_long_economy_business_km", label: "Flight — long-haul, economy (km)", unit: "km", factor: 0.22472, group: "business_travel", mode: "flight" },
++    { key: "flight_long_premium_business_km", label: "Flight — long-haul, premium economy (km)", unit: "km", factor: 0.35953, group: "business_travel", mode: "flight" },
++    { key: "flight_long_business_business_km", label: "Flight — long-haul, business class (km)", unit: "km", factor: 0.65166, group: "business_travel", mode: "flight" },
++    { key: "taxi_business_km", label: "Taxi — regular (km)", unit: "km", factor: 0.25982, group: "business_travel", mode: "taxi" },
++    { key: "taxi_black_cab_business_km", label: "Taxi — black cab (km)", unit: "km", factor: 0.38238, group: "business_travel", mode: "taxi" },
++    { key: "ferry_business_km", label: "Ferry — passenger (km)", unit: "km", factor: 0.13825, group: "business_travel", mode: "ferry" },
++    { key: "car_commute_km", label: "Car — unknown fuel/size, average (km)", unit: "km", factor: 0.1702, group: "commuting", mode: "car" },
++    { key: "car_petrol_small_commute_km", label: "Car — petrol, small (≤1.7L) (km)", unit: "km", factor: 0.17987, group: "commuting", mode: "car" },
++    { key: "car_petrol_medium_commute_km", label: "Car — petrol, medium (1.7–2.0L) (km)", unit: "km", factor: 0.22768, group: "commuting", mode: "car" },
++    { key: "car_petrol_large_commute_km", label: "Car — petrol, large (2.0L+) (km)", unit: "km", factor: 0.34796, group: "commuting", mode: "car" },
++    { key: "car_diesel_small_commute_km", label: "Car — diesel, small (≤1.4L) (km)", unit: "km", factor: 0.17323, group: "commuting", mode: "car" },
++    { key: "car_diesel_medium_commute_km", label: "Car — diesel, medium (1.7–2.0L) (km)", unit: "km", factor: 0.20795, group: "commuting", mode: "car" },
++    { key: "car_diesel_large_commute_km", label: "Car — diesel, large (2.0L+) (km)", unit: "km", factor: 0.25959, group: "commuting", mode: "car" },
++    { key: "car_hybrid_commute_km", label: "Car — hybrid, average (km)", unit: "km", factor: 0.15007, group: "commuting", mode: "car" },
++    { key: "car_electric_commute_km", label: "Car — electric, average (km)", unit: "km", factor: 0.06695, group: "commuting", mode: "car" },
++    { key: "motorbike_commute_km", label: "Motorbike, average (km)", unit: "km", factor: 0.14324, group: "commuting", mode: "motorbike" },
++    { key: "rail_commute_km", label: "Rail — UK national rail (km)", unit: "km", factor: 0.04443, group: "commuting", mode: "rail" },
++    { key: "underground_commute_km", label: "Rail — underground/metro (km)", unit: "km", factor: 0.03508, group: "commuting", mode: "rail" },
++    { key: "light_rail_commute_km", label: "Rail — light rail/tram (km)", unit: "km", factor: 0.03609, group: "commuting", mode: "rail" },
++    { key: "bus_commute_km", label: "Bus — local, average (km)", unit: "km", factor: 0.12708, group: "commuting", mode: "bus" },
++    { key: "coach_commute_km", label: "Coach (km)", unit: "km", factor: 0.03374, group: "commuting", mode: "bus" },
++    { key: "wfh_days", label: "Home-working (employee-days)", unit: "days", factor: 0.68, group: "commuting", mode: "other" },
+     { key: "downstream_road_tkm", label: "Downstream freight — road, laden avg (tonne.km)", unit: "tonne.km", factor: 0.1064, group: "downstream_transport" },
+     { key: "downstream_sea_tkm", label: "Downstream freight — sea/container (tonne.km)", unit: "tonne.km", factor: 0.01167, group: "downstream_transport" },
+   ],
+@@ -111,32 +143,58 @@ export default function CarbonReductionPlanTool() {
+   const updateEntry = (id, patch) => setEntries(es => es.map(e => e.id === id ? { ...e, ...patch } : e));
+   const removeEntry = (id) => setEntries(es => es.filter(e => e.id !== id));
+   const addEntry = () => setEntries(es => [...es, emptyEntry(thisYear)]);
++  const addTravelEntry = (patch) => setEntries(es => [...es, { id: uid(), ...patch }]);
+ 
+   // computed emissions per entry
+   const enriched = useMemo(() => entries.map(e => {
+     const cat = ALL_CATS[e.category];
+     const qty = parseFloat(e.quantity) || 0;
+     const kg = qty * (cat?.factor || 0);
+-    return { ...e, catLabel: cat?.label || "—", unit: cat?.unit || "", tco2e: kg / 1000 };
++    return { ...e, catLabel: cat?.label || "—", unit: cat?.unit || "", qty, tco2e: kg / 1000 };
+   }), [entries]);
+ 
+   const years = useMemo(() => Array.from(new Set(enriched.map(e => e.year))).sort((a, b) => a - b), [enriched]);
+ 
++  // Sums raw quantity (in each category's native unit — kWh, litres, kg) plus tCO2e
++  // for a given scope's rows, per individual source category. Every category from
++  // FACTORS[scope] is included even at zero, so the breakdown UI can show the full
++  // set of expected bill types (e.g. gas + electricity) rather than only ones in use.
++  const byCategoryForScope = (rows, scope) => Object.fromEntries(
++    FACTORS[scope].map(f => {
++      const catRows = rows.filter(r => r.category === f.key);
++      return [f.key, {
++        quantity: catRows.reduce((s, r) => s + r.qty, 0),
++        unit: f.unit,
++        label: f.label,
++        tco2e: catRows.reduce((s, r) => s + r.tco2e, 0),
++      }];
++    })
++  );
++
+   const byYear = useMemo(() => years.map(y => {
+     const rows = enriched.filter(e => e.year === y);
+-    const scope1 = rows.filter(r => r.scope === 1).reduce((s, r) => s + r.tco2e, 0);
+-    const scope2 = rows.filter(r => r.scope === 2).reduce((s, r) => s + r.tco2e, 0);
++    const scope1Rows = rows.filter(r => r.scope === 1);
++    const scope2Rows = rows.filter(r => r.scope === 2);
++    const scope1ByCategory = byCategoryForScope(scope1Rows, 1);
++    const scope2ByCategory = byCategoryForScope(scope2Rows, 2);
++    const scope1 = scope1Rows.reduce((s, r) => s + r.tco2e, 0);
++    const scope2 = scope2Rows.reduce((s, r) => s + r.tco2e, 0);
+     const scope3Rows = rows.filter(r => r.scope === 3);
+     const scope3 = scope3Rows.reduce((s, r) => s + r.tco2e, 0);
+     const scope3ByGroup = Object.fromEntries(SCOPE3_GROUP_ORDER.map(g => [
+       g,
+       scope3Rows.filter(r => ALL_CATS[r.category]?.group === g).reduce((s, r) => s + r.tco2e, 0),
+     ]));
+-    return { year: y, scope1, scope2, scope3, scope3ByGroup, total: scope1 + scope2 + scope3 };
++    return { year: y, scope1, scope2, scope3, scope1ByCategory, scope2ByCategory, scope3ByGroup, total: scope1 + scope2 + scope3 };
+   }), [years, enriched]);
+ 
+   const emptyScope3ByGroup = Object.fromEntries(SCOPE3_GROUP_ORDER.map(g => [g, 0]));
+-  const baseline = byYear.find(y => y.year === baselineYear) || { total: 0, scope1: 0, scope2: 0, scope3: 0, scope3ByGroup: emptyScope3ByGroup };
++  const emptyScope1ByCategory = byCategoryForScope([], 1);
++  const emptyScope2ByCategory = byCategoryForScope([], 2);
++  const baseline = byYear.find(y => y.year === baselineYear) || {
++    total: 0, scope1: 0, scope2: 0, scope3: 0,
++    scope1ByCategory: emptyScope1ByCategory, scope2ByCategory: emptyScope2ByCategory, scope3ByGroup: emptyScope3ByGroup,
++  };
+ 
+   const trajectory = useMemo(() => {
+     const out = [];
+@@ -196,7 +254,7 @@ export default function CarbonReductionPlanTool() {
+           baselineYear={baselineYear} setBaselineYear={setBaselineYear}
+           targetPct={targetPct} setTargetPct={setTargetPct}
+           planPeriodYears={planPeriodYears} setPlanPeriodYears={setPlanPeriodYears}
+-          entries={enriched} updateEntry={updateEntry} removeEntry={removeEntry} addEntry={addEntry}
++          entries={enriched} updateEntry={updateEntry} removeEntry={removeEntry} addEntry={addEntry} addTravelEntry={addTravelEntry} thisYear={thisYear}
+           byYear={byYear} trajectory={trajectory} baseline={baseline} latest={latest} pctChangeFromBaseline={pctChangeFromBaseline}
+         />
+       ) : (
+@@ -225,7 +283,7 @@ function Card({ children, style }) {
+ 
+ function Dashboard(props) {
+   const { orgName, setOrgName, baselineYear, setBaselineYear, targetPct, setTargetPct, planPeriodYears, setPlanPeriodYears,
+-    entries, updateEntry, removeEntry, addEntry, byYear, trajectory, baseline, latest, pctChangeFromBaseline } = props;
++    entries, updateEntry, removeEntry, addEntry, addTravelEntry, thisYear, byYear, trajectory, baseline, latest, pctChangeFromBaseline } = props;
+ 
+   return (
+     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 24px 60px" }}>
+@@ -289,6 +347,8 @@ function Dashboard(props) {
+ 
+       <ScopeBreakdownCard byYear={byYear} />
+ 
++      <TravelCalculator addTravelEntry={addTravelEntry} thisYear={thisYear} />
++
+       <Card>
+         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+           <div style={{ fontWeight: 700, fontSize: 14 }}>Activity data log</div>
+@@ -343,6 +403,127 @@ function Dashboard(props) {
+   );
+ }
+ 
++const TRAVEL_MODES = [
++  { key: "car", label: "Car" },
++  { key: "flight", label: "Flight" },
++  { key: "rail", label: "Rail" },
++  { key: "taxi", label: "Taxi" },
++  { key: "bus", label: "Bus / coach" },
++  { key: "motorbike", label: "Motorbike" },
++  { key: "ferry", label: "Ferry" },
++];
++const TRAVEL_PURPOSES = [
++  { key: "business_travel", label: "Business travel (Cat 6)" },
++  { key: "commuting", label: "Employee commuting (Cat 7)" },
++];
++
++function TravelCalculator({ addTravelEntry, thisYear }) {
++  const [purpose, setPurpose] = useState("business_travel");
++  const [mode, setMode] = useState("car");
++  const availableModes = TRAVEL_MODES.filter(m => FACTORS[3].some(f => f.group === purpose && f.mode === m.key));
++  const options = FACTORS[3].filter(f => f.group === purpose && f.mode === mode);
++  const [category, setCategory] = useState(options[0]?.key || "");
++  const activeCategory = options.some(o => o.key === category) ? category : options[0]?.key;
++  const [distanceKm, setDistanceKm] = useState("");
++  const [roundTrip, setRoundTrip] = useState(false);
++  const [trips, setTrips] = useState(1);
++  const [year, setYear] = useState(thisYear);
++  const [justAdded, setJustAdded] = useState(false);
++
++  const onPurposeChange = (p) => {
++    setPurpose(p);
++    const first = TRAVEL_MODES.find(m => FACTORS[3].some(f => f.group === p && f.mode === m.key));
++    setMode(first?.key || "car");
++  };
++  const onModeChange = (m) => {
++    setMode(m);
++    const first = FACTORS[3].find(f => f.group === purpose && f.mode === m);
++    setCategory(first?.key || "");
++  };
++
++  const cat = ALL_CATS[activeCategory];
++  const legKm = parseFloat(distanceKm) || 0;
++  const tripCount = parseInt(trips, 10) || 1;
++  const totalKm = legKm * (roundTrip ? 2 : 1) * tripCount;
++  const tco2e = totalKm * (cat?.factor || 0) / 1000;
++
++  const handleAdd = () => {
++    if (!activeCategory || totalKm <= 0) return;
++    addTravelEntry({ year, scope: 3, category: activeCategory, quantity: String(totalKm) });
++    setDistanceKm("");
++    setJustAdded(true);
++    setTimeout(() => setJustAdded(false), 1800);
++  };
++
++  return (
++    <Card style={{ marginBottom: 20 }}>
++      <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>Travel emissions calculator</div>
++      <div style={{ fontSize: 12.5, color: "#6B7A66", marginBottom: 14 }}>
++        Forecast emissions for a flight, rail journey, or car/taxi trip, then add it straight to the activity data log against the right Scope 3 category.
++      </div>
++
++      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px,1fr))", gap: 10, marginBottom: 12 }}>
++        <div>
++          <Label>Purpose</Label>
++          <select value={purpose} onChange={e => onPurposeChange(e.target.value)} style={inputStyle}>
++            {TRAVEL_PURPOSES.map(p => <option key={p.key} value={p.key}>{p.label}</option>)}
++          </select>
++        </div>
++        <div>
++          <Label>Mode</Label>
++          <select value={mode} onChange={e => onModeChange(e.target.value)} style={inputStyle}>
++            {availableModes.map(m => <option key={m.key} value={m.key}>{m.label}</option>)}
++          </select>
++        </div>
++        <div style={{ gridColumn: "span 2" }}>
++          <Label>{mode === "car" ? "Fuel type & size" : mode === "flight" ? "Haul & cabin class" : mode === "rail" ? "Rail type" : "Type"}</Label>
++          <select value={activeCategory || ""} onChange={e => setCategory(e.target.value)} style={inputStyle}>
++            {options.map(o => <option key={o.key} value={o.key}>{o.label.replace(/^[A-Za-z /]+— /, "")}</option>)}
++          </select>
++        </div>
++      </div>
++
++      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px,1fr))", gap: 10, marginBottom: 14 }}>
++        <div>
++          <Label>Distance, one-way (km)</Label>
++          <input type="number" value={distanceKm} onChange={e => setDistanceKm(e.target.value)} style={inputStyle} placeholder="e.g. 340" />
++        </div>
++        <div>
++          <Label>Trips</Label>
++          <input type="number" min={1} value={trips} onChange={e => setTrips(e.target.value)} style={inputStyle} />
++        </div>
++        <div>
++          <Label>Year</Label>
++          <input type="number" value={year} onChange={e => setYear(Number(e.target.value))} style={inputStyle} />
++        </div>
++        <div style={{ display: "flex", alignItems: "flex-end", paddingBottom: 9 }}>
++          <label style={{ fontSize: 13, display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
++            <input type="checkbox" checked={roundTrip} onChange={e => setRoundTrip(e.target.checked)} />
++            Round trip
++          </label>
++        </div>
++      </div>
++
++      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#F3F5EC", border: "1px solid #D8DBCB", borderRadius: 8, padding: "12px 16px", flexWrap: "wrap", gap: 10 }}>
++        <div>
++          <div style={{ fontSize: 11, color: "#6B7A66", textTransform: "uppercase", letterSpacing: 0.4 }}>Total distance</div>
++          <div className="mono" style={{ fontSize: 15, fontWeight: 700 }}>{fmt(totalKm, 0)} km</div>
++        </div>
++        <div>
++          <div style={{ fontSize: 11, color: "#6B7A66", textTransform: "uppercase", letterSpacing: 0.4 }}>Estimated emissions</div>
++          <div className="mono" style={{ fontSize: 15, fontWeight: 700 }}>{fmt(tco2e, 3)} tCO2e</div>
++        </div>
++        <button onClick={handleAdd} disabled={totalKm <= 0} style={{ ...addBtn, opacity: totalKm > 0 ? 1 : 0.5, cursor: totalKm > 0 ? "pointer" : "not-allowed" }}>
++          <Plus size={13} style={{ marginRight: 4, verticalAlign: -2 }} />{justAdded ? "Added ✓" : "Add to activity log"}
++        </button>
++      </div>
++      <div style={{ fontSize: 11, color: "#6B7A66", marginTop: 10 }}>
++        Distance-based factors are DEFRA-derived, well-to-tank inclusive kg CO2e per passenger-km (2023/24). For flights, use straight-line distance as a starting estimate — airlines' great-circle mileage tools give a more precise figure.
++      </div>
++    </Card>
++  );
++}
++
+ function ScopeBreakdownCard({ byYear }) {
+   const years = byYear.map(y => y.year);
+   const [selectedYear, setSelectedYear] = useState(years[years.length - 1] ?? null);
+@@ -353,7 +534,7 @@ function ScopeBreakdownCard({ byYear }) {
+ 
+   return (
+     <>
+-      <Card style={{ marginBottom: 20 }}>
++      <Card style={{ marginBottom: 20 }} id="scope-overview-card">
+         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
+           <div style={{ fontWeight: 700, fontSize: 14 }}>Scope 1, 2 &amp; 3 breakdown calculation</div>
+           {years.length > 0 && (
+@@ -408,11 +589,90 @@ function ScopeBreakdownCard({ byYear }) {
+         </div>
+       </Card>
+ 
++      <ScopeSourceBreakdown scope={1} row={row} year={activeYear} />
++      <ScopeSourceBreakdown scope={2} row={row} year={activeYear} />
+       <Scope3CategoryBreakdown row={row} year={activeYear} />
+     </>
+   );
+ }
+ 
++function ScopeSourceBreakdown({ scope, row, year }) {
++  const info = SCOPE_INFO[scope];
++  const byCategory = row?.[`scope${scope}ByCategory`] || {};
++  const scopeTotal = row?.[`scope${scope}`] || 0;
++  const categories = FACTORS[scope];
++  const hasData = scopeTotal > 0;
++
++  const barData = categories.map(f => ({
++    name: f.label.split(" (")[0],
++    fullName: f.label,
++    unit: f.unit,
++    value: Number((byCategory[f.key]?.tco2e || 0).toFixed(3)),
++  }));
++
++  return (
++    <Card style={{ marginBottom: 20 }}>
++      <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{info.label} — bill/meter source breakdown</div>
++      <div style={{ fontSize: 12.5, color: "#6B7A66", marginBottom: 14 }}>
++        Units of energy or fuel taken directly from {scope === 1 ? "fuel/utility bills and vehicle records" : "electricity bills and supplier certificates"}, for {year ?? "the selected year"}.
++      </div>
++
++      {!hasData ? (
++        <div style={{ fontSize: 13, color: "#6B7A66" }}>Add {info.label} activity data below to see the source-level breakdown.</div>
++      ) : (
++        <div className="chart-print" style={{ marginBottom: 14 }}>
++          <ResponsiveContainer width="100%" height={Math.max(120, categories.length * 32)}>
++            <BarChart data={barData} layout="vertical" margin={{ top: 5, right: 24, left: 10, bottom: 5 }}>
++              <CartesianGrid strokeDasharray="3 3" stroke="#D8DBCB" />
++              <XAxis type="number" stroke="#16241B" fontSize={12} label={{ value: "tCO2e", position: "insideBottom", offset: -3, fontSize: 11 }} />
++              <YAxis type="category" dataKey="name" stroke="#16241B" fontSize={11} width={150} />
++              <Tooltip formatter={(v, n, p) => [`${fmt(v, 3)} tCO2e`, p?.payload?.fullName]} />
++              <Bar dataKey="value" fill={info.color} radius={[0, 4, 4, 0]} />
++            </BarChart>
++          </ResponsiveContainer>
++        </div>
++      )}
++
++      <div style={{ overflowX: "auto" }}>
++        <table style={tableStyle}>
++          <thead>
++            <tr>
++              <th style={th}>Source (bill / meter type)</th>
++              <th style={th}>Quantity</th>
++              <th style={th}>Unit</th>
++              <th style={th}>tCO2e</th>
++              <th style={th}>% of {info.label}</th>
++            </tr>
++          </thead>
++          <tbody>
++            {categories.map(f => {
++              const cat = byCategory[f.key] || { quantity: 0, tco2e: 0 };
++              const pct = scopeTotal ? (cat.tco2e / scopeTotal) * 100 : 0;
++              return (
++                <tr key={f.key}>
++                  <td style={td}>{f.label}</td>
++                  <td style={td} className="mono">{fmt(cat.quantity, cat.quantity && cat.quantity < 10 ? 3 : 0)}</td>
++                  <td style={td} className="mono">{f.unit}</td>
++                  <td style={td} className="mono">{fmt(cat.tco2e, 3)}</td>
++                  <td style={td} className="mono">{hasData ? `${fmt(pct, 0)}%` : "—"}</td>
++                </tr>
++              );
++            })}
++            <tr style={{ fontWeight: 700 }}>
++              <td style={td} colSpan={3}>Total {info.label}</td>
++              <td style={td} className="mono">{fmt(scopeTotal, 3)}</td>
++              <td style={td} className="mono">100%</td>
++            </tr>
++          </tbody>
++        </table>
++      </div>
++      <div style={{ fontSize: 11, color: "#6B7A66", marginTop: 10 }}>
++        Quantities are in each source's native unit as billed (kWh for gas/electricity, litres for liquid fuel, kg for refrigerant), so they can be checked directly against supplier statements before conversion to tCO2e.
++      </div>
++    </Card>
++  );
++}
++
+ function Scope3CategoryBreakdown({ row, year }) {
+   const groupRow = row?.scope3ByGroup || {};
+   const scope3Total = row?.scope3 || 0;
+@@ -536,7 +796,59 @@ function PlanDocument({ orgName, baselineYear, targetPct, planPeriodYears, suppl
+           </table>
+         </Section>
+ 
+-        <Section title="3. Scope 3 emissions — required category breakdown">
++        <Section title="3. Scope 1 — direct emissions, activity data by source">
++          <p>
++            Figures below are taken directly from fuel and utility bills, meter readings, and vehicle fuel records for the most recent reporting year{latest ? ` (${latest.year})` : ""}, before conversion to tCO2e using DEFRA/BEIS conversion factors.
++          </p>
++          <table style={tableStyle}>
++            <thead><tr><th style={th}>Source</th><th style={th}>Quantity</th><th style={th}>Unit</th><th style={th}>tCO2e</th></tr></thead>
++            <tbody>
++              {FACTORS[1].map(f => {
++                const cat = latest?.scope1ByCategory?.[f.key] || { quantity: 0, tco2e: 0 };
++                return (
++                  <tr key={f.key}>
++                    <td style={td}>{f.label}</td>
++                    <td style={td} className="mono">{fmt(cat.quantity, cat.quantity && cat.quantity < 10 ? 3 : 0)}</td>
++                    <td style={td} className="mono">{f.unit}</td>
++                    <td style={td} className="mono">{fmt(cat.tco2e, 3)}</td>
++                  </tr>
++                );
++              })}
++              <tr style={{ fontWeight: 700 }}>
++                <td style={td} colSpan={3}>Total Scope 1</td>
++                <td style={td} className="mono">{fmt(latest?.scope1 || 0, 3)}</td>
++              </tr>
++            </tbody>
++          </table>
++        </Section>
++
++        <Section title="4. Scope 2 — indirect energy emissions, activity data by source">
++          <p>
++            Figures below are taken directly from electricity and purchased heat/steam bills for the most recent reporting year{latest ? ` (${latest.year})` : ""}. Location-based figures use the grid average emissions intensity; market-based figures reflect our specific supply contracts (e.g. REGO-backed renewable tariffs), reported per PPN 006's dual-reporting requirement for Scope 2.
++          </p>
++          <table style={tableStyle}>
++            <thead><tr><th style={th}>Source</th><th style={th}>Quantity</th><th style={th}>Unit</th><th style={th}>tCO2e</th></tr></thead>
++            <tbody>
++              {FACTORS[2].map(f => {
++                const cat = latest?.scope2ByCategory?.[f.key] || { quantity: 0, tco2e: 0 };
++                return (
++                  <tr key={f.key}>
++                    <td style={td}>{f.label}</td>
++                    <td style={td} className="mono">{fmt(cat.quantity, cat.quantity && cat.quantity < 10 ? 3 : 0)}</td>
++                    <td style={td} className="mono">{f.unit}</td>
++                    <td style={td} className="mono">{fmt(cat.tco2e, 3)}</td>
++                  </tr>
++                );
++              })}
++              <tr style={{ fontWeight: 700 }}>
++                <td style={td} colSpan={3}>Total Scope 2 (location-based)</td>
++                <td style={td} className="mono">{fmt(latest?.scope2 || 0, 3)}</td>
++              </tr>
++            </tbody>
++          </table>
++        </Section>
++
++        <Section title="5. Scope 3 emissions — required category breakdown">
+           <p>
+             PPN 006 does not require all 15 GHG Protocol Scope 3 categories — only the five below. Figures shown are for the most recent reporting year{latest ? ` (${latest.year})` : ""}.
+           </p>
+@@ -565,7 +877,7 @@ function PlanDocument({ orgName, baselineYear, targetPct, planPeriodYears, suppl
+           </p>
+         </Section>
+ 
+-        <Section title="4. Current emissions reporting">
++        <Section title="6. Current emissions reporting">
+           <p>Emissions have been re-assessed annually since the baseline year, as set out in Table 1 below.</p>
+           <table style={tableStyle}>
+             <thead><tr><th style={th}>Reporting year</th><th style={th}>Scope 1</th><th style={th}>Scope 2</th><th style={th}>Scope 3</th><th style={th}>Total (tCO2e)</th><th style={th}>1 / 2 / 3 split</th></tr></thead>
+@@ -589,7 +901,7 @@ function PlanDocument({ orgName, baselineYear, targetPct, planPeriodYears, suppl
+           )}
+         </Section>
+ 
+-        <Section title="5. Emissions Reduction Target">
++        <Section title="7. Emissions Reduction Target">
+           <p>
+             {orgName || "[Organisation]"} commits to reducing its Contract/Organisational Carbon Footprint by <strong>{targetPct}%</strong> per contract year, for a period of <strong>{planPeriodYears} years</strong> from the baseline year, focusing initially on identified GHG emissions hotspots.
+           </p>
+@@ -612,7 +924,7 @@ function PlanDocument({ orgName, baselineYear, targetPct, planPeriodYears, suppl
+           </div>
+         </Section>
+ 
+-        <Section title="6. Carbon reduction measures">
++        <Section title="8. Carbon reduction measures">
+           <p>The following environmental management measures and projects have been or will be implemented to achieve the stated emissions reduction target:</p>
+           <ul style={{ paddingLeft: 20, lineHeight: 1.7 }}>
+             {measures.map((m, i) => (
+@@ -627,7 +939,7 @@ function PlanDocument({ orgName, baselineYear, targetPct, planPeriodYears, suppl
+           <button className="no-print" onClick={addMeasure} style={addBtn}><Plus size={13} style={{ marginRight: 4, verticalAlign: -2 }} />Add measure</button>
+         </Section>
+ 
+-        <Section title="7. Declaration and sign-off">
++        <Section title="9. Declaration and sign-off">
+           <p>This Carbon Reduction Plan has been reviewed and signed off by the board (or equivalent management body).</p>
+           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginTop: 20 }}>
+             <div>

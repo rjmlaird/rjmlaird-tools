@@ -1,0 +1,14 @@
+{
+  "name": "crp",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-07-26",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "routes": [
+    { "pattern": "crp.tools.rjmlaird.co.uk", "custom_domain": true }
+  ]
+}

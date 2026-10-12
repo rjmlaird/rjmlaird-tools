@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dopamine Menu · labs.rjmlaird.co.uk</title>
+<style>
+:root{--bg:#eef1ea;--fg:#1f2927;--mut:#4a5754;--ac:#0d5c63;--line:#5f6e6a;--card:#fff;--sel:#d6ebe6;--foc:#0b57d0;--pb:#0d5c63;--pf:#fff;--err:#a4161a;--warm:#b97a0a}
+@media(prefers-color-scheme:dark){:root{--bg:#141a19;--fg:#eaf1ee;--mut:#b9c6c2;--ac:#7fd6cf;--line:#8a9a96;--card:#1e2726;--sel:#254541;--foc:#8ab4ff;--pb:#7fd6cf;--pf:#0b1f1e;--err:#ff9c9c;--warm:#e8b04a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:1.0625rem/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:42rem;margin:0 auto;padding:1rem 1rem 4rem}
+h1,h2,h3{line-height:1.25}h1{font-size:1.9rem;margin:.6rem 0 .3rem}h2{font-size:1.5rem;margin:1.3rem 0 .4rem}h3{font-size:1.15rem;margin:0 0 .3rem}
+fieldset{border:0;padding:0;margin:1.1rem 0}legend{font-weight:700;padding:0;margin-bottom:.3rem}
+.opt{display:inline-flex;align-items:center;gap:.5rem;min-height:44px;padding:.25rem .9rem;margin:.2rem .3rem .2rem 0;border:2px solid var(--line);border-radius:999px;cursor:pointer;background:var(--card)}
+.opt input{width:1.15rem;height:1.15rem;margin:0;accent-color:var(--ac)}
+.opt:has(input:checked){border-color:var(--ac);background:var(--sel);font-weight:600}
+.opt:has(input:focus-visible){outline:3px solid var(--foc);outline-offset:2px}
+:focus-visible{outline:3px solid var(--foc);outline-offset:2px}
+.btn{font:inherit;min-height:44px;padding:.45rem 1rem;border:2px solid var(--ac);border-radius:10px;background:var(--card);color:var(--fg);cursor:pointer;margin:.2rem .3rem .2rem 0}
+.btn.primary{background:var(--pb);color:var(--pf);font-weight:600}
+input[type=text],input[type=number]{font:inherit;width:100%;max-width:26rem;min-height:44px;padding:.4rem .6rem;border:2px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+.cards,.menu{list-style:none;padding:0;margin:.6rem 0}.cards{display:grid;gap:.9rem}
+.card{background:var(--card);border:2px solid var(--line);border-left:8px solid var(--warm);border-radius:12px;padding:.9rem 1rem}
+.tag{display:inline-block;border:1.5px solid var(--line);border-radius:6px;padding:0 .45rem;margin:.1rem .25rem .1rem 0;font-size:.9rem}
+.meta,.hint,small{color:var(--mut)}.meta{margin:.2rem 0 .5rem}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.menu li{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.5rem;padding:.5rem 0;border-bottom:1px solid var(--line)}
+.err{color:var(--err);font-weight:600}
+.notice{border:2px solid var(--line);border-radius:10px;padding:.6rem .8rem}
+details{margin:1.2rem 0;border-top:1px solid var(--line);padding-top:.4rem}
+summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center}
+[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>Dopamine Menu</h1>
+<p class="hint">A quick way to pick a short, enjoyable or restorative break from your own menu. “Dopamine menu” is a popular metaphor; this app doesn’t measure or change anything in your body or brain.</p>
+</header>
+<div id="live" class="sr" role="status" aria-live="polite"></div>
+<p id="mem" class="notice" hidden>This browser isn’t letting the page save, so changes will be lost when you close it. Use “Export my data” to keep your menu.</p>
+
+<main>
+<section id="v-filters">
+<h2 id="h-filters" tabindex="-1">What would help right now?</h2>
+<p class="hint">Everything here is optional.</p>
+<form id="ff">
+<fieldset><legend>What kind of thing?</legend><div id="g-pref"></div></fieldset>
+<fieldset><legend>How much time?</legend><div id="g-time"></div></fieldset>
+<fieldset><legend>Where are you?</legend><div id="g-loc"></div></fieldset>
+<button class="btn primary" type="submit">Suggest three things</button>
+<button class="btn" type="button" id="skip">Skip this, just suggest</button>
+</form>
+</section>
+
+<section id="v-results" hidden>
+<h2 id="h-results" tabindex="-1">Three ideas for right now</h2>
+<p id="r-sum" class="meta"></p>
+<p id="r-note"></p>
+<ul id="cards" class="cards"></ul>
+<div>
+<button class="btn" id="bt-more" type="button">Show me three others</button>
+<button class="btn" id="bt-change" type="button">Change filters</button>
+<button class="btn" id="bt-all" type="button">See all activities</button>
+</div>
+</section>
+
+<section id="v-chosen" hidden>
+<h2 id="h-chosen" tabindex="-1"></h2>
+<p id="c-note" class="hint"></p>
+<fieldset id="fb"><legend>Did this help you choose?</legend>
+<button class="btn" type="button" data-fb="Yes">Yes</button>
+<button class="btn" type="button" data-fb="A little">A little</button>
+<button class="btn" type="button" data-fb="Not really">Not really</button>
+<button class="btn" type="button" data-fb="">Skip feedback</button>
+</fieldset>
+<p id="fb-msg" tabindex="-1"></p>
+<div>
+<button class="btn" id="bt-back" type="button">Back to what I was doing</button>
+<button class="btn" id="bt-again" type="button">See the ideas again</button>
+</div>
+</section>
+
+<section id="v-done" hidden>
+<h2 id="h-done" tabindex="-1">Okay. Enjoy whatever comes next.</h2>
+<p class="hint">Nothing else is needed. Come back whenever you like.</p>
+<button class="btn primary" id="bt-start" type="button">Start again</button>
+</section>
+</main>
+
+<details id="edit">
+<summary>Edit my menu</summary>
+<h3 id="menu-h" tabindex="-1">Your activities (<span id="cnt"></span>)</h3>
+<p id="undo" tabindex="-1" hidden></p>
+<ul id="menu" class="menu"></ul>
+<form id="af" novalidate>
+<h3 id="af-h">Add an activity</h3>
+<p><label for="f-title">Title</label><br><input type="text" id="f-title" maxlength="80" required></p>
+<p><label for="f-min">Estimated minutes</label><br><input type="number" id="f-min" min="1" max="240" value="5"></p>
+<fieldset><legend>Categories (choose at least one)</legend><div id="f-cats"></div></fieldset>
+<fieldset><legend>Where it works (choose at least one)</legend><div id="f-locs"></div></fieldset>
+<p><label for="f-note">Requirement or note (optional)</label><br><input type="text" id="f-note" maxlength="160"></p>
+<p id="f-err" class="err"></p>
+<button class="btn primary" type="submit">Save activity</button>
+<button class="btn" type="button" id="f-cancel">Cancel editing</button>
+</form>
+</details>
+
+<details id="data">
+<summary>Privacy, data and limitations</summary>
+<p>This is a personal activity chooser, not a diagnostic or treatment tool. Your menu is saved in this browser unless you export it. You can clear your saved data at any time.</p>
+<p>This page is an informal usability experiment: does a ready-made menu make it easier to choose a break than an open question? It is not clinical research. It doesn’t score breaks, track streaks, or treat returning to work as the goal.</p>
+<p><label class="opt"><input type="checkbox" id="rec"> Keep a private record of my choices</label><br>
+<small>Off by default. If you turn it on, the date, the title of each activity you choose, and any feedback answer are saved in this browser only. Nothing is sent anywhere. It is included when you export, and removed when you clear your data.</small></p>
+<div>
+<button class="btn" id="bt-export" type="button">Export my data</button>
+<button class="btn" id="bt-restore" type="button">Restore sample menu</button>
+<button class="btn" id="bt-clear" type="button">Clear my data</button>
+</div>
+<p><label for="imp">Import a menu from a JSON file</label><br><input type="file" id="imp" accept="application/json,.json"></p>
+<p id="dmsg"></p>
+</details>
+</div>
+
+<script>
+(()=>{
+'use strict';
+const KEY='dopamine-menu-v1';
+const CATS={stimulation:'Stimulation',calm:'Calm',movement:'Movement',connection:'Connection'};
+const LOCS={any:'Anywhere',home:'At home',work:'At work/study',out:'Outdoors'};
+const SEED=[
+['Stand by an open window',2,['calm'],['any'],''],
+['Take five slow breaths',2,['calm'],['any'],''],
+['Make a cup of tea',5,['calm'],['home','work'],'A kettle'],
+['Listen to one favourite song',4,['stimulation','calm'],['any'],'Headphones or a speaker'],
+['Stretch your arms, neck and back',3,['movement','calm'],['any'],''],
+['Step outside briefly',5,['calm','movement'],['home','work'],''],
+['Water a plant',2,['calm'],['home','work'],'A plant'],
+['Doodle on scrap paper',10,['calm','stimulation'],['any'],'Paper and a pen'],
+['Message someone you like',5,['connection'],['any'],'A phone'],
+['Tidy one small surface',5,['movement','calm'],['home','work'],''],
+['Walk around the block',10,['movement'],['out'],''],
+['Dance to a song',4,['movement','stimulation'],['home'],''],
+['Try a quick puzzle or word game',10,['stimulation'],['any'],'A phone or puzzle book'],
+['Look at the sky and clouds',2,['calm'],['out'],''],
+['Call a friend or family member',20,['connection'],['home','out'],'A phone'],
+['Say hello to someone nearby',2,['connection'],['work'],''],
+['Read a few pages of a book',20,['calm'],['home','out'],'A book'],
+['Try a new snack or piece of fruit',5,['stimulation'],['home','work'],'']];
+const seed=()=>SEED.map((s,i)=>({id:'s'+i,title:s[0],minutes:s[1],cats:s[2].slice(),locs:s[3].slice(),note:s[4]}));
+const $=s=>document.querySelector(s);
+const h=(t,a={},...c)=>{const e=document.createElement(t);for(const k in a){if(k.startsWith('on'))e.addEventListener(k.slice(2),a[k]);else e.setAttribute(k,a[k]);}c.flat().forEach(x=>e.append(x));return e;};
+const uid=()=>'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const DEF={pref:'none',time:20,loc:'any'};
+let store={activities:seed(),record:false,log:[]};
+let filters={...DEF},shown=new Set(),current=[],showAll=false,editId=null;
+
+const say=m=>{const l=$('#live');l.textContent='';setTimeout(()=>{l.textContent=m;},60);};
+const msg=m=>{$('#dmsg').textContent=m;say(m);};
+
+/* storage */
+function save(){let bad=false;try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){bad=true;}$('#mem').hidden=!bad;}
+const okc=c=>typeof c==='string'&&Object.hasOwn(CATS,c);
+const okl=c=>typeof c==='string'&&Object.hasOwn(LOCS,c);
+function validate(d){
+ if(!d||typeof d!=='object'||!Array.isArray(d.activities))return{error:'This file isn’t a Dopamine Menu export: it has no “activities” list.'};
+ if(d.activities.length>200)return{error:'There are more than 200 activities, which is the limit.'};
+ const list=[];
+ for(let i=0;i<d.activities.length;i++){
+  const a=d.activities[i],n='Activity '+(i+1)+': ';
+  if(!a||typeof a.title!=='string'||!a.title.trim()||a.title.length>80)return{error:n+'title must be 1 to 80 characters.'};
+  const m=Number(a.minutes);
+  if(!Number.isFinite(m)||m<1||m>240)return{error:n+'minutes must be a number from 1 to 240.'};
+  if(!Array.isArray(a.cats)||!a.cats.length||!a.cats.every(okc))return{error:n+'needs at least one valid category (stimulation, calm, movement, connection).'};
+  if(!Array.isArray(a.locs)||!a.locs.length||!a.locs.every(okl))return{error:n+'needs at least one valid location (any, home, work, out).'};
+  if(a.note!=null&&(typeof a.note!=='string'||a.note.length>160))return{error:n+'note must be text of up to 160 characters.'};
+  list.push({id:uid()+i,title:a.title.trim(),minutes:Math.round(m),cats:[...new Set(a.cats)],locs:[...new Set(a.locs)],note:(a.note||'').trim()});
+ }
+ return{list};
+}
+function load(){
+ let raw=null;
+ try{raw=localStorage.getItem(KEY);}catch(e){$('#mem').hidden=false;return;}
+ if(!raw)return;
+ try{
+  const d=JSON.parse(raw),v=validate(d);
+  if(v.error)throw new Error(v.error);
+  store.activities=v.list;store.record=d.record===true;
+  store.log=Array.isArray(d.log)?d.log.filter(e=>e&&typeof e.title==='string').slice(-500):[];
+ }catch(e){$('#dmsg').textContent='Your saved data couldn’t be read, so the sample menu is showing. You can import an export file if you have one.';}
+}
+
+/* views */
+function go(v,focus=true){
+ ['filters','results','chosen','done'].forEach(x=>{$('#v-'+x).hidden=x!==v;});
+ if(focus){$('#h-'+v).focus();window.scrollTo(0,0);}
+}
+
+/* filters */
+function radios(box,name,opts,cur){
+ $(box).replaceChildren(...opts.map(([v,l])=>h('label',{class:'opt'},h('input',{type:'radio',name,value:String(v),...(String(cur)===String(v)?{checked:''}:{})}),' '+l)));
+}
+function renderFilters(){
+ radios('#g-pref','pref',[['stimulation','A bit of stimulation'],['calm','Calm'],['movement','Movement'],['connection','Connection'],['none','No preference'],['unsure','I’m not sure']],'none');
+ radios('#g-time','time',[[2,'2 minutes'],[5,'5 minutes'],[10,'10 minutes'],[20,'20+ minutes']],20);
+ radios('#g-loc','loc',[['any','Anywhere'],['home','At home'],['work','At work/study'],['out','Outdoors']],'any');
+}
+function readFilters(){
+ const f=new FormData($('#ff')),p=f.get('pref');
+ filters={pref:p==='unsure'?'none':p,time:Number(f.get('time')),loc:f.get('loc')};
+}
+
+/* suggestions */
+function rank(){
+ const{pref,time,loc}=filters;
+ return store.activities.map(a=>{
+  const c=pref==='none'||a.cats.includes(pref);
+  const l=loc==='any'||a.locs.includes('any')||a.locs.includes(loc);
+  const t=time>=20||a.minutes<=time;
+  return{a,all:c&&l&&t,score:(c?4:0)+(l?2:0)+(t?3:0)+Math.random()};
+ }).sort((x,y)=>(y.all-x.all)||(y.score-x.score));
+}
+function suggest(fresh){
+ if(fresh)shown.clear();
+ showAll=false;
+ const r=rank();
+ let cur=r.filter(x=>!shown.has(x.a.id)).slice(0,3);
+ if(cur.length<3){
+  shown.clear();
+  const ids=new Set(cur.map(x=>x.a.id));
+  cur=cur.concat(r.filter(x=>!ids.has(x.a.id)).slice(0,3-cur.length));
+ }
+ current=cur;cur.forEach(x=>shown.add(x.a.id));
+ renderResults();go('results');
+ say($('#r-note').textContent?'New suggestions shown. '+$('#r-note').textContent:'Three suggestions shown.');
+}
+function card(a){
+ return h('li',{class:'card'},
+  h('h3',{},a.title),
+  h('p',{class:'meta'},h('strong',{},a.minutes+' min'),' ',
+   a.cats.map(c=>h('span',{class:'tag'},h('span',{class:'sr'},'Category: '),CATS[c])),
+   a.locs.map(l=>h('span',{class:'tag'},h('span',{class:'sr'},'Location: '),LOCS[l]))),
+  a.note?h('p',{},'Needs: '+a.note):'',
+  h('button',{class:'btn primary',type:'button','aria-label':'I’ll try this: '+a.title,onclick:()=>choose(a)},'I’ll try this'));
+}
+function renderResults(){
+ const ul=$('#cards');ul.replaceChildren();
+ const empty=!store.activities.length;
+ $('#bt-more').hidden=empty||showAll;$('#bt-all').hidden=empty;
+ $('#bt-all').textContent=showAll?'Back to three ideas':'See all activities';
+ $('#h-results').textContent=showAll?'Your whole menu':'Three ideas for right now';
+ if(empty){
+  $('#r-sum').textContent='';
+  $('#r-note').textContent='Your menu is empty, so there’s nothing to suggest yet.';
+  ul.append(h('li',{},h('button',{class:'btn primary',type:'button',onclick:()=>{store.activities=seed();save();renderMenu();suggest(true);}},'Restore the sample menu'),h('button',{class:'btn',type:'button',onclick:()=>{$('#edit').open=true;$('#af').scrollIntoView();$('#f-title').focus();}},'Add my own')));
+  return;
+ }
+ const pl=filters.pref==='none'?'any kind of thing':CATS[filters.pref].toLowerCase();
+ $('#r-sum').textContent='Filters: '+pl+', '+(filters.time>=20?'any length of time':'up to '+filters.time+' min')+', '+LOCS[filters.loc].toLowerCase()+'.';
+ if(showAll){
+  [...store.activities].sort((a,b)=>a.title.localeCompare(b.title)).forEach(a=>ul.append(card(a)));
+  $('#r-note').textContent='All '+store.activities.length+' activities in your menu.';
+ }else{
+  current.forEach(x=>ul.append(card(x.a)));
+  $('#r-note').textContent=current.some(x=>!x.all)?'Fewer than three activities match everything you chose, so these include the closest matches. You can change filters or see all activities.':'';
+ }
+}
+
+/* choosing and feedback */
+function choose(a){
+ if(store.record){store.log.push({date:new Date().toISOString().slice(0,10),title:a.title});store.log=store.log.slice(-500);save();}
+ $('#h-chosen').textContent='You chose: '+a.title;
+ $('#c-note').textContent=a.minutes+' min'+(a.note?' · Needs: '+a.note:'');
+ $('#fb').hidden=false;$('#fb-msg').textContent='';
+ go('chosen');say('You chose '+a.title+'.');
+}
+function feedback(v){
+ if(v&&store.record&&store.log.length){store.log[store.log.length-1].feedback=v;save();}
+ $('#fb').hidden=true;
+ $('#fb-msg').textContent=v?'Thanks, that’s noted on this device only if you turned on the private record.':'No problem, feedback skipped.';
+ $('#fb-msg').focus();
+}
+
+/* menu editor */
+function renderMenu(){
+ $('#cnt').textContent=store.activities.length;
+ $('#menu').replaceChildren(...store.activities.map(a=>h('li',{},
+  h('span',{},h('strong',{},a.title),' · '+a.minutes+' min · '+a.cats.map(c=>CATS[c].toLowerCase()).join(', ')+' · '+a.locs.map(l=>LOCS[l].toLowerCase()).join(', ')),
+  h('span',{},
+   h('button',{class:'btn',type:'button','aria-label':'Edit '+a.title,onclick:()=>edit(a.id)},'Edit'),
+   h('button',{class:'btn',type:'button','aria-label':'Delete '+a.title,onclick:()=>del(a.id)},'Delete')))));
+}
+function checks(box,name,map,def){
+ $(box).replaceChildren(...Object.entries(map).map(([k,v])=>h('label',{class:'opt'},h('input',{type:'checkbox',name,value:k,...(k===def?{checked:''}:{})}),' '+v)));
+}
+function resetForm(){
+ editId=null;$('#af').reset();$('#af-h').textContent='Add an activity';$('#f-err').textContent='';
+}
+function edit(id){
+ const a=store.activities.find(x=>x.id===id);if(!a)return;
+ editId=id;$('#af-h').textContent='Edit activity';$('#f-err').textContent='';
+ $('#f-title').value=a.title;$('#f-min').value=a.minutes;$('#f-note').value=a.note;
+ $('#af').querySelectorAll('[name=cat]').forEach(i=>{i.checked=a.cats.includes(i.value);});
+ $('#af').querySelectorAll('[name=loc]').forEach(i=>{i.checked=a.locs.includes(i.value);});
+ $('#af').scrollIntoView();$('#f-title').focus();
+}
+function del(id){
+ const i=store.activities.findIndex(a=>a.id===id);if(i<0)return;
+ const[a]=store.activities.splice(i,1);
+ if(editId===id)resetForm();
+ save();renderMenu();
+ const u=$('#undo');
+ u.replaceChildren('Deleted “'+a.title+'”. ',h('button',{class:'btn',type:'button',onclick:()=>{store.activities.splice(i,0,a);save();renderMenu();u.hidden=true;$('#menu-h').focus();say('Restored '+a.title+'.');}},'Undo'));
+ u.hidden=false;u.focus();say('Deleted '+a.title+'. Undo is available.');
+}
+
+/* data tools */
+function twoStep(btn,label,run){
+ let t;
+ const arm=on=>{if(on){btn.dataset.arm='1';btn.textContent='Press again to confirm: '+label;}else{delete btn.dataset.arm;btn.textContent=label;}};
+ btn.addEventListener('click',()=>{
+  if(btn.dataset.arm){clearTimeout(t);arm(false);run();}
+  else{arm(true);t=setTimeout(()=>arm(false),8000);say('Press the button again to confirm: '+label+'.');}
+ });
+}
+function exportData(){
+ const out={app:'dopamine-menu',version:1,exported:new Date().toISOString(),record:store.record,
+  activities:store.activities.map(({title,minutes,cats,locs,note})=>({title,minutes,cats,locs,note})),log:store.log};
+ const u=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}));
+ const a=h('a',{href:u,download:'dopamine-menu.json'});document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(u),1000);msg('Your data was exported as dopamine-menu.json.');
+}
+async function importFile(file){
+ if(!file)return;
+ try{
+  if(file.size>1e6)throw new Error('That file is larger than 1 MB.');
+  let d;try{d=JSON.parse(await file.text());}catch(e){throw new Error('That file isn’t valid JSON.');}
+  const v=validate(d);if(v.error)throw new Error(v.error);
+  store.activities=v.list;save();renderMenu();resetForm();
+  msg('Imported '+v.list.length+' activities. Your previous menu was replaced.');
+ }catch(e){msg('Import didn’t work, and your menu is unchanged. '+e.message);}
+ $('#imp').value='';
+}
+function clearAll(){
+ try{localStorage.removeItem(KEY);}catch(e){}
+ store={activities:seed(),record:false,log:[]};filters={...DEF};shown.clear();current=[];
+ $('#rec').checked=false;$('#mem').hidden=true;
+ renderFilters();renderMenu();resetForm();go('filters',false);
+ msg('All saved data was cleared. The sample menu is showing.');
+}
+
+/* wiring */
+load();
+renderFilters();
+checks('#f-cats','cat',CATS);checks('#f-locs','loc',LOCS,'any');
+renderMenu();$('#rec').checked=store.record;
+$('#ff').addEventListener('submit',e=>{e.preventDefault();readFilters();suggest(true);});
+$('#skip').addEventListener('click',()=>{filters={...DEF};suggest(true);});
+$('#bt-more').addEventListener('click',()=>suggest(false));
+$('#bt-change').addEventListener('click',()=>go('filters'));
+$('#bt-all').addEventListener('click',()=>{showAll=!showAll;renderResults();$('#h-results').focus();say(showAll?'Showing all activities.':'Showing three ideas.');});
+document.querySelectorAll('[data-fb]').forEach(b=>b.addEventListener('click',()=>feedback(b.dataset.fb)));
+$('#bt-back').addEventListener('click',()=>go('done'));
+$('#bt-again').addEventListener('click',()=>go('results'));
+$('#bt-start').addEventListener('click',()=>go('filters'));
+$('#f-cancel').addEventListener('click',()=>{resetForm();say('Editing cancelled.');});
+$('#af').addEventListener('submit',e=>{
+ e.preventDefault();
+ const t=$('#f-title').value.trim(),m=Math.round(Number($('#f-min').value));
+ const cats=[...$('#af').querySelectorAll('[name=cat]:checked')].map(x=>x.value);
+ const locs=[...$('#af').querySelectorAll('[name=loc]:checked')].map(x=>x.value);
+ const err=!t?'Add a title.':!(m>=1&&m<=240)?'Minutes should be a number from 1 to 240.':!cats.length?'Choose at least one category.':!locs.length?'Choose at least one location.':'';
+ if(err){$('#f-err').textContent=err;say(err);return;}
+ const o={id:editId||uid(),title:t,minutes:m,cats,locs,note:$('#f-note').value.trim()};
+ const i=store.activities.findIndex(a=>a.id===editId);
+ if(i>=0)store.activities[i]=o;else store.activities.push(o);
+ save();renderMenu();resetForm();$('#undo').hidden=true;say('Saved '+t+'.');
+});
+$('#rec').addEventListener('change',e=>{store.record=e.target.checked;save();say(store.record?'Private record turned on. It stays on this device.':'Private record turned off. Earlier entries stay until you clear your data.');});
+$('#bt-export').addEventListener('click',exportData);
+$('#imp').addEventListener('change',e=>importFile(e.target.files[0]));
+twoStep($('#bt-restore'),'Restore sample menu',()=>{store.activities=seed();save();renderMenu();resetForm();msg('The sample menu was restored.');});
+twoStep($('#bt-clear'),'Clear my data',clearAll);
+go('filters',false);
+})();
+</script>
+</body>
+</html>

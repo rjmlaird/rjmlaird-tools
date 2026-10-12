@@ -2,7 +2,17 @@ name = "rjmlaird-tools-unit-converter"
 main = "src/index.ts"
 compatibility_date = "2025-09-01"
 
-# routes = [{ pattern = "tools.rjmlaird.co.uk/unit-converter*", zone_name = "rjmlaird.co.uk" }]
+# Keep a workers.dev URL available for testing and previews.
+workers_dev = true
+
+# Deploy the Worker at:
+# https://tools.rjmlaird.co.uk/unit-converter
+#
+# The rjmlaird.co.uk zone must be active in Cloudflare, and
+# tools.rjmlaird.co.uk must be proxied through Cloudflare.
+routes = [
+  { pattern = "tools.rjmlaird.co.uk/unit-converter*", zone_name = "rjmlaird.co.uk" }
+]
 
 # Fixed local ports so all apps can run together with `pnpm dev`.
 [dev]
