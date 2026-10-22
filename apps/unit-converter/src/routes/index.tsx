@@ -29,6 +29,7 @@ async function run() {
   const res = await fetch("/unit-converter/convert?" + q);
   const j = await res.json();
   out.textContent = res.ok ? Number(j.result).toPrecision(10).replace(/\\.?0+(e|$)/, "$1") : j.error;
+  out.classList.toggle("error", !res.ok);
 }
 cat.addEventListener("change", fill);
 [from, to, val].forEach((el) => el.addEventListener("input", run));
@@ -40,19 +41,31 @@ export const pageRoute = new Hono();
 
 pageRoute.get("/", (c) =>
   c.html(
-    <Layout title="Unit Converter">
-      <p>Physics, engineering and astronomy units.</p>
-      <label for="cat">Category</label>
-      <select id="cat" style="width:100%;padding:.5rem;font:inherit"></select>
-      <label for="val">Value</label>
-      <input id="val" type="number" step="any" value="1" />
-      <label for="from">From</label>
-      <select id="from" style="width:100%;padding:.5rem;font:inherit"></select>
-      <label for="to">To</label>
-      <select id="to" style="width:100%;padding:.5rem;font:inherit"></select>
-      <button id="swap" type="button">Swap</button>
-      <pre id="out" aria-live="polite" style="font-size:1.25rem"></pre>
-      <script dangerouslySetInnerHTML={{ __html: script }} />
+    <Layout
+      title="Unit Converter"
+      lede="Physics, engineering and astronomy units, from newtons and pascals to parsecs, solar masses and electronvolts."
+      script={script}
+    >
+      <section class="panel" aria-labelledby="conv-h">
+        <h2 id="conv-h">Convert</h2>
+        <label for="cat">Category</label>
+        <select id="cat"></select>
+        <label for="val">Value</label>
+        <input id="val" type="number" step="any" value="1" />
+        <label for="from">From</label>
+        <select id="from"></select>
+        <label for="to">To</label>
+        <select id="to"></select>
+        <button id="swap" type="button" class="btn-secondary" style="margin-top:1rem">
+          ⇄ Swap units
+        </button>
+        <div class="result" aria-live="polite">
+          <div id="out" class="big"></div>
+        </div>
+        <p class="muted small">
+          API: <code>GET /unit-converter/convert?category=length&amp;value=1&amp;from=pc&amp;to=ly</code>
+        </p>
+      </section>
     </Layout>,
   ),
 );

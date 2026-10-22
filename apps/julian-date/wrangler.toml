@@ -1,13 +1,16 @@
 name = "rjmlaird-tools-julian-date"
-main = "src/index.ts"
+main = "src/index.tsx"
 compatibility_date = "2025-09-01"
 
 workers_dev = false
 preview_urls = false
 
-# Production: serve under tools.rjmlaird.co.uk/orbital-calc (zone must be on Cloudflare).
-# Uncomment once the zone is set up; until then `wrangler deploy` uses *.workers.dev.
-routes = [{ pattern = "tools.rjmlaird.co.uk/julian-date*", zone_name = "rjmlaird.co.uk" }]
+# Production: tools.rjmlaird.co.uk/julian-date (the zone must be on Cloudflare and the
+# tools hostname proxied). Two patterns, so look-alike paths never match.
+routes = [
+  { pattern = "tools.rjmlaird.co.uk/julian-date", zone_name = "rjmlaird.co.uk" },
+  { pattern = "tools.rjmlaird.co.uk/julian-date/*", zone_name = "rjmlaird.co.uk" },
+]
 
 [observability]
 enabled = true
@@ -32,5 +35,5 @@ invocation_logs = true
 
 # Fixed local ports so all apps can run together with `pnpm dev`.
 [dev]
-port = 8787
-inspector_port = 9229
+port = 8790
+inspector_port = 9232

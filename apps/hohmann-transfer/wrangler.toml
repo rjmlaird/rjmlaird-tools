@@ -1,0 +1,26 @@
+name = "rjmlaird-tools-hohmann-transfer"
+main = "src/index.ts"
+compatibility_date = "2025-09-01"
+
+workers_dev = false
+preview_urls = false
+
+# Mounted under a path on the tools hostname, like the other tools. The Worker strips
+# BASE_PATH before routing, so the API is also reachable without the prefix.
+routes = [
+  { pattern = "tools.rjmlaird.co.uk/hohmann-transfer", zone_name = "rjmlaird.co.uk" },
+  { pattern = "tools.rjmlaird.co.uk/hohmann-transfer/*", zone_name = "rjmlaird.co.uk" },
+]
+
+# For a dedicated hostname instead, delete BASE_PATH and use:
+# routes = [{ pattern = "hohmann-transfer.tools.rjmlaird.co.uk", custom_domain = true }]
+
+[vars]
+BASE_PATH = "/hohmann-transfer"
+
+[observability]
+enabled = true
+
+[dev]
+port = 8792
+inspector_port = 9234

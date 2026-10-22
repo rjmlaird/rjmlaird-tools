@@ -1,8 +1,8 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
 
-// Deployed independently as exp-example.labs.rjmlaird.co.uk
+// Served at tools.rjmlaird.co.uk/dopamine-menu/. The output folder carries the prefix so
+// Workers Static Assets finds /dopamine-menu/... paths without a Worker script.
 export default defineConfig({
-  plugins: [react()],
-  base: "/"
+  base: "/dopamine-menu/",
+  build: { outDir: "dist/dopamine-menu", emptyOutDir: true },
 });

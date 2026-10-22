@@ -3,7 +3,8 @@ import { calculateRoute } from "./routes/calculate";
 import { pageRoute } from "./routes/index";
 
 // Mounted under /orbital-calc so it matches the production route path.
-const app = new Hono().basePath("/orbital-calc");
+// strict:false makes /orbital-calc and /orbital-calc/ equivalent.
+const app = new Hono({ strict: false }).basePath("/orbital-calc");
 
 app.route("/", pageRoute);
 app.route("/calculate", calculateRoute);

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { Context } from "hono";
 import { escapeVelocity, hillSphere, rocheLimit, schwarzschildRadius } from "./physics";
-import { page } from "./ui";
+import { Page } from "./page";
 
 class InputError extends Error {}
 
@@ -18,25 +18,31 @@ function num(c: Context, name: string, opts: { allowZero?: boolean; max?: number
   return value;
 }
 
-const app = new Hono();
+// Mounted under /physical-limits to match the production route; strict:false ignores a trailing slash.
+const app = new Hono({ strict: false }).basePath("/physical-limits");
 
-app.get("/", (c) => c.html(page));
+app.get("/", (c) => c.html(<Page />));
 
 app.get("/api", (c) =>
   c.json({
     units: "SI (kg, m, kg/m^3, seconds). Scientific notation such as 5.972e24 is accepted.",
     endpoints: {
-      "GET /api/escape-velocity": ["mass", "radius"],
-      "GET /api/hill-sphere": ["primary_mass", "secondary_mass", "semi_major_axis", "eccentricity (optional, 0 to <1)"],
-      "GET /api/roche-limit": ["primary_mass", "primary_radius", "satellite_density"],
-      "GET /api/schwarzschild-radius": ["mass"],
+      "GET /physical-limits/api/escape-velocity": ["mass", "radius"],
+      "GET /physical-limits/api/hill-sphere": [
+        "primary_mass",
+        "secondary_mass",
+        "semi_major_axis",
+        "eccentricity (optional, 0 to <1)",
+      ],
+      "GET /physical-limits/api/roche-limit": ["primary_mass", "primary_radius", "satellite_density"],
+      "GET /physical-limits/api/schwarzschild-radius": ["mass"],
     },
   }),
 );
 
-app.get("/api/escape-velocity", (c) =>
-  c.json(escapeVelocity(num(c, "mass"), num(c, "radius"))),
-);
+app.get("/api/health", (c) => c.json({ ok: true }));
+
+app.get("/api/escape-velocity", (c) => c.json(escapeVelocity(num(c, "mass"), num(c, "radius"))));
 
 app.get("/api/hill-sphere", (c) => {
   const e = c.req.query("eccentricity") ? num(c, "eccentricity", { allowZero: true, max: 1 }) : 0;

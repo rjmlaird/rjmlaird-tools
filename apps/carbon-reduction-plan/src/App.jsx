@@ -213,7 +213,7 @@ export default function CarbonReductionPlanTool() {
   const handlePrint = () => { setView("plan"); setTimeout(() => window.print(), 150); };
 
   return (
-    <div style={{ fontFamily: "'IBM Plex Sans', system-ui, sans-serif", background: "#EDEFE7", minHeight: "100vh", color: "#16241B" }}>
+    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#EDEFE7", minHeight: "100vh", color: "#16241B" }}>
       <style>{`
         @media print {
           .no-print { display: none !important; }
@@ -227,9 +227,9 @@ export default function CarbonReductionPlanTool() {
       `}</style>
 
       {/* Top nav */}
-      <div className="no-print" style={{ background: "#16241B", color: "#EDEFE7", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+      <div className="no-print" style={{ background: "#0b0f1a", color: "#EDEFE7", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <Leaf size={22} color="#8FBF8F" />
+          <Leaf size={22} color="#00c2a8" />
           <div>
             <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: 0.3 }}>Scope 1, 2 &amp; 3 Emissions Lab</div>
             <div style={{ fontSize: 12, opacity: 0.65 }}>Carbon Reduction Plan builder — PPN 006 (06/21) aligned</div>
@@ -242,7 +242,7 @@ export default function CarbonReductionPlanTool() {
           <button onClick={() => setView("plan")} style={navBtn(view === "plan")}>
             <FileText size={15} style={{ marginRight: 6, verticalAlign: -3 }} />Carbon Reduction Plan
           </button>
-          <button onClick={handlePrint} style={{ ...navBtn(false), background: "#8FBF8F", color: "#16241B", fontWeight: 600 }}>
+          <button onClick={handlePrint} style={{ ...navBtn(false), background: "#00c2a8", color: "#0b0f1a", fontWeight: 600 }}>
             <Download size={15} style={{ marginRight: 6, verticalAlign: -3 }} />Export PDF
           </button>
         </div>
@@ -271,8 +271,8 @@ export default function CarbonReductionPlanTool() {
 
 function navBtn(active) {
   return {
-    background: active ? "#28402E" : "transparent",
-    color: "#EDEFE7", border: "1px solid rgba(237,239,231,0.25)", borderRadius: 6,
+    background: active ? "rgba(0,194,168,0.18)" : "transparent",
+    color: "#eef2f6", border: active ? "1px solid #00c2a8" : "1px solid rgba(238,242,246,0.35)", borderRadius: 6,
     padding: "8px 14px", fontSize: 13, cursor: "pointer",
   };
 }

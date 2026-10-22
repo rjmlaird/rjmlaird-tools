@@ -28,8 +28,14 @@ describe("tools registry", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("has an entry for every apps/ folder, and a folder for every entry", () => {
-    expect(TOOLS.map((t) => t.id).sort()).toEqual([...folders].sort());
+  it("has an entry for every apps/ folder, and a folder for every live or in-progress entry", () => {
+    const ids = new Set(TOOLS.map((t) => t.id));
+    for (const f of folders) expect(ids.has(f), `apps/${f} is missing from TOOLS`).toBe(true);
+    for (const t of TOOLS) {
+      if (t.status === "active" || t.status === "in-progress") {
+        expect(folders.includes(t.id), `${t.id}: no apps/${t.id} folder`).toBe(true);
+      }
+    }
   });
 
   it("uses known groups and statuses", () => {

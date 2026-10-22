@@ -100,20 +100,20 @@ describe('sidereal time', () => {
 
 describe('HTTP API', () => {
   it('returns JSON for a valid query', async () => {
-    const res = await app.request('/api/convert?jd=2451545&lon=0');
+    const res = await app.request('/julian-date/api/convert?jd=2451545&lon=0');
     expect(res.status).toBe(200);
     const body = (await res.json()) as { utc: string; lst: { hms: string } };
     expect(body.utc).toBe('2000-01-01T12:00:00.000Z');
     expect(body.lst.hms).toBe('18:41:50.548');
   });
   it('returns 400 with a message for bad input', async () => {
-    const res = await app.request('/api/convert?utc=nonsense');
+    const res = await app.request('/julian-date/api/convert?utc=nonsense');
     expect(res.status).toBe(400);
     expect(((await res.json()) as { error: string }).error).toMatch(/ISO 8601/);
   });
   it('does not cache "now" and serves the UI with a strict CSP', async () => {
-    expect((await app.request('/api/convert?now=1')).headers.get('cache-control')).toBe('no-store');
-    const page = await app.request('/');
+    expect((await app.request('/julian-date/api/convert?now=1')).headers.get('cache-control')).toBe('no-store');
+    const page = await app.request('/julian-date/');
     expect(page.status).toBe(200);
     expect(page.headers.get('content-security-policy')).toContain("script-src 'self'");
   });

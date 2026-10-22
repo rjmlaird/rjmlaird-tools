@@ -1,16 +1,11 @@
-# React + Vite
+# carbon-reduction-plan
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+PPN 006 aligned Carbon Reduction Plan builder (Scope 1, 2 and 3), React + Vite, served at
+`tools.rjmlaird.co.uk/carbon-reduction-plan` by an assets-only Worker.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```sh
+pnpm --filter @rjmlaird/carbon-reduction-plan dev      # Vite dev server
+pnpm --filter @rjmlaird/carbon-reduction-plan preview  # build, then wrangler dev on :8794
+```
+The page chrome (brand bar, footer) uses `@rjmlaird/ui/brand.css`; the plan itself is a light,
+printable document, so the app body keeps its own colours.

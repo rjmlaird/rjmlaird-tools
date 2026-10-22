@@ -1,14 +1,15 @@
 {
-  "name": "crp",
-  "main": "worker/index.ts",
-  "compatibility_date": "2026-07-26",
-  "assets": {
-    "directory": "./dist",
-    "binding": "ASSETS",
-    "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
-  },
+  "name": "rjmlaird-tools-carbon-reduction-plan",
+  "compatibility_date": "2025-09-01",
+  "workers_dev": false,
+  "preview_urls": false,
+  // Assets-only Worker: `pnpm build` writes dist/carbon-reduction-plan/, so request paths line up.
+  "assets": { "directory": "./dist", "not_found_handling": "404-page" },
+  // Production: tools.rjmlaird.co.uk/carbon-reduction-plan (zone on Cloudflare, tools hostname proxied).
   "routes": [
-    { "pattern": "crp.tools.rjmlaird.co.uk", "custom_domain": true }
-  ]
+    { "pattern": "tools.rjmlaird.co.uk/carbon-reduction-plan", "zone_name": "rjmlaird.co.uk" },
+    { "pattern": "tools.rjmlaird.co.uk/carbon-reduction-plan/*", "zone_name": "rjmlaird.co.uk" }
+  ],
+  "observability": { "enabled": true },
+  "dev": { "port": 8794, "inspector_port": 9236 }
 }

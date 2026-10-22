@@ -1,36 +1,23 @@
-name = "dopamine-menu"
-main = "src/index.ts"
+name = "rjmlaird-tools-dopamine-menu"
 compatibility_date = "2025-09-01"
 
 workers_dev = false
 preview_urls = false
 
-# Production: serve under tools.rjmlaird.co.uk/orbital-calc (zone must be on Cloudflare).
-# Uncomment once the zone is set up; until then `wrangler deploy` uses *.workers.dev.
-routes = [{ pattern = "tools.rjmlaird.co.uk/dopamine-menu*", zone_name = "rjmlaird.co.uk" }]
+# Assets-only Worker: `pnpm build` writes dist/dopamine-menu/, so request paths line up.
+[assets]
+directory = "./dist"
+not_found_handling = "404-page"
+
+# Production: tools.rjmlaird.co.uk/dopamine-menu (zone on Cloudflare, tools hostname proxied).
+routes = [
+  { pattern = "tools.rjmlaird.co.uk/dopamine-menu", zone_name = "rjmlaird.co.uk" },
+  { pattern = "tools.rjmlaird.co.uk/dopamine-menu/*", zone_name = "rjmlaird.co.uk" },
+]
 
 [observability]
 enabled = true
-head_sampling_rate = 1
 
-[observability.logs]
-invocation_logs = true
-
-# Later bindings:
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "tools"
-# database_id = "<id>"
-#
-# [[kv_namespaces]]
-# binding = "KV"
-# id = "<id>"
-#
-# [[r2_buckets]]
-# binding = "BUCKET"
-# bucket_name = "tools"
-
-# Fixed local ports so all apps can run together with `pnpm dev`.
 [dev]
-port = 8787
-inspector_port = 9229
+port = 8793
+inspector_port = 9235

@@ -5,7 +5,14 @@
   "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",
-  "scripts": { "typecheck": "tsc -p ." },
+  "exports": {
+    ".": "./src/index.ts",
+    "./brand.css": "./src/brand.css"
+  },
+  "scripts": {
+    "gen": "node scripts/gen-css.mjs",
+    "typecheck": "tsc -p ."
+  },
   "dependencies": { "hono": "^4.6.0" },
   "devDependencies": {
     "@rjmlaird/tsconfig": "workspace:*",

@@ -5,10 +5,12 @@
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev": "pnpm -r --parallel dev",
-    "build": "pnpm -r build",
+    "build": "pnpm gen && pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "gen": "pnpm --filter @rjmlaird/ui gen",
+    "test": "pnpm -r --if-present test"
   },
   "prettier": "@rjmlaird/prettier-config",
   "devDependencies": {

@@ -1,0 +1,139 @@
+/*
+ * rjmlaird tools brand layer — SOURCE OF TRUTH.
+ * Edit this file, then run `pnpm --filter @rjmlaird/ui gen` (the root `pnpm build` does it too).
+ * Workers import the generated TS string (brand-css.generated.ts); Vite apps import this file
+ * directly as "@rjmlaird/ui/brand.css". Fonts are loaded with <link> tags, not @import.
+ */
+:root {
+  --navy: #0b0f1a;
+  --navy-raised: #121826;
+  --navy-sunken: #0d1220;
+  --teal: #00c2a8;
+  --teal-hover: #30d6bf;
+  --amber: #f5a623;
+  --text-hi: #eef2f6;
+  --text-lo: #9aa5b1;
+  --border: rgba(238, 242, 246, 0.08);
+  --border-strong: #75818f; /* form-control and table borders: >= 3:1 on --navy (WCAG 1.4.11) */
+  --danger: #ff8a80;
+  --danger-bg: rgba(255, 138, 128, 0.08);
+
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --content-width: 1080px;
+  --prose-width: 42rem;
+  --page-gutter: 1.5rem;
+  --radius: 16px;
+  --radius-sm: 10px;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html {
+  background: var(--navy);
+  color: var(--text-hi);
+  font-family: var(--font-body);
+  line-height: 1.55;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(0, 194, 168, 0.06), transparent 40%),
+    radial-gradient(circle at 85% 75%, rgba(245, 166, 35, 0.05), transparent 45%),
+    var(--navy);
+}
+
+h1, h2, h3 { margin: 0; font-family: var(--font-display); letter-spacing: -0.01em; }
+p, ul, ol { margin-top: 0; }
+a { color: inherit; }
+a:hover { color: var(--teal); }
+button, input, select, textarea { font: inherit; }
+code, pre { font-family: var(--font-mono); font-size: 0.9em; }
+::selection { background: rgba(0, 194, 168, 0.25); color: var(--text-hi); }
+:focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
+[hidden] { display: none !important; }
+
+.wrap { width: min(100% - (var(--page-gutter) * 2), var(--content-width)); margin-inline: auto; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.muted { color: var(--text-lo); }
+.small { font-size: 0.875rem; }
+
+/* ---- Shell: brand bar, intro, footer ---- */
+.rj-bar { border-bottom: 1px solid var(--border); background: rgba(11, 15, 26, 0.85); }
+.rj-bar-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 56px; }
+.rj-brand { display: inline-flex; align-items: center; gap: 0.6rem; font-family: var(--font-display); font-weight: 600; text-decoration: none; }
+.rj-brand b { color: var(--teal); font-weight: 600; }
+.rj-bar-link { color: var(--text-lo); font-size: 0.9rem; text-decoration: none; }
+.rj-bar-link:hover { color: var(--teal); }
+
+.rj-main { padding: clamp(1.75rem, 5vw, 3rem) 0 3rem; }
+.rj-main.narrow { width: min(100% - (var(--page-gutter) * 2), var(--prose-width)); margin-inline: auto; }
+.orbit-line { width: 72px; height: 3px; margin-bottom: 1.25rem; border-radius: 3px; background: linear-gradient(90deg, var(--teal), var(--amber)); }
+.rj-intro h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); line-height: 1.12; font-weight: 700; }
+.lede { max-width: 62ch; margin: 0.75rem 0 1.75rem; color: var(--text-lo); font-size: 1.05rem; line-height: 1.65; }
+.rj-footer { padding: 1.5rem 0 2.5rem; border-top: 1px solid var(--border); color: var(--text-lo); font-size: 0.9rem; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; }
+.rj-footer a { text-decoration: none; }
+.rj-footer a:hover { color: var(--teal); text-decoration: underline; }
+
+/* ---- Components ---- */
+.panel { padding: 1.25rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--navy-raised); }
+.panel + .panel { margin-top: 1.25rem; }
+.panel h2 { font-size: 1.25rem; line-height: 1.25; margin-bottom: 0.25rem; }
+.grid-2 { display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
+@media (min-width: 52rem) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+
+label { display: block; margin: 0.9rem 0 0.3rem; font-size: 0.9rem; font-weight: 500; }
+label .opt { color: var(--text-lo); font-weight: 400; }
+input, select, textarea {
+  width: 100%; min-height: 44px; padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  background: var(--navy); color: var(--text-hi);
+}
+input:hover, select:hover, textarea:hover { border-color: var(--teal); }
+input:disabled { opacity: 0.55; }
+input[aria-invalid="true"] { border-color: var(--danger); border-width: 2px; }
+
+button { min-height: 44px; padding: 0.5rem 1rem; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--navy-raised); color: var(--text-hi); cursor: pointer; }
+button:hover { border-color: var(--teal); }
+.btn-primary, .btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; min-height: 44px; padding: 0.5rem 1rem; border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 600; text-decoration: none; cursor: pointer; }
+.btn-primary { border: 1px solid var(--teal); background: var(--teal); color: var(--navy); }
+.btn-primary:hover { border-color: var(--teal-hover); background: var(--teal-hover); color: var(--navy); }
+.btn-secondary { border: 1px solid var(--border-strong); background: transparent; color: var(--text-hi); }
+.btn-secondary:hover { border-color: var(--teal); color: var(--text-hi); }
+form .btn-primary { margin-top: 1.1rem; }
+.row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+
+.result:empty { display: none; }
+.result { margin-top: 1.25rem; padding: 1rem 1.25rem; border: 1px solid var(--border); border-left: 4px solid var(--teal); border-radius: var(--radius-sm); background: var(--navy-sunken); min-height: 3.5rem; }
+.result.error, .error { border-left-color: var(--danger); background: var(--danger-bg); color: var(--danger); font-weight: 600; }
+p.error { padding: 0.6rem 0.8rem; border: 1px solid var(--border); border-left: 4px solid var(--danger); border-radius: var(--radius-sm); }
+.big { font-family: var(--font-display); font-size: clamp(1.5rem, 5vw, 2rem); font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.lab { color: var(--text-lo); font-size: 0.875rem; }
+.big + .lab { margin-bottom: 0.6rem; }
+.note { color: var(--amber); font-weight: 600; }
+
+dl.kv { display: grid; grid-template-columns: minmax(7rem, 12rem) 1fr; gap: 0.35rem 1rem; margin: 0; }
+dl.kv dt { color: var(--text-lo); }
+dl.kv dd { margin: 0; font-family: var(--font-mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+dl.kv dd.lead { color: var(--teal); font-size: 1.4rem; line-height: 1.3; }
+@media (max-width: 30rem) { dl.kv { grid-template-columns: 1fr; gap: 0; } dl.kv dd { margin-bottom: 0.6rem; } }
+
+pre { margin: 0.75rem 0 0; padding: 0.75rem; overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--navy-sunken); }
+details { margin-top: 1.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+summary { display: flex; align-items: center; min-height: 44px; font-weight: 600; cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; scroll-behavior: auto !important; transition: none !important; }
+}
+@media (max-width: 560px) { :root { --page-gutter: 1rem; } }
+@media print { .rj-bar, .rj-footer { display: none !important; } }

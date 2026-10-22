@@ -1,10 +1,10 @@
+import { FONTS_HREF } from "@rjmlaird/ui";
 import type { FC } from "hono/jsx";
 import { css } from "./styles";
 import { script } from "./script";
 import { GROUPS, REPO, STATUS, TOOLS } from "./tools";
 import type { Tool } from "./tools";
 import { Callout } from "./Callout";
-import { calloutCss } from "./callout-styles"; 
 
 const byUpdatedDesc = (a: Tool, b: Tool) =>
   b.updated.localeCompare(a.updated) || a.title.localeCompare(b.title);
@@ -66,6 +66,9 @@ export const IndexPage: FC = () => (
       <meta name="theme-color" content="#0b0f1a" />
       <meta name="color-scheme" content="dark" />
       <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+      <link rel="stylesheet" href={FONTS_HREF} />
       <style dangerouslySetInnerHTML={{ __html: css }} />
     </head>
     <body>

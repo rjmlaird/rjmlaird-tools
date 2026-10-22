@@ -1,5 +1,5 @@
 export type Status = "active" | "in-progress" | "planned" | "archived";
-export type GroupId = "space" | "maths-physics" | "places" | "web-dev";
+export type GroupId = "space" | "maths-physics" | "places" | "web-dev" | "sustainability" | "productivity";
 
 export interface Tool {
   /** Must match the folder name under apps/ (checked by tools.test.ts). */
@@ -23,6 +23,8 @@ export const GROUPS: { id: GroupId; name: string; blurb: string }[] = [
   { id: "space", name: "Space & Astronomy", blurb: "Orbital mechanics, satellite passes and astronomy utilities." },
   { id: "maths-physics", name: "Maths & Physics", blurb: "Calculators and converters for physics, engineering and maths." },
   { id: "places", name: "Places & Infrastructure", blurb: "Coordinates, postcodes and local data lookups." },
+  { id: "sustainability", name: "Sustainability & Climate", blurb: "Emissions reporting and planning tools." },
+  { id: "productivity", name: "Focus & Wellbeing", blurb: "Small tools for focus, breaks and everyday routines." },
   { id: "web-dev", name: "Web & Development", blurb: "Accessibility and sustainability checks and developer utilities." },
 ];
 
@@ -70,8 +72,9 @@ export const TOOLS: Tool[] = [
       "Delta-v and transfer time for a two-impulse Hohmann transfer between two circular, coplanar orbits around the same body.",
     group: "space",
     tech: STACK,
-    status: "planned",
+    status: "active",
     updated: "2026-10-11",
+    path: "/hohmann-transfer",
     source: "apps/hohmann-transfer",
   },
   {
@@ -83,7 +86,6 @@ export const TOOLS: Tool[] = [
     tech: STACK,
     status: "planned",
     updated: "2026-10-11",
-    source: "apps/astro-calc",
   },
   {
     id: "satellite-passes",
@@ -94,7 +96,6 @@ export const TOOLS: Tool[] = [
     tech: [...STACK, "SGP4"],
     status: "planned",
     updated: "2026-10-09",
-    source: "apps/satellite-passes",
   },
 
   // Maths & Physics
@@ -117,9 +118,38 @@ export const TOOLS: Tool[] = [
       "Four gravitational limits in one calculator: escape velocity, Hill sphere, Roche limit and Schwarzschild radius.",
     group: "maths-physics",
     tech: STACK,
-    status: "planned",
+    status: "active",
     updated: "2026-10-11",
+    path: "/physical-limits",
     source: "apps/physical-limits",
+  },
+
+  // Sustainability & Climate
+  {
+    id: "carbon-reduction-plan",
+    title: "Carbon Reduction Plan Builder",
+    description:
+      "Record Scope 1, 2 and 3 emissions, track progress against a reduction target and export a printable Carbon Reduction Plan aligned with PPN 006.",
+    group: "sustainability",
+    tech: ["React", "Vite", "Cloudflare Workers"],
+    status: "active",
+    updated: "2026-10-12",
+    path: "/carbon-reduction-plan",
+    source: "apps/carbon-reduction-plan",
+  },
+
+  // Focus & Wellbeing
+  {
+    id: "dopamine-menu",
+    title: "Dopamine Menu",
+    description:
+      "Pick a short, enjoyable or restorative break from your own menu, filtered by type, time and place. Your menu stays in your browser.",
+    group: "productivity",
+    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    status: "active",
+    updated: "2026-10-12",
+    path: "/dopamine-menu",
+    source: "apps/dopamine-menu",
   },
 
   // Places & Infrastructure
@@ -132,7 +162,6 @@ export const TOOLS: Tool[] = [
     tech: STACK,
     status: "planned",
     updated: "2026-10-09",
-    source: "apps/coordinate-converter",
   },
   {
     id: "postcode-lookup",
@@ -143,7 +172,6 @@ export const TOOLS: Tool[] = [
     tech: STACK,
     status: "planned",
     updated: "2026-10-11",
-    source: "apps/postcode-lookup",
   },
 
   // Web & Development
@@ -156,7 +184,6 @@ export const TOOLS: Tool[] = [
     tech: STACK,
     status: "planned",
     updated: "2026-10-09",
-    source: "apps/colour-contrast",
   },
   {
     id: "website-carbon",
@@ -167,6 +194,5 @@ export const TOOLS: Tool[] = [
     tech: STACK,
     status: "planned",
     updated: "2026-10-11",
-    source: "apps/website-carbon",
   },
 ];

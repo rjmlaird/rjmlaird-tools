@@ -2,7 +2,8 @@ import { Hono } from "hono";
 import { convertRoutes } from "./routes/convert";
 import { pageRoute } from "./routes/index";
 
-const app = new Hono().basePath("/unit-converter");
+// strict:false makes /unit-converter and /unit-converter/ equivalent.
+const app = new Hono({ strict: false }).basePath("/unit-converter");
 
 app.route("/", pageRoute);
 app.route("/", convertRoutes);
