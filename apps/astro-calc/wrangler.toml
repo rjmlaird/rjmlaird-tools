@@ -1,0 +1,21 @@
+name = "rjmlaird-tools-astro-calc"
+main = "src/index.tsx"
+compatibility_date = "2025-09-01"
+
+workers_dev = false
+preview_urls = false
+
+# Production: tools.rjmlaird.co.uk/astro-calc (the zone must be on Cloudflare and the
+# tools hostname proxied). Two patterns, so look-alike paths never match.
+routes = [
+  { pattern = "tools.rjmlaird.co.uk/astro-calc", zone_name = "rjmlaird.co.uk" },
+  { pattern = "tools.rjmlaird.co.uk/astro-calc/*", zone_name = "rjmlaird.co.uk" },
+]
+
+[observability]
+enabled = true
+
+# Fixed local ports so all apps can run together with `pnpm dev`.
+[dev]
+port = 8795
+inspector_port = 9237
