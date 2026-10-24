@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Deep-Sky Object Visibility | AstroDash</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    :root {
+      --bg: #080c15; --panel: #0e1523; --panel2: #121b2d; --field: #0a101b;
+      --ink: #e7ecf4; --muted: #94a2b8; --line: #212d44; --line2: #2e3d5c;
+      --accent: #e0a844; --on-accent: #1a1100; --accent-soft: rgba(224,168,68,.14);
+      --good: #4cc27f; --warn: #f08a4b; --bad: #ee6f5c; --info: #6aa8ff; --sky: #04070d;
+      --display: 'Familjen Grotesk', system-ui, sans-serif;
+      --mono: 'IBM Plex Mono', monospace;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--ink);
+      font: 15px/1.45 var(--display); padding: 16px;
+      -webkit-text-size-adjust: 100%;
+    }
+    .app { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+    
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--line); padding-bottom: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand h1 { font-size: 1.2rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin: 0; }
+    .badge {
+      font-size: 0.72rem; padding: 2px 8px; border-radius: 99px;
+      background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent);
+      text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;
+    }
+
+    .tech-stack {
+      display: flex; gap: 8px; margin-top: 4px;
+    }
+    .tech-pill {
+      font-family: var(--mono); font-size: 0.72rem; color: var(--muted);
+      background: var(--field); border: 1px solid var(--line); padding: 2px 6px; border-radius: 4px;
+    }
+
+    .card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px;
+    }
+    .grid2 {
+      display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 16px;
+    }
+    @media(max-width: 768px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+    input, select {
+      font-family: var(--mono); font-size: 0.88rem; color: var(--ink);
+      background: var(--field); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px;
+      width: 100%;
+    }
+    button {
+      font-family: var(--display); font-weight: 600; font-size: 0.88rem;
+      background: var(--accent); color: var(--on-accent); border: none;
+      padding: 10px 16px; border-radius: 6px; cursor: pointer; transition: opacity 0.2s;
+    }
+    button:hover { opacity: 0.9; }
+
+    .cv {
+      border: 1px solid var(--line); border-radius: 6px; background: var(--sky);
+      position: relative; width: 100%; height: 260px; display: flex;
+      align-items: center; justify-content: center;
+    }
+    canvas { width: 100%; height: 100%; }
+
+    .kv { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; font-family: var(--mono); font-size: 0.85rem; }
+    .kv dt { color: var(--muted); }
+    .kv dd { margin: 0; text-align: right; font-weight: 500; }
+    
+    .meta { font-size: 0.75rem; color: var(--muted); margin-top: 12px; text-align: right; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <div class="brand">
+          <h1>Deep-Sky Object Visibility</h1>
+          <span class="badge">Planned</span>
+        </div>
+        <div class="tech-stack">
+          <span class="tech-pill">TypeScript</span>
+          <span class="tech-pill">Hono</span>
+          <span class="tech-pill">Cloudflare Workers</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid2">
+      <div class="card">
+        <h2 style="font-size: 1.05rem; margin-top: 0; margin-bottom: 14px;">Parameters</h2>
+        
+        <div class="form-group">
+          <label for="dsoTarget">Deep-Sky Target</label>
+          <select id="dsoTarget">
+            <option value="M31">M31 - Andromeda Galaxy</option>
+            <option value="M42">M42 - Orion Nebula</option>
+            <option value="M13">M13 - Great Globular Cluster in Hercules</option>
+            <option value="M51">M51 - Whirlpool Galaxy</option>
+            <option value="M45">M45 - Pleiades</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="obsLoc">Observing Location</label>
+          <input type="text" id="obsLoc" value="51.5074, -0.1278 (London, UK)">
+        </div>
+
+        <div class="form-group">
+          <label for="obsTime">Observing Date & Time</label>
+          <input type="datetime-local" id="obsTime">
+        </div>
+
+        <button type="button" onclick="calculateVisibility()">Update Calculations</button>
+      </div>
+
+      <div class="card">
+        <h2 style="font-size: 1.05rem; margin-top: 0; margin-bottom: 14px;">Altitude Profile</h2>
+        <div class="cv">
+          <canvas id="altChart"></canvas>
+        </div>
+        <div class="kv" style="margin-top: 16px;">
+          <dt>Altitude / Azimuth</dt>
+          <dd id="resAltAz">48.2° / 184° (S)</dd>
+          <dt>Transit Time</dt>
+          <dd id="resTransit">22:14 local</dd>
+          <dt>Rise Time</dt>
+          <dd id="resRise">16:42 local</dd>
+          <dt>Set Time</dt>
+          <dd id="resSet">05:46 local</dd>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta">
+      Status: Coming soon &bull; Updated 2026-10-22
+    </div>
+  </div>
+
+  <script>
+    // Initialize default time to tonight at 22:00
+    const now = new Date();
+    now.setHours(22, 0, 0, 0);
+    document.getElementById('obsTime').value = now.toISOString().slice(0, 16);
+
+    function calculateVisibility() {
+      // Mock chart drawing for presentation
+      const canvas = document.getElementById('altChart');
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw horizon line
+      ctx.strokeStyle = '#212d44';
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height - 30);
+      ctx.lineTo(canvas.width, canvas.height - 30);
+      ctx.stroke();
+
+      // Draw altitude curve
+      ctx.strokeStyle = '#e0a844';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height - 30);
+      ctx.bezierCurveTo(
+        canvas.width * 0.3, 20,
+        canvas.width * 0.7, 20,
+        canvas.width, canvas.height - 30
+      );
+      ctx.stroke();
+
+      // Point marker
+      ctx.fillStyle = '#6aa8ff';
+      ctx.beginPath();
+      ctx.arc(canvas.width * 0.5, 45, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    window.addEventListener('resize', calculateVisibility);
+    calculateVisibility();
+  </script>
+</body>
+</html>

@@ -90,14 +90,64 @@ export const TOOLS: Tool[] = [
     source: "apps/astro-calc",
   },
   {
-    id: "satellite-passes",
-    title: "Satellite Pass Predictor",
+    id: "deep-sky-objects",
+    title: "Deep-Sky Objects",
     description:
-      "Next visible passes of a satellite for a given location, calculated from current orbital elements.",
+      "Explore deep-sky objects, coordinates, magnitudes, and visibility from your observing site.",
     group: "space",
-    tech: [...STACK, "SGP4"],
-    status: "planned",
-    updated: "2026-10-09",
+    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    status: "active",
+    updated: "2026-10-24",
+    path: "/deep-sky-objects",
+    source: "apps/deep-sky-objects",
+  },
+  {
+    id: "light-pollution",
+    title: "Light Pollution Estimator",
+    description:
+      "Estimate local sky brightness and Bortle class from a UK location, with practical guidance for visual observing.",
+    group: "space",
+    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    status: "active",
+    updated: "2026-10-24",
+    path: "/light-pollution",
+    source: "apps/light-pollution",
+  },
+  {
+    id: "optics-visualiser",
+    title: "Optics Visualiser",
+    description:
+      "Move sliders for aperture, focal length and eyepiece to see magnification, exit pupil, field of view and resolution update beside a schematic ray diagram.",
+    group: "space",
+    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    status: "active",
+    updated: "2026-10-24",
+    path: "/optics-visualiser",
+    source: "apps/optics-visualiser",
+  },
+  {
+    id: "orbit-simulator",
+    title: "Orbit Simulator",
+    description:
+      "Animate a two-body orbit from a central body, semi-major axis and eccentricity, with live distance, speed and true anomaly alongside the vis-viva quantities.",
+    group: "space",
+    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    status: "active",
+    updated: "2026-10-24",
+    path: "/orbit-simulator",
+    source: "apps/orbit-simulator",
+  },
+  {
+    id: "moon-sun-calc",
+    title: "Moon & Sun Calculator",
+    description:
+      "Calculate sunrise, sunset, twilight times, moonrise and moonset, Moon phase and illumination for a location and date.",
+    group: "space",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-22",
+    path: "/moon-sun-calc",
+    source: "apps/moon-sun-calc",
   },
 
   // Maths & Physics
@@ -139,6 +189,30 @@ export const TOOLS: Tool[] = [
     path: "/carbon-reduction-plan",
     source: "apps/carbon-reduction-plan",
   },
+  {
+    id: "flight-emissions",
+    title: "Flight Emissions Estimator",
+    description:
+      "Estimate greenhouse-gas emissions for a flight from origin and destination airports, cabin class and trip type. A modelled estimate, not a measurement.",
+    group: "sustainability",
+    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    status: "active",
+    updated: "2026-10-23",
+    path: "/flight-emissions",
+    source: "apps/flight-emissions",
+  },
+  {
+    id: "home-energy-baseline",
+    title: "Home Energy Baseline",
+    description:
+      "Record electricity and gas use, estimate annual emissions, compare against UK benchmarks and identify practical reduction opportunities.",
+    group: "sustainability",
+    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    status: "in-progress",
+    updated: "2026-10-23",
+    path: "/home-energy-baseline",
+    source: "apps/home-energy-baseline",
+  },
 
   // Focus & Wellbeing
   {
@@ -152,6 +226,29 @@ export const TOOLS: Tool[] = [
     updated: "2026-10-12",
     path: "/dopamine-menu",
     source: "apps/dopamine-menu",
+  },
+  {
+    id: "habit-streak",
+    title: "Habit Streak Tracker",
+    description:
+      "Track simple daily habits with streaks, weekly summaries and local-browser storage. No account required.",
+    group: "productivity",
+    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    status: "in-progress",
+    updated: "2026-10-23",
+    path: "/habit-streak",
+    source: "apps/habit-streak",
+  },
+  {
+    id: "context-switcher",
+    title: "Context Switcher",
+    description: "Quickly switch between workspace contexts and environments.",
+    group: "productivity",
+    tech: STACK,
+    status: "in-progress",
+    updated: "2026-10-24",
+    path: "/context-switcher",
+    source: "apps/context-switcher",
   },
 
   // Places & Infrastructure
@@ -192,7 +289,41 @@ export const TOOLS: Tool[] = [
     source: "apps/colour-contrast",
   },
   {
-    id: "website-carbon",
+    id: "seo-meta-tag",
+    title: "SEO Meta Tag Checker",
+    description:
+      "Check a page’s title, description, Open Graph, Twitter card, canonical URL and robots directives against common SEO and sharing requirements.",
+    group: "web-dev",
+    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    status: "active",
+    updated: "2026-10-24",
+    path: "/seo-meta-tag",
+    source: "apps/seo-meta-tag",
+  },
+  {
+    id: "meta-tag-checker",
+    title: "Meta Tag Checker",
+    description:
+      "Check a page’s title, description, Open Graph, Twitter card, canonical URL and robots directives against common SEO and sharing requirements.",
+    group: "web-dev",
+    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    status: "in-progress",
+    updated: "2026-10-23",
+    path: "/meta-tag-checker",
+    source: "apps/meta-tag-checker",
+  },
+  {
+    id: "page-weight",
+    title: "Page Weight Audit",
+    description:
+      "Inspect a web page’s transferred bytes, largest assets, request count and caching headers, with practical performance and sustainability suggestions.",
+    group: "web-dev",
+    tech: STACK,
+    status: "planned",
+    updated: "2026-10-22",
+  },
+  {
+    id: "web-carbon",
     title: "Website Carbon Checker",
     description:
       "Estimate the carbon footprint of a web page from its transfer size, and check whether it is served from green hosting. A modelled estimate, not a measurement.",

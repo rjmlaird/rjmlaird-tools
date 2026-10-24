@@ -1,0 +1,22 @@
+.pl-layout { display: grid; gap: 1.25rem; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 62rem) { .pl-layout { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
+.pl-layout > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; min-width: 0; }
+.pl-layout .panel + .panel { margin-top: 0; }
+.pl-presets { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+fieldset { margin: 0.75rem 0 0; padding: 0; border: 0; min-width: 0; }
+legend { padding: 0; margin-bottom: 0.3rem; font-size: 0.9rem; font-weight: 500; }
+.pl-modes { display: grid; gap: 0.5rem; grid-template-columns: 1fr 1fr; }
+.pl-modes .check { justify-content: center; position: relative; }
+.pl-modes .check input { position: absolute; opacity: 0; width: 1px; }
+.pl-sub { margin: 1.25rem 0 0; font-size: 1rem; color: var(--text-lo); font-weight: 500; }
+.pl-svg { display: block; width: 100%; max-width: 32rem; height: auto; margin: 0.5rem auto 0; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--navy-sunken); }
+.pl-wide { max-width: none; }
+.pl-svg text { fill: var(--text-hi); font: 500 13px var(--font-body); }
+.pl-leg { display: grid; gap: 0.5rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+.pl-leg li { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; align-items: baseline; }
+.pl-leg i { display: inline-block; width: 0.8rem; height: 0.8rem; border-radius: 50%; flex: none; align-self: center; }
+.pl-leg b { margin-left: auto; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.pl-res { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); margin: 0.75rem 0 0; padding: 0; list-style: none; }
+.pl-res li { padding: 0.85rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--navy-sunken); }
+.pl-res .big { font-size: 1.3rem; }
+.pl-out { margin-top: 0.75rem; padding: 0.75rem 0.9rem; border: 1px solid var(--border-strong); border-left: 4px solid var(--teal); border-radius: var(--radius-sm); }

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Physical Limits Visualiser · rjmlaird tools</title>
+<meta name="description" content="Explore escape velocity, the Schwarzschild radius, the Hill sphere and the Roche limit for a body of your choice, with a to-scale-in-log diagram and an escape-energy diagram.">
+<meta name="theme-color" content="#0b0f1a">
+<meta name="color-scheme" content="dark">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap">
+</head>
+<body>
+<div class="rj-bar"><div class="rj-bar-inner wrap">
+<a class="rj-brand" href="/"><svg viewBox="0 0 32 32" width="24" height="24" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="7" fill="#121826"/><circle cx="16" cy="16" r="9" fill="none" stroke="#00c2a8" stroke-width="2"/><circle cx="25" cy="16" r="2.5" fill="#f5a623"/></svg><span>rjmlaird <b>tools</b></span></a>
+<a class="rj-bar-link" href="/">All tools</a>
+</div></div>
+<main class="rj-main wrap">
+<header class="rj-intro">
+<div class="orbit-line" aria-hidden="true"></div>
+<h1>Physical Limits Visualiser</h1>
+<p class="lede">Explore escape velocity, the Schwarzschild radius, the Hill sphere and the Roche limit for a body of your choice, with a to-scale-in-log diagram and an escape-energy diagram.</p>
+</header>
+<div id="live" class="sr-only" role="status" aria-live="polite"></div>
+<div class="pl-layout">
+  <div>
+    <section class="panel" aria-labelledby="sy-h">
+      <h2 id="sy-h">System</h2>
+      <div class="pl-presets" role="group" aria-label="Presets">
+        <button type="button" class="btn-secondary" data-p="earth">Earth</button>
+        <button type="button" class="btn-secondary" data-p="jupiter">Jupiter</button>
+        <button type="button" class="btn-secondary" data-p="sun">Sun</button>
+        <button type="button" class="btn-secondary" data-p="sagA">Sagittarius A*</button>
+        <button type="button" class="btn-secondary" data-p="bh">Stellar black hole</button>
+      </div>
+      <p class="pl-sub">The body</p>
+      <label for="M">Mass, M (kg)</label>
+      <input id="M" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="5.972e24">
+      <input id="M-s" type="range" min="20" max="42" step="0.1" aria-label="Mass slider (logarithmic, power of ten)">
+      <label for="R">Radius, R (m)</label>
+      <input id="R" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="6.371e6">
+      <input id="R-s" type="range" min="3" max="12" step="0.05" aria-label="Radius slider (logarithmic, power of ten)">
+      <p class="pl-sub">What it orbits, and a satellite</p>
+      <label for="P">Parent mass (kg)</label>
+      <input id="P" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="1.989e30">
+      <label for="aau">Orbital distance from parent (AU)</label>
+      <input id="aau" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="1">
+      <label for="rho">Satellite density (kg/m³)</label>
+      <input id="rho" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="3000">
+      <fieldset><legend>Roche limit model</legend>
+        <div class="pl-modes"><label class="check"><input type="radio" name="mode" value="fluid" checked> Fluid satellite</label><label class="check"><input type="radio" name="mode" value="rigid"> Rigid satellite</label></div>
+      </fieldset>
+      <p class="error" id="err" role="alert" hidden></p>
+    </section>
+    <section class="panel" aria-labelledby="res-h">
+      <h2 id="res-h">The four limits</h2>
+      <ul class="pl-res">
+        <li><div class="lab">Escape velocity</div><div class="big" id="o-vesc"></div><div class="lab" id="o-vescc"></div></li>
+        <li><div class="lab">Schwarzschild radius</div><div class="big" id="o-rs"></div><div class="lab" id="o-rsn"></div></li>
+        <li><div class="lab">Hill sphere</div><div class="big" id="o-rh"></div><div class="lab" id="o-rhau"></div></li>
+        <li><div class="lab">Roche limit</div><div class="big" id="o-rl"></div><div class="lab" id="o-rlr"></div></li>
+      </ul>
+    </section>
+  </div>
+  <div>
+    <section class="panel" aria-labelledby="sc-h">
+      <h2 id="sc-h">Nested boundaries</h2>
+      <p class="muted small">Radii are drawn on a logarithmic scale so that all four fit. Compare the values in the list, not the sizes of the circles.</p>
+      <svg class="pl-svg" id="scale" viewBox="0 0 500 500" role="img" aria-label="Nested boundaries"></svg>
+      <ul class="pl-leg" id="leg"></ul>
+    </section>
+    <section class="panel" aria-labelledby="en-h">
+      <h2 id="en-h">Escape energy</h2>
+      <label for="v0">Launch speed straight up from the surface: <output id="v0-o" for="v0"></output></label>
+      <input id="v0" type="range" min="1" max="220" step="1" value="90" aria-describedby="v0-n">
+      <p class="help" id="v0-n">From 1% to 220% of escape velocity.</p>
+      <svg class="pl-svg pl-wide" id="well" viewBox="0 0 600 300" role="img" aria-label="Potential well"></svg>
+      <p class="pl-out" id="well-t" role="status"></p>
+      <p class="muted small">Radial launch from the surface, ignoring air drag, rotation and other bodies.</p>
+    </section>
+    <section class="panel">
+      <h2>Definitions</h2>
+      <p class="formula">v<sub>esc</sub> = √(2GM ÷ R) &nbsp;·&nbsp; r<sub>s</sub> = 2GM ÷ c²</p>
+      <p class="formula">r<sub>H</sub> ≈ a ∛(M ÷ 3M<sub>parent</sub>) &nbsp;·&nbsp; d<sub>Roche</sub> ≈ k R ∛(ρ<sub>body</sub> ÷ ρ<sub>sat</sub>)</p>
+      <p class="muted small">k = 2.44 for a fluid satellite and 1.26 for a rigid one. The Hill sphere formula assumes a near-circular orbit and a much more massive parent. Numbers only? Use <a href="/physical-limits">Physical Limits</a>.</p>
+    </section>
+  </div>
+</div>
+</main>
+<footer class="rj-footer wrap"><a href="/">← All tools</a><a href="https://rjmlaird.co.uk">rjmlaird.co.uk</a></footer>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+name = "rjmlaird-tools-colour-palette"
+compatibility_date = "2025-09-01"
+
+workers_dev = false
+preview_urls = false
+
+# Assets-only Worker: `pnpm build` writes dist/colour-palette/, so request paths line up.
+[assets]
+directory = "./dist"
+not_found_handling = "404-page"
+
+# Production: tools.rjmlaird.co.uk/colour-palette (zone on Cloudflare, tools hostname proxied).
+routes = [
+  { pattern = "tools.rjmlaird.co.uk/colour-palette", zone_name = "rjmlaird.co.uk" },
+  { pattern = "tools.rjmlaird.co.uk/colour-palette/*", zone_name = "rjmlaird.co.uk" },
+]
+
+[observability]
+enabled = true
+
+[dev]
+port = 8805
+inspector_port = 10245

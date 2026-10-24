@@ -1,4 +1,4 @@
-name = "dopamine-menu"
+name = "rjmlaird-tools-dopamine-menu"
 compatibility_date = "2025-09-01"
 
 workers_dev = false
@@ -19,5 +19,5 @@ routes = [
 enabled = true
 
 [dev]
-port = 8793
-inspector_port = 9235
+port = 8809
+inspector_port = 10249

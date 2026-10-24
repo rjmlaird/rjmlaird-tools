@@ -1,0 +1,22 @@
+.mt-layout { display: grid; gap: 1.25rem; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 62rem) { .mt-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.mt-layout .panel + .panel { margin-top: 0; }
+.mt-col { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; min-width: 0; }
+.mt-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.mt-head label { margin-bottom: 0; }
+.mt-count { color: var(--text-lo); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.checklist { display: grid; gap: 0.6rem; margin: 0.75rem 0 0; padding: 0; list-style: none; }
+.checklist li { display: grid; grid-template-columns: 5.5rem 1fr; gap: 0.75rem; align-items: start; }
+.checklist .chip { justify-content: center; }
+.serp { padding: 1rem; border-radius: var(--radius-sm); background: #fff; color: #202124; font-family: Arial, sans-serif; }
+.serp-url { margin: 0; overflow: hidden; color: #4d5156; font-size: 0.8rem; text-overflow: ellipsis; white-space: nowrap; }
+.serp-title { margin: 0.2rem 0 0; overflow: hidden; color: #1a0dab; font: 400 1.2rem/1.3 Arial, sans-serif; letter-spacing: 0; text-overflow: ellipsis; white-space: nowrap; }
+.serp-desc { display: -webkit-box; margin: 0.2rem 0 0; overflow: hidden; color: #4d5156; font-size: 0.88rem; line-height: 1.5; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.og { max-width: 28rem; margin: 0 auto; overflow: hidden; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--navy); }
+.og-img { display: grid; height: 11rem; place-items: center; background: var(--navy-sunken); color: var(--text-lo); font-size: 0.85rem; }
+.og-img img { width: 100%; height: 100%; object-fit: cover; }
+.og-body { padding: 0.85rem 1rem; }
+.og-domain { margin: 0; color: var(--text-lo); font-size: 0.75rem; letter-spacing: 0.04em; }
+.og-title { margin: 0.2rem 0 0; overflow: hidden; font: 600 0.95rem/1.3 var(--font-body); text-overflow: ellipsis; white-space: nowrap; }
+.og-desc { display: -webkit-box; margin: 0.25rem 0 0; overflow: hidden; color: var(--text-lo); font-size: 0.82rem; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+#code { margin-top: 0; max-height: 26rem; color: var(--teal); white-space: pre; }

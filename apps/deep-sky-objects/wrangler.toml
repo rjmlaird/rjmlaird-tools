@@ -1,0 +1,23 @@
+name = "rjmlaird-tools-deep-sky-objects"
+compatibility_date = "2025-09-01"
+
+workers_dev = false
+preview_urls = false
+
+# Production routes (at top level)
+routes = [
+  { pattern = "tools.rjmlaird.co.uk/deep-sky-objects", zone_name = "rjmlaird.co.uk" },
+  { pattern = "tools.rjmlaird.co.uk/deep-sky-objects/*", zone_name = "rjmlaird.co.uk" },
+]
+
+# Assets configuration with SPA fallback
+[assets]
+directory = "dist"
+not_found_handling = "single-page-application"
+
+[observability]
+enabled = true
+
+[dev]
+port = 8808
+inspector_port = 10248

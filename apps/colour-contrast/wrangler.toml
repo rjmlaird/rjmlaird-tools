@@ -17,5 +17,5 @@ enabled = true
 
 # Fixed local ports so all apps can run together with `pnpm dev`.
 [dev]
-port = 8797
-inspector_port = 9239
+port = 8804
+inspector_port = 10244

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Light Pollution Estimator | AstroDash</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    :root {
+      --bg: #080c15; --panel: #0e1523; --panel2: #121b2d; --field: #0a101b;
+      --ink: #e7ecf4; --muted: #94a2b8; --line: #212d44; --line2: #2e3d5c;
+      --accent: #e0a844; --on-accent: #1a1100; --accent-soft: rgba(224,168,68,.14);
+      --good: #4cc27f; --warn: #f08a4b; --bad: #ee6f5c; --info: #6aa8ff;
+      --display: 'Familjen Grotesk', system-ui, sans-serif;
+      --mono: 'IBM Plex Mono', monospace;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--ink);
+      font: 15px/1.45 var(--display); padding: 16px;
+      -webkit-text-size-adjust: 100%;
+    }
+    .app { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+    
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--line); padding-bottom: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand h1 { font-size: 1.2rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin: 0; }
+    .badge {
+      font-size: 0.72rem; padding: 2px 8px; border-radius: 99px;
+      background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent);
+      text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;
+    }
+
+    .tech-stack { display: flex; gap: 8px; margin-top: 4px; }
+    .tech-pill {
+      font-family: var(--mono); font-size: 0.72rem; color: var(--muted);
+      background: var(--field); border: 1px solid var(--line); padding: 2px 6px; border-radius: 4px;
+    }
+
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+    .grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+    @media(max-width: 768px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+    input, select {
+      font-family: var(--mono); font-size: 0.88rem; color: var(--ink);
+      background: var(--field); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px;
+      width: 100%;
+    }
+
+    .bortle-badge {
+      display: inline-block; font-size: 2.5rem; font-weight: 700; font-family: var(--mono);
+      color: var(--warn); margin: 8px 0;
+    }
+    
+    .guidance-box {
+      background: var(--panel2); border-left: 3px solid var(--accent);
+      padding: 12px; border-radius: 0 6px 6px 0; margin-top: 12px;
+    }
+    
+    .meta { font-size: 0.75rem; color: var(--muted); margin-top: 12px; text-align: right; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <div class="brand">
+          <h1>Light Pollution Estimator</h1>
+          <span class="badge">Planned</span>
+        </div>
+        <div class="tech-stack">
+          <span class="tech-pill">TypeScript</span>
+          <span class="tech-pill">Hono</span>
+          <span class="tech-pill">Cloudflare Workers</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid2">
+      <div class="card">
+        <h2 style="font-size: 1.05rem; margin-top: 0; margin-bottom: 14px;">UK Location Input</h2>
+        
+        <div class="form-group">
+          <label for="postcode">Postcode / City (UK)</label>
+          <input type="text" id="postcode" placeholder="e.g. SW1A 1AA or Edinburgh" value="Exeter, Devon">
+        </div>
+
+        <div class="form-group">
+          <label for="bortleOverride">Manual Bortle Selection</label>
+          <select id="bortleOverride" onchange="updateBortle(this.value)">
+            <option value="1">Class 1: Excellent dark-sky site</option>
+            <option value="2">Class 2: Truly dark site</option>
+            <option value="3">Class 3: Rural sky</option>
+            <option value="4" selected>Class 4: Rural/suburban transition</option>
+            <option value="5">Class 5: Suburban sky</option>
+            <option value="6">Class 6: Bright suburban sky</option>
+            <option value="7">Class 7: Suburban/urban transition</option>
+            <option value="8">Class 8: City sky</option>
+            <option value="9">Class 9: Inner-city sky</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="font-size: 1.05rem; margin-top: 0; margin-bottom: 4px;">Sky Quality Estimate</h2>
+        <div>
+          <span class="bortle-badge" id="bortleClass">Bortle 4</span>
+        </div>
+        <div style="font-family: var(--mono); font-size: 0.85rem; color: var(--muted);">
+          SQM: <span id="sqmVal" style="color:var(--ink);">20.4 to 21.3</span> mag/arcsec²
+        </div>
+
+        <div class="guidance-box">
+          <h3 style="margin: 0 0 6px 0; font-size: 0.85rem; color: var(--accent);">Observing Guidance</h3>
+          <p id="guidanceText" style="margin: 0; font-size: 0.88rem;">
+            Fairly bright background light pollution. The Milky Way is clearly visible well above the horizon. M31 and M44 are easily seen with the naked eye.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta">
+      Status: Coming soon &bull; Updated 2026-10-22
+    </div>
+  </div>
+
+  <script>
+    const guidanceMap = {
+      "1": "The Zodiacal light, gegenschein, and Zodiacal band are visible. The Milky Way casts obvious shadows.",
+      "2": "Airglow may be weakly visible near horizon. M33 is easily seen with naked eye.",
+      "3": "Some light pollution clouds near the horizon. Milky Way still appears complex and textured.",
+      "4": "Fairly bright background light pollution. The Milky Way is clearly visible well above the horizon. M31 and M44 are easily seen with the naked eye.",
+      "5": "Milky Way is very faint or invisible near horizon. Light sources are visible in most directions.",
+      "6": "Milky Way only visible towards the zenith. Sky within 35° of horizon glows grayish white.",
+      "7": "Entire sky background has a pale grayish glow. Strong light sources evident in all directions.",
+      "8": "Sky glows white or orange. You can read headlines easily under sky light alone.",
+      "9": "Entire sky is brightly lit. Many stars forming familiar constellation outlines are invisible."
+    };
+
+    function updateBortle(val) {
+      document.getElementById('bortleClass').innerText = 'Bortle ' + val;
+      document.getElementById('guidanceText').innerText = guidanceMap[val] || '';
+    }
+  </script>
+</body>
+</html>

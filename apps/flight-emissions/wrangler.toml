@@ -1,0 +1,23 @@
+name = "rjmlaird-tools-flight-emissions"
+compatibility_date = "2025-09-01"
+
+workers_dev = false
+preview_urls = false
+
+# Production routes
+routes = [
+  { pattern = "tools.rjmlaird.co.uk/flight-emissions", zone_name = "rjmlaird.co.uk" },
+  { pattern = "tools.rjmlaird.co.uk/flight-emissions/*", zone_name = "rjmlaird.co.uk" },
+]
+
+# Assets configuration (pointing to parent 'dist' so /flight-emissions matches dist/flight-emissions/)
+[assets]
+directory = "dist"
+not_found_handling = "404-page"
+
+[observability]
+enabled = true
+
+[dev]
+port = 8810
+inspector_port = 10250

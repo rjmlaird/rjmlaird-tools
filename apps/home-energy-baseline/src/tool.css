@@ -1,0 +1,52 @@
+.he-tabs { margin-top: 1.5rem; }
+.he-tabs button { min-height: 44px; }
+.he-grid { display: grid; gap: 1.25rem; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 62rem) { .he-grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); } }
+.he-grid > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; min-width: 0; }
+.he-grid .panel + .panel { margin-top: 0; }
+fieldset { margin: 0.75rem 0 0; padding: 0; border: 0; min-width: 0; }
+legend { padding: 0; margin-bottom: 0.3rem; font-size: 0.9rem; font-weight: 500; }
+.he-modes { display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
+.he-modes .check { justify-content: center; text-align: center; position: relative; }
+.he-modes .check input { position: absolute; opacity: 0; width: 1px; }
+.he-sum { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1rem; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border); color: var(--text-lo); font-size: 0.9rem; }
+.he-sum b { color: var(--text-hi); }
+.he-donut { display: grid; grid-template-columns: 9rem 1fr; gap: 1.25rem; align-items: center; margin-top: 0.75rem; }
+.he-donut svg { width: 100%; height: auto; }
+.he-donut text { fill: var(--text-hi); font: 600 6px var(--font-display); }
+.he-donut .t2 { fill: var(--text-lo); font: 400 3px var(--font-body); }
+.he-leg { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.he-leg i { display: inline-block; width: 0.7rem; height: 0.7rem; margin-right: 0.45rem; border-radius: 50%; }
+.he-bm { position: relative; margin-top: 0.75rem; }
+.he-bm .meter { height: 0.9rem; }
+.he-bm i { position: absolute; top: -0.2rem; width: 2px; height: 1.3rem; background: var(--text-lo); }
+.he-ticks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.75rem; text-align: center; font-size: 0.85rem; }
+.he-ticks b { display: block; font-variant-numeric: tabular-nums; }
+.he-flow { width: 100%; height: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--navy-sunken); }
+.he-flow text { fill: var(--text-hi); font: 600 15px var(--font-body); }
+.he-flow .v { fill: var(--text-lo); font: 400 13px var(--font-mono); }
+.he-flow .lk { fill: none; opacity: 0.5; }
+.he-acts { display: grid; gap: 1rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+.he-act { padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--navy-sunken); }
+.he-act.on { border-color: var(--teal); background: rgba(0, 194, 168, 0.07); }
+.he-act.na { opacity: 0.6; }
+.he-act .check { border: 0; padding: 0; background: transparent; align-items: flex-start; }
+.he-act .check:has(input:checked) { background: transparent; }
+.he-act .check b { display: block; }
+.he-act .check span { display: block; }
+.he-cost { margin-left: auto; font-family: var(--font-mono); font-weight: 600; white-space: nowrap; }
+.he-top { display: flex; align-items: flex-start; gap: 0.75rem; }
+.he-figs { display: grid; gap: 0.5rem; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0.75rem 0 0; }
+.he-figs div { padding: 0.5rem; border-radius: 6px; background: var(--navy); text-align: center; }
+.he-figs dt { color: var(--text-lo); font-size: 0.75rem; }
+.he-figs dd { margin: 0; font-family: var(--font-mono); font-weight: 600; font-size: 0.9rem; }
+.he-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; margin-top: 1.5rem; }
+#toast { position: fixed; left: 1rem; bottom: 1rem; z-index: 20; max-width: calc(100% - 2rem); padding: 0.6rem 0.9rem; border: 1px solid var(--teal); border-radius: var(--radius-sm); background: var(--navy-raised); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45); }
+@media (max-width: 40rem) { .he-donut { grid-template-columns: 1fr; } .he-figs { grid-template-columns: 1fr; } }
+@media print {
+  body { background: #fff !important; color: #111 !important; }
+  .rj-bar, .rj-footer, .he-tabs, .he-bar, #toast, .rj-intro .orbit-line { display: none !important; }
+  [role="tabpanel"][hidden] { display: block !important; }
+  .panel, .stats li, .he-act, .he-flow, .meter { background: #fff !important; border-color: #999 !important; color: #111 !important; box-shadow: none !important; }
+  h1, h2, h3, .big, b, dd, .lede, .muted, .lab, .help, .he-sum, dt, p, td, th, text { color: #111 !important; fill: #111 !important; }
+}

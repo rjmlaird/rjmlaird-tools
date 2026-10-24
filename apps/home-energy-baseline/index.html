@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home Energy Baseline · rjmlaird tools</title>
+<meta name="description" content="Record your home’s electricity and heating use, estimate annual emissions and bills, compare them with Ofgem typical consumption values, and see which upgrades could cut them. A modelled estimate, not a measurement.">
+<meta name="theme-color" content="#0b0f1a">
+<meta name="color-scheme" content="dark">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap">
+</head>
+<body>
+<div class="rj-bar"><div class="rj-bar-inner wrap">
+<a class="rj-brand" href="/"><svg viewBox="0 0 32 32" width="24" height="24" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="7" fill="#121826"/><circle cx="16" cy="16" r="9" fill="none" stroke="#00c2a8" stroke-width="2"/><circle cx="25" cy="16" r="2.5" fill="#f5a623"/></svg><span>rjmlaird <b>tools</b></span></a>
+<a class="rj-bar-link" href="/">All tools</a>
+</div></div>
+<main class="rj-main wrap">
+<header class="rj-intro">
+<div class="orbit-line" aria-hidden="true"></div>
+<h1>Home Energy Baseline</h1>
+<p class="lede">Record your home’s electricity and heating use, estimate annual emissions and bills, compare them with Ofgem typical consumption values, and see which upgrades could cut them. A modelled estimate, not a measurement.</p>
+</header>
+<p id="mem" class="notice" hidden>This browser isn’t letting the page save, so your entries will be lost when you close it. Use “Export JSON” to keep them.</p>
+<div id="live" class="sr-only" role="status" aria-live="polite"></div>
+
+<ul class="stats" aria-label="Summary">
+  <li><div class="lab">Annual footprint</div><div class="big"><span id="k-co2">0.00</span> <span class="lab">t CO₂e</span></div><div class="lab" id="k-co2pp"></div></li>
+  <li><div class="lab">Estimated annual spend</div><div class="big" id="k-cost">£0</div><div class="lab" id="k-cost-m"></div></li>
+  <li><div class="lab">Energy used</div><div class="big"><span id="k-kwh">0</span> <span class="lab">kWh</span></div><div class="lab" id="k-int"></div></li>
+  <li><div class="lab">Against Ofgem typical use</div><div class="big" id="k-tier" style="font-size:1.25rem">-</div><div class="lab" id="k-tier-n"></div></li>
+</ul>
+
+<div class="tabs he-tabs" role="tablist" aria-label="Sections" id="tabs">
+  <button type="button" role="tab" id="t-in" aria-controls="p-in" aria-selected="true">Your home</button>
+  <button type="button" role="tab" id="t-bm" aria-controls="p-bm" aria-selected="false" tabindex="-1">Ofgem comparison</button>
+  <button type="button" role="tab" id="t-fl" aria-controls="p-fl" aria-selected="false" tabindex="-1">Energy flow</button>
+  <button type="button" role="tab" id="t-ac" aria-controls="p-ac" aria-selected="false" tabindex="-1">Ways to cut it</button>
+</div>
+
+<div role="tabpanel" id="p-in" aria-labelledby="t-in">
+  <div class="he-grid">
+    <div>
+      <section class="panel" aria-labelledby="hh-h">
+        <h2 id="hh-h">Household</h2>
+        <div class="field-row">
+          <div><label for="floor">Floor area (m²)</label><input id="floor" data-k="floor" type="number" min="10" max="1000" step="1"></div>
+          <div><label for="occ">Occupants</label><input id="occ" data-k="occ" type="number" min="1" max="20" step="1"></div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="el-h">
+        <h2 id="el-h">Electricity</h2>
+        <fieldset><legend>How would you like to enter it?</legend>
+          <div class="he-modes">
+            <label class="check"><input type="radio" name="elecMode" data-k="elecMode" value="kwh"> Annual kWh</label>
+            <label class="check"><input type="radio" name="elecMode" data-k="elecMode" value="cost"> Monthly bill</label>
+            <label class="check"><input type="radio" name="elecMode" data-k="elecMode" value="meter"> Meter readings</label>
+          </div>
+        </fieldset>
+        <div id="m-kwh"><label for="elecKwh">Annual electricity use (kWh)</label><input id="elecKwh" data-k="elecKwh" type="number" min="0" step="50" inputmode="numeric"></div>
+        <div id="m-cost" class="field-row"><div><label for="elecSpend">Average monthly bill (£)</label><input id="elecSpend" data-k="elecSpend" type="number" min="0" step="1" inputmode="decimal"></div><div><label for="elecRate">Unit rate (p/kWh)</label><input id="elecRate" data-k="elecRate" type="number" min="1" step="0.1" inputmode="decimal"></div></div>
+        <div id="m-meter" class="field-row"><div><label for="r1">Earlier reading</label><input id="r1" data-k="r1" type="number" min="0" inputmode="numeric"></div><div><label for="r2">Latest reading</label><input id="r2" data-k="r2" type="number" min="0" inputmode="numeric"></div><div><label for="days">Days between</label><input id="days" data-k="days" type="number" min="1" max="1000" inputmode="numeric"></div></div>
+        <p class="error" id="el-err" role="status" hidden></p>
+        <div class="he-sum"><span id="el-note"></span><b id="el-sum"></b></div>
+      </section>
+
+      <section class="panel" aria-labelledby="ht-h">
+        <h2 id="ht-h">Heating and hot water</h2>
+        <div class="field-row">
+          <div><label for="heat">Main heating fuel</label>
+            <select id="heat" data-k="heat">
+              <option value="gas">Mains natural gas</option><option value="oil">Heating oil</option><option value="lpg">LPG</option>
+              <option value="heatpump">Air source heat pump</option><option value="electric">Direct electric / storage heaters</option>
+            </select></div>
+          <div id="f-eff"><label for="eff">Boiler efficiency (%)</label><input id="eff" data-k="eff" type="number" min="50" max="100" step="1"></div>
+          <div id="f-scop"><label for="scop">Heat pump SCOP</label><input id="scop" data-k="scop" type="number" min="1" max="6" step="0.1"></div>
+        </div>
+        <fieldset id="f-unit"><legend>Gas entered as</legend>
+          <div class="he-modes"><label class="check"><input type="radio" name="heatUnit" data-k="heatUnit" value="kwh"> kWh</label><label class="check"><input type="radio" name="heatUnit" data-k="heatUnit" value="m3"> m³ (volume)</label></div>
+        </fieldset>
+        <label for="heatKwh" id="heat-l">Annual heating energy (kWh)</label>
+        <input id="heatKwh" data-k="heatKwh" type="number" min="0" step="100" inputmode="numeric">
+        <p class="help" id="heat-h"></p>
+        <div class="he-sum"><span id="ht-note"></span><b id="ht-sum"></b></div>
+      </section>
+    </div>
+
+    <div>
+      <section class="panel" aria-labelledby="bd-h">
+        <h2 id="bd-h">Emissions breakdown</h2>
+        <div class="he-donut">
+          <svg viewBox="0 0 42 42" id="donut" role="img" aria-label="Emissions split"></svg>
+          <ul class="he-leg">
+            <li><i style="background:var(--teal)"></i>Electricity: <b id="b-el">0 t</b></li>
+            <li><i style="background:var(--amber)"></i>Heating and hot water: <b id="b-ht">0 t</b></li>
+          </ul>
+        </div>
+      </section>
+      <section class="panel" aria-labelledby="fc-h">
+        <h2 id="fc-h">Factors used</h2>
+        <div class="tbl-wrap"><table class="data" id="factors"></table></div>
+        <p class="muted small">Carried over from the earlier prototype and not re-verified against the published DESNZ tables. Check them before using results for reporting. Tariffs are illustrative.</p>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div role="tabpanel" id="p-bm" aria-labelledby="t-bm" hidden>
+  <section class="panel" aria-labelledby="bm-h">
+    <h2 id="bm-h">Ofgem typical domestic consumption values</h2>
+    <p class="muted">Ofgem publishes typical annual use for low, medium and high households. Your figures are shown against those bands.</p>
+    <div class="grid-2" style="margin-top:1rem">
+      <div><div class="mt-head row" style="justify-content:space-between"><h3>Electricity</h3><span class="chip" id="bm-el-chip">-</span></div><p id="bm-el-t" class="muted"></p><div class="he-bm" id="bm-el-bar"></div><div class="he-ticks" id="bm-el-ticks"></div></div>
+      <div><div class="mt-head row" style="justify-content:space-between"><h3>Mains gas</h3><span class="chip" id="bm-gs-chip">-</span></div><p id="bm-gs-t" class="muted"></p><div class="he-bm" id="bm-gs-bar"></div><div class="he-ticks" id="bm-gs-ticks"></div></div>
+    </div>
+    <p id="bm-text" style="margin-top:1.25rem"></p>
+  </section>
+</div>
+
+<div role="tabpanel" id="p-fl" aria-labelledby="t-fl" hidden>
+  <section class="panel" aria-labelledby="fl-h">
+    <h2 id="fl-h">Where the energy goes</h2>
+    <p class="muted">Link widths are proportional to kWh. The end-use split is an illustrative assumption, not a measurement of your home.</p>
+    <svg class="he-flow" id="flow" viewBox="0 0 900 430" role="img" aria-label="Energy flow diagram"></svg>
+    <ul class="stats" style="margin-top:1rem" id="flow-stats"></ul>
+  </section>
+</div>
+
+<div role="tabpanel" id="p-ac" aria-labelledby="t-ac" hidden>
+  <section class="panel" aria-labelledby="ac-h">
+    <div class="row" style="justify-content:space-between"><h2 id="ac-h">Ways to cut your footprint</h2>
+      <div><label for="sort" style="margin:0">Sort by</label><select id="sort"><option value="payback">Shortest payback</option><option value="saving">Highest saving (£)</option><option value="co2">Highest CO₂ saving</option></select></div></div>
+    <p class="muted">Tick measures to see their combined effect. Costs and savings are typical UK figures for a home like the one you described; get quotes for real numbers.</p>
+    <ul class="he-acts" id="acts"></ul>
+    <div class="panel" style="margin-top:1rem;background:var(--navy-sunken)" aria-labelledby="sc-h">
+      <h3 id="sc-h">Selected measures combined</h3>
+      <ul class="stats" style="margin-top:.75rem">
+        <li><div class="lab">Up-front cost</div><div class="big" id="sc-cost" style="font-size:1.4rem">£0</div></li>
+        <li><div class="lab">Bill saving</div><div class="big" id="sc-save" style="font-size:1.4rem">£0 / year</div></li>
+        <li><div class="lab">Carbon saving</div><div class="big" id="sc-co2" style="font-size:1.4rem">0.00 t / year</div></li>
+      </ul>
+      <p class="muted small" style="margin-bottom:0" id="sc-note">Combined savings account for overlap between measures, so they can be less than the sum of the figures above.</p>
+    </div>
+  </section>
+</div>
+
+<div class="he-bar">
+  <button type="button" class="btn-secondary" id="export">Export JSON</button>
+  <button type="button" class="btn-secondary" id="import">Import JSON</button>
+  <input type="file" id="file" accept="application/json,.json" hidden>
+  <button type="button" class="btn-secondary" id="print">Print report</button>
+  <button type="button" class="btn-secondary" id="reset">Reset</button>
+</div>
+<p class="muted small" style="margin-top:1rem">A modelled estimate, not a measurement or advice. Your entries stay in this browser. Heat-pump savings assume a gas connection is removed and that the heat pump replaces your current system; grant eligibility and amounts change, so check current schemes.</p>
+<div id="toast" role="status" hidden></div>
+</main>
+<footer class="rj-footer wrap"><a href="/">← All tools</a><a href="https://rjmlaird.co.uk">rjmlaird.co.uk</a></footer>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

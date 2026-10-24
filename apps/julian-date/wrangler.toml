@@ -35,5 +35,5 @@ invocation_logs = true
 
 # Fixed local ports so all apps can run together with `pnpm dev`.
 [dev]
-port = 8790
-inspector_port = 9232
+port = 8815
+inspector_port = 10255

@@ -5,11 +5,13 @@
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev": "pnpm -r --parallel dev",
-    "build": "pnpm gen && pnpm -r build",
+    "build": "pnpm gen && pnpm export:builds && pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint .",
     "format": "prettier --write .",
     "gen": "pnpm --filter @rjmlaird/ui gen",
+    "export:builds": "tsx scripts/export-builds.ts",
+    "check:builds-export": "tsx scripts/export-builds.ts --check",
     "test": "pnpm -r --if-present test"
   },
   "prettier": "@rjmlaird/prettier-config",
@@ -18,6 +20,7 @@
     "@rjmlaird/prettier-config": "workspace:*",
     "eslint": "^9.14.0",
     "prettier": "^3.3.3",
+    "tsx": "^4.19.0",
     "typescript": "^5.6.3",
     "wrangler": "^4.0.0"
   }

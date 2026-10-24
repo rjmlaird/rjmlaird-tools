@@ -22,5 +22,5 @@ BASE_PATH = "/hohmann-transfer"
 enabled = true
 
 [dev]
-port = 8792
-inspector_port = 9234
+port = 8812
+inspector_port = 10252

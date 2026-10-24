@@ -1,0 +1,18 @@
+.ov-layout { display: grid; gap: 1.25rem; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 62rem) { .ov-layout { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
+.ov-layout > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; min-width: 0; }
+.ov-layout .panel + .panel { margin-top: 0; }
+.ov-row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.ov-row label { margin: 0; }
+.ov-row output { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--teal); }
+.ov-kv { display: grid; gap: 0.6rem; margin: 0.75rem 0 0; padding: 0; }
+.ov-kv div { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+.ov-kv dt { color: var(--text-lo); }
+.ov-kv dd { margin: 0; font-family: var(--font-mono); font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+.ov-svg { width: 100%; height: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--navy-sunken); }
+.ov-svg .axis { stroke: rgba(238, 242, 246, 0.25); stroke-dasharray: 5 5; }
+.ov-svg .in { stroke: #7aa7ff; } .ov-svg .conv { stroke: #00c2a8; } .ov-svg .div { stroke: #f5a623; } .ov-svg .out { stroke: #8b7cf6; }
+.ov-svg line { stroke-width: 1.6; }
+.ov-svg text { fill: var(--text-hi); font: 500 13px var(--font-body); }
+.ov-key { display: flex; flex-wrap: wrap; gap: 0.4rem 1.25rem; margin: 0.9rem 0 0; padding: 0; list-style: none; color: var(--text-lo); font-size: 0.85rem; }
+.ov-key i { display: inline-block; width: 1.4rem; height: 3px; margin-right: 0.4rem; vertical-align: middle; border-radius: 2px; }

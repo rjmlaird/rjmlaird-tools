@@ -17,5 +17,5 @@ routes = [
 
 # Fixed local ports so all apps can run together with `pnpm dev`.
 [dev]
-port = 8788
-inspector_port = 9230
+port = 8825
+inspector_port = 10265

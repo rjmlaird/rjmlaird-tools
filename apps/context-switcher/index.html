@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Context Switcher</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --bg: #16171B;
+    --panel: #1D1F24;
+    --panel-raised: #23262C;
+    --line: #2C2F36;
+    --text: #ECECEE;
+    --text-muted: #93969E;
+    --text-faint: #5E6169;
+    --accent-writing: #D9A441;
+    --accent-coding: #4FA8A0;
+    --accent-meetings: #9284CC;
+    --accent-admin: #6E93BD;
+    --accent-default: #9AA0A8;
+    --danger: #C97B6B;
+    --radius: 3px;
+    --font-ui: "Space Grotesk", system-ui, sans-serif;
+    --font-body: "Inter", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="light"]) {
+      --bg: #F3F2EF;
+      --panel: #FFFFFF;
+      --panel-raised: #FAF9F7;
+      --line: #DEDCD6;
+      --text: #1C1D20;
+      --text-muted: #6B6D74;
+      --text-faint: #9C9EA4;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171B;
+    --panel: #1D1F24;
+    --panel-raised: #23262C;
+    --line: #2C2F36;
+    --text: #ECECEE;
+    --text-muted: #93969E;
+    --text-faint: #5E6169;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  #app { display: flex; flex-direction: column; min-height: 100vh; }
+
+  a { color: inherit; }
+  button {
+    font-family: var(--font-ui);
+    cursor: pointer;
+  }
+  button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid var(--ctx-color, var(--accent-default));
+    outline-offset: 2px;
+  }
+
+  /* ---------- Shell ---------- */
+  .shell {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+  }
+
+  /* ---------- Rail (context selector) ---------- */
+  .rail {
+    width: 190px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--line);
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  @media (max-width: 720px) {
+    .rail {
+      width: 100%;
+      flex-direction: row;
+      overflow-x: auto;
+      border-right: none;
+      border-bottom: 1px solid var(--line);
+      padding: 10px 12px;
+      gap: 6px;
+    }
+  }
+  .rail-brand {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: var(--text-faint);
+    padding: 0 18px 16px;
+  }
+  @media (max-width: 720px) { .rail-brand { display: none; } }
+
+  .rail-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    color: var(--text-muted);
+    font-size: 14px;
+    padding: 10px 16px 10px 15px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  @media (max-width: 720px) {
+    .rail-item { border-left: none; border-bottom: 3px solid transparent; border-radius: var(--radius); padding: 8px 12px; }
+  }
+  .rail-item .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--dotcolor, var(--text-faint));
+    flex-shrink: 0;
+  }
+  .rail-item.active {
+    color: var(--text);
+    border-left-color: var(--dotcolor);
+    background: var(--panel);
+  }
+  @media (max-width: 720px) {
+    .rail-item.active { border-bottom-color: var(--dotcolor); background: var(--panel); }
+  }
+  .rail-item:hover:not(.active) { color: var(--text); }
+
+  /* ---------- Main panel ---------- */
+  .main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .panel-inner {
+    max-width: 680px;
+    width: 100%;
+    padding: 28px 32px 60px;
+    margin: 0 auto;
+  }
+  @media (max-width: 520px) { .panel-inner { padding: 20px 16px 48px; } }
+
+  .top-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+  .ctx-name {
+    font-family: var(--font-ui);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .ctx-name .bar { color: var(--ctx-color); }
+  .clock {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 20px;
+    color: var(--text-muted);
+  }
+  .clock.running { color: var(--ctx-color); }
+
+  hr.rule { border: none; border-top: 1px solid var(--line); margin: 20px 0; }
+
+  .ritual {
+    font-family: var(--font-ui);
+    font-size: 19px;
+    line-height: 1.5;
+    padding: 16px 18px;
+    border-left: 2px solid var(--ctx-color);
+    background: var(--panel);
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+
+  .btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .btn {
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--text);
+  }
+  .btn:hover { border-color: var(--text-faint); }
+  .btn.primary {
+    background: var(--ctx-color);
+    border-color: var(--ctx-color);
+    color: #16171B;
+    font-weight: 600;
+  }
+  .btn.ghost { background: none; }
+  .btn.danger { color: var(--danger); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .section-label {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--text-faint);
+    margin-bottom: 10px;
+  }
+
+  /* ---------- Tasks ---------- */
+  .task-list { list-style: none; margin: 0; padding: 0; }
+  .task-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .task-row:last-child { border-bottom: none; }
+  .task-check {
+    width: 16px; height: 16px; margin-top: 2px;
+    border: 1px solid var(--text-faint);
+    border-radius: 50%;
+    background: none;
+    flex-shrink: 0;
+    padding: 0;
+  }
+  .task-check.on { background: var(--ctx-color); border-color: var(--ctx-color); }
+  .task-body { flex: 1; min-width: 0; }
+  .task-title {
+    font-size: 14.5px;
+    background: none; border: none; color: var(--text);
+    text-align: left; padding: 0; cursor: pointer; width: 100%;
+  }
+  .task-title.active-task { color: var(--ctx-color); font-weight: 600; }
+  .task-meta { font-size: 12px; color: var(--text-faint); margin-top: 2px; }
+  .task-del {
+    background: none; border: none; color: var(--text-faint);
+    font-size: 13px; padding: 2px 6px;
+  }
+  .task-del:hover { color: var(--danger); }
+  .empty-note { color: var(--text-faint); font-size: 13.5px; padding: 6px 0; }
+
+  .show-all { background: none; border: none; color: var(--text-muted); font-size: 12.5px; margin-top: 8px; padding: 4px 0; text-decoration: underline; }
+
+  .add-task-form { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .add-task-form input, .add-task-form select {
+    font-family: var(--font-body);
+    font-size: 13px;
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: var(--radius);
+    padding: 7px 9px;
+  }
+  .add-task-form input[name="title"] { flex: 1; min-width: 160px; }
+
+  /* ---------- Tools ---------- */
+  .tool-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tool-btn {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--text);
+    border-radius: var(--radius);
+    padding: 9px 13px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
+  }
+  .tool-btn:hover { border-color: var(--ctx-color); }
+  .tool-btn .desc { color: var(--text-faint); font-size: 11px; }
+
+  /* ---------- Resume card ---------- */
+  .resume-card {
+    border: 1px solid var(--line);
+    border-left: 2px solid var(--ctx-color);
+    background: var(--panel);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 14px 16px;
+    margin-bottom: 22px;
+    font-size: 13.5px;
+  }
+  .resume-card .rc-title { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.04em; color: var(--text-faint); margin-bottom: 8px; }
+  .resume-card p { margin: 4px 0; color: var(--text-muted); line-height: 1.5; }
+  .resume-card strong { color: var(--text); font-weight: 600; }
+  .resume-card .rc-dismiss { margin-top: 8px; }
+
+  /* ---------- Modal ---------- */
+  .modal-veil {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    display: flex; align-items: center; justify-content: center; z-index: 50;
+    padding: 20px;
+  }
+  .modal {
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    max-width: 420px; width: 100%;
+    padding: 22px;
+  }
+  .modal h2 { font-family: var(--font-ui); font-size: 17px; margin: 0 0 4px; }
+  .modal .sub { color: var(--text-muted); font-size: 13px; margin-bottom: 14px; }
+  .modal textarea {
+    width: 100%; min-height: 70px; resize: vertical;
+    background: var(--panel); border: 1px solid var(--line); color: var(--text);
+    border-radius: var(--radius); padding: 9px; font-family: var(--font-body); font-size: 13.5px;
+    margin-bottom: 14px;
+  }
+  .modal .modal-actions { display: flex; flex-direction: column; gap: 6px; }
+  .modal .modal-actions .btn { width: 100%; text-align: center; }
+
+  /* ---------- Footer / settings ---------- */
+  .foot {
+    border-top: 1px solid var(--line);
+    padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    font-size: 12px; color: var(--text-faint);
+  }
+  .foot .foot-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .foot button, .foot label {
+    background: none; border: none; color: var(--text-faint);
+    font-size: 12px; cursor: pointer; text-decoration: underline;
+  }
+  .foot button:hover, .foot label:hover { color: var(--text-muted); }
+  #import-input { display: none; }
+
+  .toast {
+    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+    background: var(--panel-raised); border: 1px solid var(--line);
+    color: var(--text); font-size: 13px; padding: 9px 16px;
+    border-radius: var(--radius); z-index: 60; opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+  .kbd-hint { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+<input type="file" id="import-input" accept="application/json">
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============================== DATA MODEL ============================== */
+
+  var STORAGE_KEY = "context-switcher:v1";
+
+  function uid(prefix) {
+    return prefix + "-" + Math.random().toString(36).slice(2, 9);
+  }
+
+  function defaultContexts() {
+    return [
+      { id: "writing", name: "Writing", colour: "#D9A441",
+        toolIds: ["research-capture", "brain-dump", "draft", "savepoint"],
+        taskTags: ["writing", "research", "editing"],
+        defaultDurationMinutes: 25,
+        startPrompt: "Open the draft and write one imperfect paragraph." },
+      { id: "coding", name: "Coding", colour: "#4FA8A0",
+        toolIds: ["github", "terminal", "issues", "savepoint"],
+        taskTags: ["coding", "bugs"],
+        defaultDurationMinutes: 45,
+        startPrompt: "Open the repository and identify the next failing test." },
+      { id: "meetings", name: "Meetings", colour: "#9284CC",
+        toolIds: ["calendar", "notes", "savepoint"],
+        taskTags: ["meetings", "calls"],
+        defaultDurationMinutes: 30,
+        startPrompt: "Open the agenda and note the outcome you need." },
+      { id: "admin", name: "Admin", colour: "#6E93BD",
+        toolIds: ["email", "calendar", "followups"],
+        taskTags: ["admin", "communication"],
+        defaultDurationMinutes: 15,
+        startPrompt: "Choose one message that can be completed in under five minutes." },
+      { id: "default", name: "Default", colour: "#9AA0A8",
+        toolIds: [],
+        taskTags: [],
+        defaultDurationMinutes: 20,
+        startPrompt: "Pick the next context — or capture one loose thought before you do." }
+    ];
+  }
+
+  function defaultTools() {
+    return [
+      { id: "research-capture", label: "Research capture", description: "Clip a source or quote" },
+      { id: "brain-dump", label: "Brain dump", description: "Empty your head onto the page" },
+      { id: "draft", label: "Draft", description: "Open the current draft" },
+      { id: "savepoint", label: "Savepoint", description: "Record what you were doing" },
+      { id: "github", label: "GitHub", url: "https://github.com" },
+      { id: "terminal", label: "Terminal", description: "Open your terminal" },
+      { id: "issues", label: "Issue list", description: "Open open issues" },
+      { id: "calendar", label: "Calendar", description: "Open today's schedule" },
+      { id: "notes", label: "Meeting notes", description: "Open the notes doc" },
+      { id: "email", label: "Email", description: "Open your inbox" },
+      { id: "followups", label: "Follow-ups", description: "Open the follow-up list" }
+    ];
+  }
+
+  function defaultTasks() {
+    return [
+      { id: uid("task"), title: "Extract claim from ESA report", status: "next",
+        tags: ["writing", "research"], estimatedMinutes: 20, energy: "medium",
+        nextAction: "Find the paragraph about collision-avoidance manoeuvres." },
+      { id: uid("task"), title: "Draft article introduction", status: "next",
+        tags: ["writing"], estimatedMinutes: 25, energy: "high" },
+      { id: uid("task"), title: "Fix failing test in auth module", status: "next",
+        tags: ["coding", "bugs"], estimatedMinutes: 30, energy: "high" },
+      { id: uid("task"), title: "Review open pull request", status: "next",
+        tags: ["coding"], estimatedMinutes: 15, energy: "medium" },
+      { id: uid("task"), title: "Prep agenda for partner call", status: "next",
+        tags: ["meetings"], estimatedMinutes: 15, energy: "medium" },
+      { id: uid("task"), title: "Send meeting follow-up notes", status: "next",
+        tags: ["meetings", "communication"], estimatedMinutes: 10, energy: "low" },
+      { id: uid("task"), title: "Reply to two overdue emails", status: "next",
+        tags: ["admin", "communication"], estimatedMinutes: 10, energy: "low" },
+      { id: uid("task"), title: "Chase overdue invoice", status: "next",
+        tags: ["admin"], estimatedMinutes: 5, energy: "low" }
+    ];
+  }
+
+  function createInitialState() {
+    return {
+      contexts: defaultContexts(),
+      tools: defaultTools(),
+      tasks: defaultTasks(),
+      sessions: [],
+      savepoints: {}, // contextId -> latest savepoint
+      activeContextId: "default",
+      activeTaskId: null,
+      activeSessionId: null,
+      visibleTaskCounts: {},
+      dismissedResume: {},
+      lastUpdated: new Date().toISOString()
+    };
+  }
+
+  function migrateState(parsed) {
+    if (!parsed || parsed.version !== 1 || !parsed.data) throw new Error("unrecognised state");
+    var d = parsed.data;
+    var base = createInitialState();
+    return Object.assign(base, d, {
+      contexts: d.contexts || base.contexts,
+      tools: d.tools || base.tools,
+      tasks: d.tasks || base.tasks,
+      sessions: d.sessions || [],
+      savepoints: d.savepoints || {},
+      visibleTaskCounts: d.visibleTaskCounts || {},
+      dismissedResume: d.dismissedResume || {}
+    });
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return createInitialState();
+      return migrateState(JSON.parse(raw));
+    } catch (e) {
+      return createInitialState();
+    }
+  }
+
+  function saveState() {
+    state.lastUpdated = new Date().toISOString();
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, data: state }));
+    } catch (e) {
+      showToast("Couldn't save locally — storage may be full or blocked.");
+    }
+  }
+
+  var state = loadState();
+
+  /* ============================== HELPERS ============================== */
+
+  function getContext(id) {
+    for (var i = 0; i < state.contexts.length; i++) if (state.contexts[i].id === id) return state.contexts[i];
+    return state.contexts[state.contexts.length - 1];
+  }
+  function getTool(id) {
+    for (var i = 0; i < state.tools.length; i++) if (state.tools[i].id === id) return state.tools[i];
+    return null;
+  }
+  function getTask(id) {
+    for (var i = 0; i < state.tasks.length; i++) if (state.tasks[i].id === id) return state.tasks[i];
+    return null;
+  }
+  function activeSession() {
+    if (!state.activeSessionId) return null;
+    for (var i = 0; i < state.sessions.length; i++) if (state.sessions[i].id === state.activeSessionId) return state.sessions[i];
+    return null;
+  }
+
+  function getTasksForContext(tasks, context) {
+    var open = tasks.filter(function (t) { return t.status !== "done"; });
+    var scoped = context.taskTags.length
+      ? open.filter(function (t) { return t.tags.some(function (tag) { return context.taskTags.indexOf(tag) !== -1; }); })
+      : open;
+    scoped.sort(function (a, b) {
+      var aActive = a.id === state.activeTaskId ? 0 : 1;
+      var bActive = b.id === state.activeTaskId ? 0 : 1;
+      if (aActive !== bActive) return aActive - bActive;
+      return (a.estimatedMinutes || 999) - (b.estimatedMinutes || 999);
+    });
+    return scoped;
+  }
+
+  function fmtClock(totalSeconds) {
+    var sign = totalSeconds < 0 ? "-" : "";
+    var s = Math.abs(Math.round(totalSeconds));
+    var m = Math.floor(s / 60);
+    var sec = s % 60;
+    return sign + String(m).padStart(2, "0") + ":" + String(sec).padStart(2, "0");
+  }
+
+  var toastTimer = null;
+  function showToast(msg) {
+    var el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove("show"); }, 2600);
+  }
+
+  function esc(str) {
+    return String(str == null ? "" : str).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  /* ============================== SESSION / TIMER ============================== */
+
+  var tickInterval = null;
+
+  function sessionRemainingSeconds(session) {
+    var elapsed = (Date.now() - new Date(session.startedAt).getTime()) / 1000;
+    return session.plannedMinutes * 60 - elapsed;
+  }
+
+  function startTicker() {
+    stopTicker();
+    tickInterval = setInterval(updateClockDisplay, 1000);
+    updateClockDisplay();
+  }
+  function stopTicker() {
+    if (tickInterval) { clearInterval(tickInterval); tickInterval = null; }
+  }
+
+  var hasNotifiedComplete = false;
+
+  function updateClockDisplay() {
+    var el = document.getElementById("clock");
+    if (!el) return;
+    var sess = activeSession();
+    if (!sess) { el.textContent = "—:—"; el.classList.remove("running"); return; }
+    var remaining = sessionRemainingSeconds(sess);
+    el.textContent = fmtClock(remaining);
+    el.classList.add("running");
+    if (remaining <= 0 && !hasNotifiedComplete) {
+      hasNotifiedComplete = true;
+      showToast("Session finished — save your progress?");
+    }
+  }
+
+  function endActiveSession(outcome) {
+    var sess = activeSession();
+    if (!sess) return;
+    sess.endedAt = new Date().toISOString();
+    sess.actualMinutes = Math.round((new Date(sess.endedAt) - new Date(sess.startedAt)) / 60000);
+    sess.outcome = outcome;
+    state.activeSessionId = null;
+    stopTicker();
+    hasNotifiedComplete = false;
+  }
+
+  /* ============================== SAVEPOINTS ============================== */
+
+  function makeSavepoint(note) {
+    var ctx = getContext(state.activeContextId);
+    var task = state.activeTaskId ? getTask(state.activeTaskId) : null;
+    var sp = {
+      title: task ? task.title : "No active task",
+      context: ctx.name,
+      contextId: ctx.id,
+      whatIWasDoing: note || "",
+      nextAction: (task && task.nextAction) || (task ? task.title : ""),
+      visibleTools: ctx.toolIds,
+      sessionId: state.activeSessionId,
+      createdAt: new Date().toISOString()
+    };
+    state.savepoints[ctx.id] = sp;
+    state.dismissedResume[ctx.id] = false;
+    saveState();
+    return sp;
+  }
+
+  /* ============================== ACTIONS ============================== */
+
+  function attemptSwitch(newId) {
+    if (newId === state.activeContextId) return;
+    if (activeSession()) {
+      openTransitionModal(newId);
+    } else {
+      doSwitch(newId);
+    }
+  }
+
+  function doSwitch(newId) {
+    state.activeContextId = newId;
+    state.activeTaskId = null;
+    saveState();
+    render();
+  }
+
+  function openTransitionModal(newId) {
+    pendingSwitchId = newId;
+    render(true);
+  }
+  var pendingSwitchId = null;
+
+  function resolveTransition(choice, note) {
+    if (choice === "savepoint") { makeSavepoint(note); endActiveSession("paused"); }
+    else if (choice === "pause") { endActiveSession("paused"); }
+    else if (choice === "abandon") { endActiveSession("abandoned"); }
+    var target = pendingSwitchId;
+    pendingSwitchId = null;
+    if (target) doSwitch(target); else render();
+  }
+
+  function startRitual() {
+    var ctx = getContext(state.activeContextId);
+    var sess = {
+      id: uid("session"),
+      contextId: ctx.id,
+      taskId: state.activeTaskId || null,
+      startedAt: new Date().toISOString(),
+      plannedMinutes: ctx.defaultDurationMinutes,
+      interruptionCount: 0
+    };
+    state.sessions.push(sess);
+    state.activeSessionId = sess.id;
+    hasNotifiedComplete = false;
+    saveState();
+    startTicker();
+    render();
+  }
+
+  function pauseSession() {
+    if (!activeSession()) return;
+    endActiveSession("paused");
+    saveState();
+    render();
+    showToast("Session paused.");
+  }
+
+  function setActiveTask(id) {
+    state.activeTaskId = state.activeTaskId === id ? null : id;
+    saveState();
+    render();
+  }
+
+  function toggleTaskDone(id) {
+    var t = getTask(id);
+    if (!t) return;
+    t.status = t.status === "done" ? "next" : "done";
+    if (t.status === "done" && state.activeTaskId === id) state.activeTaskId = null;
+    saveState();
+    render();
+  }
+
+  function deleteTask(id) {
+    state.tasks = state.tasks.filter(function (t) { return t.id !== id; });
+    if (state.activeTaskId === id) state.activeTaskId = null;
+    saveState();
+    render();
+  }
+
+  function addTask(title, tagsRaw, estimate, energy) {
+    if (!title.trim()) return;
+    var ctx = getContext(state.activeContextId);
+    var tags = tagsRaw.trim()
+      ? tagsRaw.split(",").map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean)
+      : (ctx.taskTags[0] ? [ctx.taskTags[0]] : []);
+    state.tasks.push({
+      id: uid("task"), title: title.trim(), status: "next", tags: tags,
+      estimatedMinutes: estimate ? parseInt(estimate, 10) : undefined,
+      energy: energy || undefined
+    });
+    saveState();
+    render();
+  }
+
+  function toggleShowAll(ctxId) {
+    state.visibleTaskCounts[ctxId] = state.visibleTaskCounts[ctxId] ? 0 : 999;
+    render();
+  }
+
+  function dismissResume(ctxId) {
+    state.dismissedResume[ctxId] = true;
+    render();
+  }
+
+  function openTool(tool) {
+    if (tool.url) {
+      window.open(tool.url, "_blank", "noopener");
+    } else {
+      showToast(tool.label + (tool.description ? " — " + tool.description : "") + " (no URL configured)");
+    }
+  }
+
+  function exportData() {
+    var payload = JSON.stringify({ version: 1, data: state }, null, 2);
+    (async function () {
+      try {
+        var downloads = window.claude && window.claude.use ? await window.claude.use("downloads") : null;
+        if (downloads) {
+          await downloads.save({ filename: "context-switcher-export.json", data: payload });
+          showToast("Export ready — check the save prompt.");
+          return;
+        }
+      } catch (e) { /* fall through */ }
+      // Fallback: show the JSON so the person can copy it manually.
+      window.prompt("Copy your exported data:", payload);
+    })();
+  }
+
+  function importData(file) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var parsed = JSON.parse(reader.result);
+        var incoming = migrateState(parsed);
+        if (!window.confirm("Import will replace your current contexts, tools and tasks. Continue?")) return;
+        state = incoming;
+        saveState();
+        render();
+        showToast("Import complete.");
+      } catch (e) {
+        showToast("That file doesn't look like a Context Switcher export.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  /* ============================== RENDER ============================== */
+
+  function render(modalOnly) {
+    var ctx = getContext(state.activeContextId);
+    var app = document.getElementById("app");
+
+    var railHtml = renderRail();
+    var mainHtml = renderMain(ctx);
+    var footHtml = renderFoot();
+
+    app.innerHTML =
+      '<div class="shell">' + railHtml + '<div class="main"><div class="panel-inner">' + mainHtml + '</div></div></div>' + footHtml;
+
+    if (pendingSwitchId) renderModal();
+
+    bindEvents();
+    updateClockDisplay();
+    if (activeSession() && !tickInterval) startTicker();
+    if (!activeSession()) stopTicker();
+  }
+
+  function renderRail() {
+    var out = '<nav class="rail" aria-label="Contexts"><div class="rail-brand">CONTEXT&nbsp;SWITCHER</div>';
+    state.contexts.forEach(function (c) {
+      var active = c.id === state.activeContextId;
+      out += '<button class="rail-item' + (active ? " active" : "") + '" style="--dotcolor:' + c.colour + '" data-switch="' + c.id + '">' +
+        '<span class="dot"></span>' + esc(c.name) + '</button>';
+    });
+    out += "</nav>";
+    return out;
+  }
+
+  function renderMain(ctx) {
+    var sess = activeSession();
+    var running = !!sess;
+    var out = '<div style="--ctx-color:' + ctx.colour + '">';
+
+    out += '<div class="top-row"><div class="ctx-name"><span class="bar">▮</span> ' + esc(ctx.name) + '</div>' +
+      '<div class="clock' + (running ? " running" : "") + '" id="clock">—:—</div></div>';
+
+    // resume card
+    var sp = state.savepoints[ctx.id];
+    if (sp && !state.dismissedResume[ctx.id] && !running) {
+      out += '<div class="resume-card"><div class="rc-title">RESUME ' + esc(ctx.name.toUpperCase()) + '</div>' +
+        '<p>You were: <strong>' + esc(sp.whatIWasDoing || sp.title) + '</strong></p>' +
+        (sp.nextAction ? '<p>Next: ' + esc(sp.nextAction) + '</p>' : "") +
+        '<div class="rc-dismiss"><button class="btn ghost" data-dismiss-resume="' + ctx.id + '">Dismiss</button></div></div>';
+    }
+
+    out += '<div class="ritual">' + esc(ctx.startPrompt) + '</div>';
+
+    out += '<div class="btn-row">';
+    if (!running) {
+      out += '<button class="btn primary" data-start-ritual>Start ritual (' + ctx.defaultDurationMinutes + ' min)</button>';
+    } else {
+      out += '<button class="btn ghost" data-pause>Pause session</button>';
+    }
+    out += '<button class="btn" data-savepoint>Savepoint</button>';
+    out += '</div>';
+
+    out += '<hr class="rule">';
+
+    // Tasks
+    var tasks = getTasksForContext(state.tasks, ctx);
+    var showAll = !!state.visibleTaskCounts[ctx.id];
+    var visible = showAll ? tasks : tasks.slice(0, 5);
+    out += '<div class="section-label">NEXT ACTIONS</div>';
+    if (!visible.length) {
+      out += '<div class="empty-note">Nothing tagged for ' + esc(ctx.name) + ' yet — add one below.</div>';
+    } else {
+      out += '<ul class="task-list">';
+      visible.forEach(function (t) {
+        var isActive = t.id === state.activeTaskId;
+        out += '<li class="task-row">' +
+          '<button class="task-check' + (t.status === "done" ? " on" : "") + '" data-toggle-done="' + t.id + '" aria-label="Mark done"></button>' +
+          '<div class="task-body">' +
+          '<button class="task-title' + (isActive ? " active-task" : "") + '" data-set-active="' + t.id + '">' + esc(t.title) + '</button>' +
+          '<div class="task-meta">' + (t.estimatedMinutes ? t.estimatedMinutes + " min · " : "") + (t.energy || "") + '</div>' +
+          '</div>' +
+          '<button class="task-del" data-delete-task="' + t.id + '" aria-label="Delete task">✕</button>' +
+          '</li>';
+      });
+      out += '</ul>';
+    }
+    if (tasks.length > 5) {
+      out += '<button class="show-all" data-toggle-all="' + ctx.id + '">' + (showAll ? "Show fewer" : "Show all (" + tasks.length + ")") + '</button>';
+    }
+
+    out += '<form class="add-task-form" data-add-task>' +
+      '<input type="text" name="title" placeholder="Add a task for ' + esc(ctx.name) + '…" required>' +
+      '<input type="text" name="tags" placeholder="tags (optional)" style="width:120px">' +
+      '<input type="number" name="estimate" placeholder="min" style="width:60px" min="1">' +
+      '<select name="energy"><option value="">energy</option><option value="low">low</option><option value="medium">medium</option><option value="high">high</option></select>' +
+      '<button class="btn" type="submit">Add</button>' +
+      '</form>';
+
+    out += '<hr class="rule">';
+
+    // Tools
+    out += '<div class="section-label">RELEVANT TOOLS</div>';
+    if (!ctx.toolIds.length) {
+      out += '<div class="empty-note">No tools assigned to this context.</div>';
+    } else {
+      out += '<div class="tool-grid">';
+      ctx.toolIds.forEach(function (tid) {
+        var tool = getTool(tid);
+        if (!tool) return;
+        out += '<button class="tool-btn" data-open-tool="' + tool.id + '"><span>' + esc(tool.label) + '</span>' +
+          (tool.description ? '<span class="desc">' + esc(tool.description) + '</span>' : '') + '</button>';
+      });
+      out += '</div>';
+    }
+
+    out += '</div>';
+    return out;
+  }
+
+  function renderFoot() {
+    var done = state.sessions.filter(function (s) { return s.outcome === "completed"; }).length;
+    return '<div class="foot">' +
+      '<span class="kbd-hint">⌘/Ctrl+Shift+1–4 switch · ⇧S savepoint · ⇧P pause</span>' +
+      '<div class="foot-actions">' +
+      '<span>' + state.sessions.length + ' session' + (state.sessions.length === 1 ? '' : 's') + ' logged</span>' +
+      '<button data-export>Export JSON</button>' +
+      '<label>Import JSON<input type="file" id="import-input-inline" accept="application/json" style="display:none"></label>' +
+      '</div></div>';
+  }
+
+  function renderModal() {
+    var ctx = getContext(state.activeContextId);
+    var veil = document.createElement("div");
+    veil.className = "modal-veil";
+    veil.innerHTML =
+      '<div class="modal" style="--ctx-color:' + ctx.colour + '">' +
+      '<h2>Leaving ' + esc(ctx.name) + '</h2>' +
+      '<div class="sub">What should happen to the current session?</div>' +
+      '<textarea id="transition-note" placeholder="Quick note on what you were doing (optional)"></textarea>' +
+      '<div class="modal-actions">' +
+      '<button class="btn primary" data-transition="savepoint">Savepoint and switch</button>' +
+      '<button class="btn" data-transition="pause">Pause only</button>' +
+      '<button class="btn ghost danger" data-transition="abandon">Switch without saving</button>' +
+      '</div></div>';
+    document.getElementById("app").appendChild(veil);
+    veil.addEventListener("click", function (e) {
+      if (e.target === veil) { pendingSwitchId = null; render(); }
+    });
+    veil.querySelectorAll("[data-transition]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var note = document.getElementById("transition-note").value;
+        resolveTransition(btn.getAttribute("data-transition"), note);
+      });
+    });
+  }
+
+  /* ============================== EVENT BINDING ============================== */
+
+  function bindEvents() {
+    document.querySelectorAll("[data-switch]").forEach(function (el) {
+      el.addEventListener("click", function () { attemptSwitch(el.getAttribute("data-switch")); });
+    });
+    var startBtn = document.querySelector("[data-start-ritual]");
+    if (startBtn) startBtn.addEventListener("click", startRitual);
+    var pauseBtn = document.querySelector("[data-pause]");
+    if (pauseBtn) pauseBtn.addEventListener("click", pauseSession);
+    var spBtn = document.querySelector("[data-savepoint]");
+    if (spBtn) spBtn.addEventListener("click", function () {
+      var note = window.prompt("What were you doing? (optional)", "");
+      if (note !== null) { makeSavepoint(note); showToast("Savepoint saved."); render(); }
+    });
+    document.querySelectorAll("[data-toggle-done]").forEach(function (el) {
+      el.addEventListener("click", function () { toggleTaskDone(el.getAttribute("data-toggle-done")); });
+    });
+    document.querySelectorAll("[data-set-active]").forEach(function (el) {
+      el.addEventListener("click", function () { setActiveTask(el.getAttribute("data-set-active")); });
+    });
+    document.querySelectorAll("[data-delete-task]").forEach(function (el) {
+      el.addEventListener("click", function () { deleteTask(el.getAttribute("data-delete-task")); });
+    });
+    document.querySelectorAll("[data-toggle-all]").forEach(function (el) {
+      el.addEventListener("click", function () { toggleShowAll(el.getAttribute("data-toggle-all")); });
+    });
+    document.querySelectorAll("[data-dismiss-resume]").forEach(function (el) {
+      el.addEventListener("click", function () { dismissResume(el.getAttribute("data-dismiss-resume")); });
+    });
+    document.querySelectorAll("[data-open-tool]").forEach(function (el) {
+      el.addEventListener("click", function () { openTool(getTool(el.getAttribute("data-open-tool"))); });
+    });
+    var form = document.querySelector("[data-add-task]");
+    if (form) form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var fd = new FormData(form);
+      addTask(fd.get("title") || "", fd.get("tags") || "", fd.get("estimate") || "", fd.get("energy") || "");
+    });
+    var exportBtn = document.querySelector("[data-export]");
+    if (exportBtn) exportBtn.addEventListener("click", exportData);
+    var importInline = document.getElementById("import-input-inline");
+    if (importInline) importInline.addEventListener("change", function () {
+      if (importInline.files && importInline.files[0]) importData(importInline.files[0]);
+    });
+  }
+
+  /* ============================== KEYBOARD SHORTCUTS ============================== */
+
+  document.addEventListener("keydown", function (e) {
+    if (!(e.metaKey || e.ctrlKey) || !e.shiftKey) return;
+    var tag = (document.activeElement && document.activeElement.tagName) || "";
+    if (tag === "INPUT" || tag === "TEXTAREA") return;
+    var map = { "1": "writing", "2": "coding", "3": "meetings", "4": "admin", "0": "default" };
+    if (map[e.key]) { e.preventDefault(); attemptSwitch(map[e.key]); }
+    else if (e.key.toLowerCase() === "s") { e.preventDefault(); var b = document.querySelector("[data-savepoint]"); if (b) b.click(); }
+    else if (e.key.toLowerCase() === "p") { e.preventDefault(); var p = document.querySelector("[data-pause]"); if (p) p.click(); }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

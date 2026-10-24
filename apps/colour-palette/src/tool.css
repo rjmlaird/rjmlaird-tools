@@ -1,0 +1,25 @@
+.cp-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+.cp-bar .btn-primary { margin-top: 0; }
+.cp-swatches { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr)); margin: 0; padding: 0; list-style: none; }
+.cp-sw { padding: 0.85rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--navy-sunken); }
+.cp-sw label { margin-top: 0; }
+.cp-sw label + .cp-hexrow, .cp-sw .cp-hexrow + button { margin-top: 0.5rem; }
+.cp-hexrow { display: grid; grid-template-columns: 3.25rem 1fr; gap: 0.5rem; }
+.cp-hexrow input[type="color"] { width: 100%; }
+.cp-hexrow input[type="text"] { font-family: var(--font-mono); text-transform: lowercase; }
+.cp-matrix th, .cp-matrix td { white-space: nowrap; }
+.cp-cell { display: grid; gap: 0.25rem; justify-items: start; }
+.cp-cell b { font-variant-numeric: tabular-nums; }
+.cp-key { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin: 0.9rem 0 0; padding: 0; list-style: none; color: var(--text-lo); font-size: 0.85rem; }
+.cp-sim { display: grid; gap: 0.6rem; margin: 0.75rem 0 0; padding: 0; list-style: none; }
+.cp-sim li { display: grid; grid-template-columns: 2.25rem 2.25rem 1fr; gap: 0.6rem; align-items: center; }
+.cp-chipbox { height: 2.25rem; border: 1px solid var(--border-strong); border-radius: 6px; }
+.cp-ui { margin-top: 0.75rem; padding: 1.25rem; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); }
+.cp-ui h3 { margin: 0.5rem 0 0.35rem; font-size: 1.15rem; }
+.cp-ui p { margin: 0 0 1rem; }
+.cp-ui .cp-tag { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600; }
+.cp-ui button { min-height: 44px; padding: 0.5rem 1rem; border: 2px solid; border-radius: var(--radius-sm); font-weight: 600; }
+.cp-reads { display: grid; gap: 0.5rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+.cp-reads li { display: grid; grid-template-columns: 6rem 1fr; gap: 0.75rem; align-items: start; }
+.cp-reads .chip { justify-content: center; }
+#css-out { margin-top: 0.75rem; }

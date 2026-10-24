@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Two-Body Orbital Mechanics Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- KaTeX for LaTeX Math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+  <style>
+    body {
+      background-color: #0b0f19;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/70 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+          <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <circle cx="8" cy="12" r="3" class="fill-emerald-400/20 stroke-emerald-400" stroke-width="2"/>
+            <circle cx="17" cy="9" r="1.5" class="fill-cyan-400 stroke-cyan-300" stroke-width="1"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+            Two-Body Orbital Calculator
+            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Keplerian Dynamics</span>
+          </h1>
+          <p class="text-xs text-slate-400">Vis-Viva equation & 2D interactive elliptical orbit simulator</p>
+        </div>
+      </div>
+      <!-- Preset Quick Links -->
+      <div class="hidden md:flex items-center gap-2 text-xs">
+        <span class="text-slate-400 font-medium">Presets:</span>
+        <button onclick="applyPreset('ISS')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition">ISS (LEO)</button>
+        <button onclick="applyPreset('GEO')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition">GEO</button>
+        <button onclick="applyPreset('Molniya')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition">Molniya</button>
+        <button onclick="applyPreset('EarthSun')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition">Earth around Sun</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Grid -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+    <!-- Presets bar for mobile -->
+    <div class="flex md:hidden overflow-x-auto gap-2 pb-2 text-xs">
+      <span class="text-slate-400 font-medium self-center">Presets:</span>
+      <button onclick="applyPreset('ISS')" class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700 whitespace-nowrap">ISS</button>
+      <button onclick="applyPreset('GEO')" class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700 whitespace-nowrap">GEO</button>
+      <button onclick="applyPreset('Molniya')" class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700 whitespace-nowrap">Molniya</button>
+      <button onclick="applyPreset('EarthSun')" class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700 whitespace-nowrap">Earth/Sun</button>
+      <button onclick="applyPreset('MarsSun')" class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700 whitespace-nowrap">Mars/Sun</button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Left Column: Inputs & Controls -->
+      <div class="lg:col-span-5 space-y-5">
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-5 shadow-xl">
+          <h2 class="text-base font-semibold text-white border-b border-slate-800 pb-2 flex justify-between items-center">
+            Orbital Parameters
+            <span class="text-xs text-slate-400 font-normal">Vis-Viva: $v^2 = \mu \left(\frac{2}{r} - \frac{1}{a}\right)$</span>
+          </h2>
+
+          <!-- Central Body Selector -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Central Body ($\mu$)</label>
+            <select id="central-body" onchange="handleCentralBodyChange()" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+              <option value="earth" selected>Earth (μ = 398,600.44 km³/s²)</option>
+              <option value="sun">Sun (μ = 1.327 × 10¹¹ km³/s²)</option>
+              <option value="moon">Moon (μ = 4,902.8 km³/s²)</option>
+              <option value="mars">Mars (μ = 42,828 km³/s²)</option>
+              <option value="jupiter">Jupiter (μ = 1.266 × 10⁸ km³/s²)</option>
+              <option value="custom">Custom Gravitational Parameter</option>
+            </select>
+          </div>
+
+          <!-- Custom Mu Input (Hidden by default) -->
+          <div id="custom-mu-container" class="space-y-1 hidden">
+            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Custom Standard Gravitational Parameter $\mu$ ($\text{km}^3/\text{s}^2$)</label>
+            <input type="number" id="custom-mu-input" value="398600.44" step="any" oninput="calculateOrbit()" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-1.5 text-sm font-mono focus:outline-none focus:border-emerald-500" />
+          </div>
+
+          <!-- Semi-Major Axis (a) -->
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Semi-Major Axis ($a$)</label>
+              <div class="flex items-center gap-1">
+                <input type="number" id="sma-num" value="7000" min="100" max="500000000" step="any" oninput="syncInput('sma-num', 'sma-slider'); calculateOrbit();" class="w-28 bg-slate-800 border border-slate-700 text-right text-emerald-400 font-mono font-semibold rounded px-2 py-0.5 text-sm focus:outline-none focus:border-emerald-500" />
+                <span class="text-xs text-slate-400">km</span>
+              </div>
+            </div>
+            <input type="range" id="sma-slider" min="6500" max="50000" step="50" value="7000" oninput="syncInput('sma-slider', 'sma-num'); calculateOrbit();" class="w-full accent-emerald-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer" />
+          </div>
+
+          <!-- Eccentricity (e) -->
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Eccentricity ($e$)</label>
+              <input type="number" id="ecc-num" value="0.05" min="0" max="0.99" step="0.01" oninput="syncInput('ecc-num', 'ecc-slider'); calculateOrbit();" class="w-24 bg-slate-800 border border-slate-700 text-right text-cyan-400 font-mono font-semibold rounded px-2 py-0.5 text-sm focus:outline-none focus:border-cyan-500" />
+            </div>
+            <input type="range" id="ecc-slider" min="0" max="0.95" step="0.01" value="0.05" oninput="syncInput('ecc-slider', 'ecc-num'); calculateOrbit();" class="w-full accent-cyan-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer" />
+          </div>
+        </div>
+
+        <!-- Calculated Orbital State Output Cards -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-3 shadow-xl">
+          <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800 pb-2">Derived Orbital Elements & Speeds</h3>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-slate-800/40 p-3 rounded-lg border border-slate-800/80">
+              <span class="block text-slate-400 text-xs font-medium">Periapsis Radius ($r_p$)</span>
+              <span id="res-rp" class="text-base font-bold text-emerald-400 font-mono">6,650 km</span>
+              <span id="res-rp-alt" class="block text-[11px] text-slate-500 mt-0.5">Alt: 272 km</span>
+            </div>
+            <div class="bg-slate-800/40 p-3 rounded-lg border border-slate-800/80">
+              <span class="block text-slate-400 text-xs font-medium">Apoapsis Radius ($r_a$)</span>
+              <span id="res-ra" class="text-base font-bold text-cyan-400 font-mono">7,350 km</span>
+              <span id="res-ra-alt" class="block text-[11px] text-slate-500 mt-0.5">Alt: 972 km</span>
+            </div>
+            <div class="bg-slate-800/40 p-3 rounded-lg border border-slate-800/80">
+              <span class="block text-slate-400 text-xs font-medium">Periapsis Speed ($v_p$)</span>
+              <span id="res-vp" class="text-base font-bold text-amber-400 font-mono">7.92 km/s</span>
+            </div>
+            <div class="bg-slate-800/40 p-3 rounded-lg border border-slate-800/80">
+              <span class="block text-slate-400 text-xs font-medium">Apoapsis Speed ($v_a$)</span>
+              <span id="res-va" class="text-base font-bold text-rose-400 font-mono">7.16 km/s</span>
+            </div>
+            <div class="bg-slate-800/40 p-3 rounded-lg border border-slate-800/80 col-span-2">
+              <span class="block text-slate-400 text-xs font-medium">Orbital Period ($T$)</span>
+              <span id="res-period" class="text-lg font-bold text-purple-400 font-mono">1h 37m 12s</span>
+              <span id="res-period-sec" class="block text-[11px] text-slate-500 mt-0.5">5,832 seconds (0.067 days)</span>
+            </div>
+            <div class="bg-slate-800/40 p-3 rounded-lg border border-slate-800/80">
+              <span class="block text-slate-400 text-xs font-medium">Mean Motion ($n$)</span>
+              <span id="res-n" class="text-xs font-bold text-slate-200 font-mono">0.00108 rad/s</span>
+            </div>
+            <div class="bg-slate-800/40 p-3 rounded-lg border border-slate-800/80">
+              <span class="block text-slate-400 text-xs font-medium">Specific Energy ($\epsilon$)</span>
+              <span id="res-energy" class="text-xs font-bold text-slate-200 font-mono">-28.47 MJ/kg</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Interactive Canvas & Real-time Telemetry -->
+      <div class="lg:col-span-7 space-y-4">
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between items-center relative shadow-xl min-h-[500px]">
+          
+          <!-- Canvas Top Bar Controls -->
+          <div class="w-full flex justify-between items-center mb-2 z-10 flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <h3 class="text-sm font-semibold text-slate-200">2D Orbital Simulation</h3>
+            </div>
+            <div class="flex items-center gap-3 text-xs">
+              <label class="flex items-center gap-1.5 cursor-pointer text-slate-400 hover:text-slate-200">
+                <input type="checkbox" id="show-vectors" checked class="accent-emerald-500 rounded">
+                Speed Vectors
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer text-slate-400 hover:text-slate-200">
+                <input type="checkbox" id="show-grid" checked class="accent-emerald-500 rounded">
+                Grid
+              </label>
+              <button id="pause-btn" onclick="togglePause()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded text-xs transition">Pause</button>
+            </div>
+          </div>
+
+          <!-- Canvas Container -->
+          <div class="relative w-full flex-1 flex items-center justify-center min-h-[400px]">
+            <canvas id="orbitCanvas" class="w-full h-full border border-slate-800/60 rounded-lg bg-slate-950/80 cursor-crosshair"></canvas>
+            
+            <!-- Realtime Telemetry Overlay -->
+            <div class="absolute top-3 left-3 bg-slate-900/90 border border-slate-800 p-2.5 rounded-lg text-xs font-mono space-y-1 shadow-lg backdrop-blur">
+              <div class="text-slate-400 border-b border-slate-800 pb-1 text-[11px]">Real-time Satellite State</div>
+              <div class="text-emerald-400">Dist ($r$): <span id="telemetry-r">0</span> km</div>
+              <div class="text-cyan-400">Speed ($v$): <span id="telemetry-v">0.00</span> km/s</div>
+              <div class="text-amber-400">True Anomaly ($\nu$): <span id="telemetry-nu">0.0</span>°</div>
+            </div>
+          </div>
+
+          <!-- Legend Bar -->
+          <div class="w-full flex flex-wrap justify-center gap-4 text-xs mt-3 pt-2 border-t border-slate-800/80 z-10 text-slate-400">
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-400 inline-block shadow-sm"></span> Central Body Focus</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span> Periapsis ($r_p$)</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-cyan-400 inline-block"></span> Apoapsis ($r_a$)</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-indigo-400 inline-block"></span> Orbiting Satellite</span>
+          </div>
+        </div>
+
+        <!-- Explanatory Equations Card -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 text-xs text-slate-400 space-y-2">
+          <h4 class="font-semibold text-slate-300">Key Keplerian Mechanics Equations</h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2 font-mono text-[11px] bg-slate-950/50 p-2.5 rounded border border-slate-800">
+            <div><strong>Vis-Viva:</strong> $$v = \sqrt{\mu\left(\frac{2}{r} - \frac{1}{a}\right)}$$</div>
+            <div><strong>Period:</strong> $$T = 2\pi\sqrt{\frac{a^3}{\mu}}$$</div>
+            <div><strong>Apoapsis / Periapsis:</strong> $$r_p = a(1-e), \, r_a = a(1+e)$$</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 py-3 bg-slate-900/40 text-center text-xs text-slate-500">
+    Two-Body Orbital Mechanics & Real-Time Kepler Simulator
+  </footer>
+
+  <script>
+    // Central Body Gravitational Constants (mu in km^3 / s^2) & Radii (km)
+    const CENTRAL_BODIES = {
+      earth: { mu: 398600.4418, radius: 6371, name: "Earth", color: "#38bdf8" },
+      sun: { mu: 132712440018, radius: 696340, name: "Sun", color: "#f59e0b" },
+      moon: { mu: 4902.8, radius: 1737, name: "Moon", color: "#94a3b8" },
+      mars: { mu: 42828.3, radius: 3389.5, name: "Mars", color: "#f87171" },
+      jupiter: { mu: 126686534, radius: 69911, name: "Jupiter", color: "#fb923c" },
+      custom: { mu: 398600.4418, radius: 0, name: "Custom Body", color: "#a855f7" }
+    };
+
+    // Preset configurations
+    const PRESETS = {
+      ISS: { body: 'earth', a: 6771, e: 0.0006 },
+      GEO: { body: 'earth', a: 42164, e: 0.0001 },
+      Molniya: { body: 'earth', a: 26600, e: 0.74 },
+      EarthSun: { body: 'sun', a: 149597870, e: 0.0167 },
+      MarsSun: { body: 'sun', a: 227939200, e: 0.0934 }
+    };
+
+    // State Variables
+    let currentMu = CENTRAL_BODIES.earth.mu;
+    let currentBody = 'earth';
+    let meanAnomaly = 0; // Radians
+    let isPaused = false;
+    let lastAnimTime = performance.now();
+
+    // Elements
+    const smaNum = document.getElementById('sma-num');
+    const smaSlider = document.getElementById('sma-slider');
+    const eccNum = document.getElementById('ecc-num');
+    const eccSlider = document.getElementById('ecc-slider');
+    const canvas = document.getElementById('orbitCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Synchronize inputs
+    function syncInput(sourceId, targetId) {
+      const source = document.getElementById(sourceId);
+      const target = document.getElementById(targetId);
+      target.value = source.value;
+    }
+
+    function handleCentralBodyChange() {
+      const sel = document.getElementById('central-body').value;
+      currentBody = sel;
+      const customContainer = document.getElementById('custom-mu-container');
+
+      if (sel === 'custom') {
+        customContainer.classList.remove('hidden');
+        currentMu = parseFloat(document.getElementById('custom-mu-input').value) || 398600;
+      } else {
+        customContainer.classList.add('hidden');
+        currentMu = CENTRAL_BODIES[sel].mu;
+      }
+
+      // Adjust slider ranges according to scale of central body
+      if (sel === 'sun') {
+        smaSlider.min = 50000000;
+        smaSlider.max = 500000000;
+        smaSlider.step = 1000000;
+        if (parseFloat(smaNum.value) < 10000000) {
+          smaNum.value = 149597870;
+          smaSlider.value = 149597870;
+        }
+      } else if (sel === 'jupiter') {
+        smaSlider.min = 100000;
+        smaSlider.max = 25000000;
+        smaSlider.step = 10000;
+        if (parseFloat(smaNum.value) < 100000) {
+          smaNum.value = 422000;
+          smaSlider.value = 422000;
+        }
+      } else {
+        smaSlider.min = 2000;
+        smaSlider.max = 100000;
+        smaSlider.step = 100;
+        if (parseFloat(smaNum.value) > 500000) {
+          smaNum.value = 7000;
+          smaSlider.value = 7000;
+        }
+      }
+
+      calculateOrbit();
+    }
+
+    function applyPreset(presetKey) {
+      const p = PRESETS[presetKey];
+      if (!p) return;
+
+      document.getElementById('central-body').value = p.body;
+      handleCentralBodyChange();
+
+      smaNum.value = p.a;
+      smaSlider.value = p.a;
+      eccNum.value = p.e;
+      eccSlider.value = p.e;
+
+      calculateOrbit();
+    }
+
+    // Main Orbit Calculations
+    function calculateOrbit() {
+      if (currentBody === 'custom') {
+        currentMu = parseFloat(document.getElementById('custom-mu-input').value) || 398600;
+      } else {
+        currentMu = CENTRAL_BODIES[currentBody].mu;
+      }
+
+      const a = parseFloat(smaNum.value) || 7000; // km
+      const e = parseFloat(eccNum.value) || 0.0;   // dimensionless
+
+      // 1. Periapsis and Apoapsis Radii
+      const rp = a * (1 - e);
+      const ra = a * (1 + e);
+
+      // Body radius for altitude check
+      const bodyRadius = CENTRAL_BODIES[currentBody] ? CENTRAL_BODIES[currentBody].radius : 0;
+      const hp = rp - bodyRadius;
+      const ha = ra - bodyRadius;
+
+      // 2. Vis-Viva Speeds at Periapsis and Apoapsis
+      const vp = Math.sqrt(currentMu * (2 / rp - 1 / a));
+      const va = Math.sqrt(currentMu * (2 / ra - 1 / a));
+
+      // 3. Orbital Period (T = 2*pi*sqrt(a^3 / mu))
+      const periodSec = 2 * Math.PI * Math.sqrt(Math.pow(a, 3) / currentMu);
+      
+      // 4. Mean Motion (n = sqrt(mu / a^3))
+      const n = Math.sqrt(currentMu / Math.pow(a, 3));
+
+      // 5. Specific Orbital Energy (epsilon = -mu / (2*a))
+      const energy = -currentMu / (2 * a);
+
+      // Display Outputs
+      document.getElementById('res-rp').textContent = `${formatNum(rp)} km`;
+      document.getElementById('res-rp-alt').textContent = bodyRadius > 0 ? `Alt: ${formatNum(hp)} km` : '';
+      
+      document.getElementById('res-ra').textContent = `${formatNum(ra)} km`;
+      document.getElementById('res-ra-alt').textContent = bodyRadius > 0 ? `Alt: ${formatNum(ha)} km` : '';
+
+      document.getElementById('res-vp').textContent = `${vp.toFixed(3)} km/s`;
+      document.getElementById('res-va').textContent = `${va.toFixed(3)} km/s`;
+
+      document.getElementById('res-period').textContent = formatPeriod(periodSec);
+      document.getElementById('res-period-sec').textContent = `${formatNum(Math.round(periodSec))} seconds (${(periodSec / 86400).toFixed(3)} days)`;
+
+      document.getElementById('res-n').textContent = `${n.toExponential(4)} rad/s`;
+      document.getElementById('res-energy').textContent = `${energy.toFixed(2)} MJ/kg`;
+
+      if (window.renderMathInElement) {
+        renderMathInElement(document.body);
+      }
+    }
+
+    function formatNum(val) {
+      return new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(val);
+    }
+
+    function formatPeriod(seconds) {
+      if (seconds < 120) return `${seconds.toFixed(1)}s`;
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      const secs = Math.floor(seconds % 60);
+      const days = Math.floor(hrs / 24);
+
+      if (days > 365) {
+        return `${(days / 365.25).toFixed(2)} years`;
+      }
+      if (days >= 2) {
+        return `${days}d ${hrs % 24}h ${mins}m`;
+      }
+      if (hrs > 0) {
+        return `${hrs}h ${mins}m ${secs}s`;
+      }
+      return `${mins}m ${secs}s`;
+    }
+
+    function togglePause() {
+      isPaused = !isPaused;
+      document.getElementById('pause-btn').textContent = isPaused ? "Resume" : "Pause";
+    }
+
+    // Solve Kepler's Equation: M = E - e*sin(E) for Eccentric Anomaly E
+    function solveKepler(M, e) {
+      let E = M;
+      for (let i = 0; i < 15; i++) {
+        const f = E - e * Math.sin(E) - M;
+        const fPrime = 1 - e * Math.cos(E);
+        const delta = f / fPrime;
+        E -= delta;
+        if (Math.abs(delta) < 1e-7) break;
+      }
+      return E;
+    }
+
+    // Animation / Rendering Loop
+    function animate(now) {
+      const dt = (now - lastAnimTime) / 1000; // seconds
+      lastAnimTime = now;
+
+      const a = parseFloat(smaNum.value) || 7000;
+      const e = parseFloat(eccNum.value) || 0.05;
+
+      // Advance Mean Anomaly based on Kepler motion
+      if (!isPaused && a > 0) {
+        const meanMotion = Math.sqrt(currentMu / Math.pow(a, 3)); // rad/s
+        // Speed up simulation time visually proportional to period
+        const speedFactor = Math.max(0.5, Math.min(2000, (2 * Math.PI * Math.sqrt(Math.pow(a, 3) / currentMu)) / 20));
+        meanAnomaly += meanMotion * dt * speedFactor;
+        meanAnomaly %= (2 * Math.PI);
+      }
+
+      drawOrbit(a, e);
+      requestAnimationFrame(animate);
+    }
+
+    function drawOrbit(a, e) {
+      if (!canvas || canvas.offsetParent === null) return;
+      const dpr = window.devicePixelRatio || 1;
+      const width = canvas.parentElement.clientWidth;
+      const height = canvas.parentElement.clientHeight || 400;
+
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
+
+      ctx.clearRect(0, 0, width, height);
+
+      const showGrid = document.getElementById('show-grid').checked;
+      const showVectors = document.getElementById('show-vectors').checked;
+
+      // 1. Draw Background Grid
+      if (showGrid) {
+        ctx.strokeStyle = 'rgba(30, 41, 59, 0.5)';
+        ctx.lineWidth = 1;
+        const gridSize = 40;
+        for (let x = 0; x < width; x += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, height);
+          ctx.stroke();
+        }
+        for (let y = 0; y < height; y += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+          ctx.stroke();
+        }
+      }
+
+      const centerX = width / 2;
+      const centerY = height / 2;
+
+      // Geometric ellipse parameters
+      const b = a * Math.sqrt(1 - e * e); // Semi-minor axis
+      const c = a * e; // Focal distance from center
+
+      const ra = a * (1 + e);
+      // Scale canvas so apoapsis fits comfortably
+      const margin = 70;
+      const maxDim = Math.min(width, height) / 2 - margin;
+      const scale = maxDim / ra;
+
+      const pxA = a * scale;
+      const pxB = b * scale;
+      const pxC = c * scale;
+
+      // Central Body Focus is placed at (centerX - pxC, centerY) so orbit aligns naturally
+      const focusX = centerX - pxC;
+      const focusY = centerY;
+
+      // 2. Draw Elliptical Orbit Path
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, pxA, pxB, 0, 0, 2 * Math.PI);
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.restore();
+
+      // 3. Draw Major Axis Line
+      ctx.beginPath();
+      ctx.moveTo(centerX - pxA, centerY);
+      ctx.lineTo(centerX + pxA, centerY);
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([]);
+      ctx.stroke();
+
+      // 4. Periapsis & Apoapsis Markers
+      const periapsisX = centerX + pxA - pxC * 2; // Right end of ellipse from focus
+      const apoapsisX = centerX - pxA;          // Left end of ellipse
+
+      // Periapsis point (r_p)
+      ctx.beginPath();
+      ctx.arc(centerX + pxA, centerY, 5, 0, 2 * Math.PI);
+      ctx.fillStyle = '#10b981';
+      ctx.fill();
+      ctx.font = '11px system-ui';
+      ctx.fillStyle = '#34d399';
+      ctx.fillText(`Periapsis (rₚ)`, centerX + pxA - 25, centerY + 20);
+
+      // Apoapsis point (r_a)
+      ctx.beginPath();
+      ctx.arc(centerX - pxA, centerY, 5, 0, 2 * Math.PI);
+      ctx.fillStyle = '#06b6d4';
+      ctx.fill();
+      ctx.fillStyle = '#22d3ee';
+      ctx.fillText(`Apoapsis (rₐ)`, centerX - pxA - 25, centerY + 20);
+
+      // 5. Draw Central Body at Primary Focus
+      const bodyInfo = CENTRAL_BODIES[currentBody] || CENTRAL_BODIES.earth;
+      const bodyRadiusPx = Math.max(6, Math.min(28, (bodyInfo.radius || 6371) * scale));
+
+      ctx.beginPath();
+      ctx.arc(focusX, focusY, bodyRadiusPx, 0, 2 * Math.PI);
+      ctx.fillStyle = bodyInfo.color;
+      ctx.shadowColor = bodyInfo.color;
+      ctx.shadowBlur = 12;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // 6. Calculate Current Satellite Position (Kepler's Equation)
+      const E = solveKepler(meanAnomaly, e);
+      // True Anomaly nu
+      const nu = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
+      
+      // Distance from focus r
+      const r = a * (1 - e * Math.cos(E));
+      
+      // Satellite 2D position relative to Central Body focus
+      const satX = focusX + (r * scale) * Math.cos(nu);
+      const satY = focusY - (r * scale) * Math.sin(nu); // Y flipped in canvas
+
+      // Instantaneous speed via Vis-Viva equation
+      const currentSpeed = Math.sqrt(currentMu * (2 / r - 1 / a));
+
+      // Update Realtime Telemetry Display
+      document.getElementById('telemetry-r').textContent = formatNum(r);
+      document.getElementById('telemetry-v').textContent = currentSpeed.toFixed(2);
+      let degNu = (nu * 180 / Math.PI) % 360;
+      if (degNu < 0) degNu += 360;
+      document.getElementById('telemetry-nu').textContent = degNu.toFixed(1);
+
+      // Draw Radius Vector (Central body to satellite)
+      ctx.beginPath();
+      ctx.moveTo(focusX, focusY);
+      ctx.lineTo(satX, satY);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // 7. Draw Velocity Vector (Tangent to orbit)
+      if (showVectors) {
+        // Velocity vector orientation angle: phi = nu + gamma (flight path angle)
+        const flightPathAngle = Math.atan2(e * Math.sin(nu), 1 + e * Math.cos(nu));
+        const velAngle = nu + Math.PI / 2 + flightPathAngle;
+        
+        const vecLen = Math.min(60, Math.max(20, currentSpeed * 3));
+        const vecEndX = satX + vecLen * Math.cos(velAngle);
+        const vecEndY = satY - vecLen * Math.sin(velAngle);
+
+        ctx.beginPath();
+        ctx.moveTo(satX, satY);
+        ctx.lineTo(vecEndX, vecEndY);
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Arrow head
+        const headLen = 6;
+        ctx.beginPath();
+        ctx.moveTo(vecEndX, vecEndY);
+        ctx.lineTo(vecEndX - headLen * Math.cos(velAngle - Math.PI / 6), vecEndY + headLen * Math.sin(velAngle - Math.PI / 6));
+        ctx.lineTo(vecEndX - headLen * Math.cos(velAngle + Math.PI / 6), vecEndY + headLen * Math.sin(velAngle + Math.PI / 6));
+        ctx.fillStyle = '#f59e0b';
+        ctx.fill();
+      }
+
+      // 8. Draw Satellite Body
+      ctx.beginPath();
+      ctx.arc(satX, satY, 6, 0, 2 * Math.PI);
+      ctx.fillStyle = '#818cf8';
+      ctx.shadowColor = '#6366f1';
+      ctx.shadowBlur = 10;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    // Window Resize Listener
+    window.addEventListener('resize', calculateOrbit);
+
+    // Initial Setup
+    window.onload = function() {
+      handleCentralBodyChange();
+      calculateOrbit();
+      requestAnimationFrame(animate);
+    };
+  </script>
+</body>
+</html>

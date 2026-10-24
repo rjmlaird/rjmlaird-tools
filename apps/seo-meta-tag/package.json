@@ -1,0 +1,19 @@
+{
+  "name": "@rjmlaird/seo-meta-tag",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@rjmlaird/ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@rjmlaird/tsconfig": "workspace:*",
+    "@types/node": "^22.0.0",
+    "vite": "^8.3.5"
+  }
+}

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orbit Simulator · rjmlaird tools</title>
+<meta name="description" content="Set a central body, semi-major axis and eccentricity to see a two-body orbit animate with live distance, speed and true anomaly, alongside the period, radii and speeds from the vis-viva equation.">
+<meta name="theme-color" content="#0b0f1a">
+<meta name="color-scheme" content="dark">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap">
+</head>
+<body>
+<div class="rj-bar"><div class="rj-bar-inner wrap">
+<a class="rj-brand" href="/"><svg viewBox="0 0 32 32" width="24" height="24" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="7" fill="#121826"/><circle cx="16" cy="16" r="9" fill="none" stroke="#00c2a8" stroke-width="2"/><circle cx="25" cy="16" r="2.5" fill="#f5a623"/></svg><span>rjmlaird <b>tools</b></span></a>
+<a class="rj-bar-link" href="/">All tools</a>
+</div></div>
+<main class="rj-main wrap">
+<header class="rj-intro">
+<div class="orbit-line" aria-hidden="true"></div>
+<h1>Orbit Simulator</h1>
+<p class="lede">Set a central body, semi-major axis and eccentricity to see a two-body orbit animate with live distance, speed and true anomaly, alongside the period, radii and speeds from the vis-viva equation.</p>
+</header>
+<div id="live" class="sr-only" role="status" aria-live="polite"></div>
+<div class="os-layout">
+  <div>
+    <section class="panel" aria-labelledby="p-h">
+      <h2 id="p-h">Orbit</h2>
+      <div class="os-presets" role="group" aria-label="Presets">
+        <button type="button" class="btn-secondary" data-preset="ISS">ISS</button>
+        <button type="button" class="btn-secondary" data-preset="GEO">Geostationary</button>
+        <button type="button" class="btn-secondary" data-preset="Molniya">Molniya</button>
+        <button type="button" class="btn-secondary" data-preset="EarthSun">Earth around Sun</button>
+        <button type="button" class="btn-secondary" data-preset="MarsSun">Mars around Sun</button>
+      </div>
+      <label for="body">Central body</label>
+      <select id="body"></select>
+      <div id="mu-wrap" hidden><label for="mu">Gravitational parameter μ (km³/s²)</label><input id="mu" type="number" min="0.001" step="any" value="398600.4418"></div>
+      <label for="a">Semi-major axis, a</label>
+      <div class="os-in"><input id="a" type="number" min="1" step="any" inputmode="decimal" value="6771"><span>km</span></div>
+      <input id="a-s" type="range" min="0" max="1000" step="1" aria-label="Semi-major axis slider (logarithmic)">
+      <label for="e">Eccentricity, e</label>
+      <input id="e" type="number" min="0" max="0.99" step="0.01" inputmode="decimal" value="0.05">
+      <input id="e-s" type="range" min="0" max="0.95" step="0.01" aria-label="Eccentricity slider">
+      <p class="error os-warn" id="warn" role="status" hidden></p>
+    </section>
+    <section class="panel" aria-labelledby="r-h">
+      <h2 id="r-h">Orbital quantities</h2>
+      <dl class="os-kv">
+        <div><dt>Periapsis radius</dt><dd><span id="r-rp"></span><small id="r-hp"></small></dd></div>
+        <div><dt>Apoapsis radius</dt><dd><span id="r-ra"></span><small id="r-ha"></small></dd></div>
+        <div><dt>Speed at periapsis</dt><dd id="r-vp"></dd></div>
+        <div><dt>Speed at apoapsis</dt><dd id="r-va"></dd></div>
+        <div><dt>Orbital period</dt><dd><span id="r-T"></span><small id="r-Ts"></small></dd></div>
+        <div><dt>Mean motion</dt><dd id="r-n"></dd></div>
+        <div><dt>Specific orbital energy</dt><dd id="r-E"></dd></div>
+      </dl>
+    </section>
+  </div>
+  <div>
+    <section class="panel" aria-labelledby="s-h">
+      <h2 id="s-h">Simulation</h2>
+      <div class="os-tools">
+        <button type="button" class="btn-secondary" id="pause" aria-pressed="false">Pause</button>
+        <label class="check"><input type="checkbox" id="vec" checked> Velocity vector</label>
+        <label class="check"><input type="checkbox" id="grid" checked> Grid</label>
+      </div>
+      <div class="os-stage"><canvas id="cv" role="img" aria-label="Orbit animation"></canvas></div>
+      <dl class="os-tel" aria-label="Current position">
+        <div class="stat-like"><dt class="lab">Distance, r</dt><dd class="big" style="font-size:1.2rem;margin:0" id="t-r">-</dd></div>
+        <div><dt class="lab">Speed, v</dt><dd class="big" style="font-size:1.2rem;margin:0" id="t-v">-</dd></div>
+        <div><dt class="lab">True anomaly, ν</dt><dd class="big" style="font-size:1.2rem;margin:0" id="t-nu">-</dd></div>
+      </dl>
+      <p class="muted small">One orbit takes about 20 seconds on screen whatever the real period. The figures above are the real values at the satellite’s current position. The central body is not drawn to scale.</p>
+    </section>
+    <section class="panel">
+      <h2>Equations</h2>
+      <p class="formula">v² = μ (2 ÷ r − 1 ÷ a) &nbsp;·&nbsp; T = 2π √(a³ ÷ μ)</p>
+      <p class="formula">r<sub>p</sub> = a (1 − e) &nbsp;·&nbsp; r<sub>a</sub> = a (1 + e) &nbsp;·&nbsp; ε = −μ ÷ 2a</p>
+      <p class="formula">M = E − e sin E (Kepler’s equation) &nbsp;·&nbsp; r = a (1 − e cos E)</p>
+      <p class="muted small">Idealised: two bodies only, a point-mass central body, no drag, perturbations or relativity. For numbers only or a JSON API, use the <a href="/orbital-calc">Orbital Calculator</a>.</p>
+    </section>
+  </div>
+</div>
+</main>
+<footer class="rj-footer wrap"><a href="/">← All tools</a><a href="https://rjmlaird.co.uk">rjmlaird.co.uk</a></footer>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

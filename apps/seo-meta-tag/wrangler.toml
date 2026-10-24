@@ -1,0 +1,23 @@
+name = "rjmlaird-tools-seo-meta-tag"
+compatibility_date = "2025-09-01"
+
+workers_dev = false
+preview_urls = false
+
+# Production routes
+routes = [
+  { pattern = "tools.rjmlaird.co.uk/seo-meta-tag", zone_name = "rjmlaird.co.uk" },
+  { pattern = "tools.rjmlaird.co.uk/seo-meta-tag/*", zone_name = "rjmlaird.co.uk" },
+]
+
+# Assets configuration
+[assets]
+directory = "dist"
+not_found_handling = "single-page-application"
+
+[observability]
+enabled = true
+
+[dev]
+port = 8824
+inspector_port = 10264
