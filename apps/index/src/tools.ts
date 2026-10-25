@@ -17,6 +17,26 @@ export interface Tool {
   source?: string;
 }
 
+export interface TechItem {
+  name: string;
+  url: string;
+  logo: string;
+  color: string;
+  logoColor?: string;
+  context?: string;
+}
+
+export interface ToolsApiResponse {
+  section: string;
+  data: {
+    categories: {
+      name: string;
+      items: TechItem[];
+    }[];
+  };
+}
+
+export const API_URL = "https://api.rjmlaird.co.uk/v1/cv/section/tools";
 export const REPO = "https://github.com/rjmlaird/rjmlaird-tools";
 
 export const GROUPS: { id: GroupId; name: string; blurb: string }[] = [
@@ -35,10 +55,43 @@ export const STATUS: Record<Status, { label: string; order: number }> = {
   archived: { label: "Archived", order: 4 },
 };
 
-const STACK = ["TypeScript", "Hono", "Cloudflare Workers"];
+export const STACK = ["TypeScript", "Hono", "Cloudflare Workers"];
 
-// Add a tool here and it appears on the index. Keep `id` equal to the apps/ folder name.
-// Flip a tool to "active" and add `path` only once it is deployed.
+/**
+ * Fetches badge metadata from the CV API and indexes items by tech name.
+ */
+export async function fetchTechBadgesMap(): Promise<Map<string, TechItem>> {
+  const map = new Map<string, TechItem>();
+  try {
+    const response = await fetch(API_URL);
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`);
+    }
+    const json: ToolsApiResponse = await response.json();
+    for (const category of json.data.categories) {
+      for (const item of category.items) {
+        map.set(item.name, item);
+      }
+    }
+  } catch (error) {
+    console.error("Failed to load tech badges from API:", error);
+  }
+  return map;
+}
+
+/**
+ * Generates a Shields.io badge URL using metadata from the API.
+ */
+export function getBadgeUrl(techName: string, badgesMap: Map<string, TechItem>): string {
+  const badge = badgesMap.get(techName);
+  if (!badge) {
+    return `https://img.shields.io/badge/${encodeURIComponent(techName)}-gray?style=flat-square`;
+  }
+  const logoParam = `&logo=${encodeURIComponent(badge.logo)}`;
+  const logoColorParam = badge.logoColor ? `&logoColor=${encodeURIComponent(badge.logoColor)}` : "";
+  return `https://img.shields.io/badge/${encodeURIComponent(badge.name)}-${badge.color}?style=flat-square${logoParam}${logoColorParam}`;
+}
+
 export const TOOLS: Tool[] = [
   // Space & Astronomy
   {
