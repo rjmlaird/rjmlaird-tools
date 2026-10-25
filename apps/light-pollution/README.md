@@ -1,14 +1,17 @@
-# orbit-simulator
+# light-pollution
 
-Animated two-body (Keplerian) orbit: central-body presets or custom gravitational parameter, semi-major axis and
-eccentricity, solved with Kepler's equation each frame, plus the closed-form orbital quantities. Companion to
-`orbital-calc` (numbers and a JSON API). Respects `prefers-reduced-motion` (starts paused). Vanilla JS + Vite, served at
-`tools.rjmlaird.co.uk/orbit-simulator`.
+Estimates sky brightness (SQM) and Bortle class for a UK postcode, place name, coordinates or device location,
+with observing guidance and the towns contributing most of the glow. Vanilla JS + Vite, served at
+`tools.rjmlaird.co.uk/light-pollution` by an assets-only Worker.
 
-The animation runs at a rate that completes one orbit in about 20 seconds regardless of the real period; the
-telemetry shows true values.
+It is a **model, not a measurement**: `src/model.js` sums the glow from the settlements in `src/places.js`
+(population and distance, in the shape of Walker's law) and converts it to SQM and Bortle. The fit was tuned
+against about twenty approximate UK sky-brightness figures, so expect to be within about one Bortle class.
+To improve it, add settlements to `places.js` or re-fit the constants at the top of `model.js`.
+
+The only network request is a postcode lookup to postcodes.io; everything else runs in the browser.
 
 ```sh
-pnpm --filter @rjmlaird/orbit-simulator dev      # Vite dev server
-pnpm --filter @rjmlaird/orbit-simulator preview  # build, then wrangler dev on :8804
+pnpm --filter @rjmlaird/light-pollution dev      # Vite dev server
+pnpm --filter @rjmlaird/light-pollution preview  # build, then wrangler dev on :8816
 ```

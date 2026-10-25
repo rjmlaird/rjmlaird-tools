@@ -4,8 +4,9 @@ Stable, bookmarkable production tools for **tools.rjmlaird.co.uk** — calculato
 
 ## Layout
 - `apps/<tool>` — one deployable per tool, always served at `tools.rjmlaird.co.uk/<tool>`
-  - Hono Workers: `orbital-calc`, `unit-converter`, `julian-date`, `physical-limits`, `hohmann-transfer`
-  - Vite static apps (assets-only Workers): `dopamine-menu`, `carbon-reduction-plan`
+  - Hono Workers (TypeScript): `orbital-calc`, `unit-converter`, `julian-date`, `hohmann-transfer`, `astro-calc`, `coordinate-converter`, `colour-contrast`
+  - Vite static apps (assets-only Workers): every other tool, for example `physical-limits`, `light-pollution`, `dopamine-menu` and `carbon-reduction-plan`
+  - The `tech` list for each tool in `apps/index/src/tools.ts` is checked against its `package.json` and sources by `tools.test.ts`
   - `index` serves `tools.rjmlaird.co.uk/` (the catalogue) and `/favicon.svg` for every tool
 - `packages/ui` — **brand layer**: `brand.css` (source of truth), `Layout`, brand bar/footer
 - `packages/utils` — shared maths/units; `packages/config/*` — tsconfig, ESLint, Prettier

@@ -1,5 +1,5 @@
-import { readdirSync } from "node:fs";
-import { basename, dirname } from "node:path";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { GROUPS, STATUS, TOOLS } from "./tools";
@@ -64,6 +64,29 @@ describe("tools registry", () => {
     for (const t of TOOLS) {
       expect(t.updated, `${t.id}: updated`).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(Number.isNaN(Date.parse(t.updated)), `${t.id}: updated`).toBe(false);
+    }
+  });
+
+  it("lists the tech each built app actually uses", () => {
+    // Derived from the app's package.json and source files, so a tool that changes stack
+    // fails here until its catalogue entry is updated. Planned tools have no code yet.
+    const stackOf = (id: string): string[] | undefined => {
+      const pkgPath = join(APPS_DIR, id, "package.json");
+      if (!existsSync(pkgPath)) return undefined;
+      const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as {
+        dependencies?: Record<string, string>;
+        devDependencies?: Record<string, string>;
+      };
+      const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+      if (deps.hono) return ["TypeScript", "Hono", "Cloudflare Workers"];
+      if (deps.react) return ["React", "Vite", "Cloudflare Workers"];
+      const src = join(APPS_DIR, id, "src");
+      const hasTs = existsSync(src) && readdirSync(src).some((f) => /\.tsx?$/.test(f));
+      return [hasTs ? "TypeScript" : "JavaScript", "Vite", "Cloudflare Workers"];
+    };
+    for (const t of TOOLS) {
+      const expected = stackOf(t.id);
+      if (expected) expect(t.tech, `${t.id}: tech`).toEqual(expected);
     }
   });
 });
