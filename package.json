@@ -12,7 +12,8 @@
     "gen": "pnpm --filter @rjmlaird/ui gen",
     "export:builds": "tsx scripts/export-builds.ts",
     "check:builds-export": "tsx scripts/export-builds.ts --check",
-    "test": "pnpm -r --if-present test"
+    "test": "pnpm -r --if-present test",
+    "deploy:all": "pnpm -r --if-present run deploy"
   },
   "prettier": "@rjmlaird/prettier-config",
   "devDependencies": {
