@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jupiter Moon Visualiser — tools.rjmlaird.co.uk</title>
+<meta name="description" content="Interactive edge-on visualiser of Jupiter's Galilean moons, using a Jupiter-centric ephemeris model for viewing geometry.">
+<style>
+:root{
+  --ink:#0B0F1A; --ink2:#0F1520; --card:#141B29; --lift:#1A2236;
+  --w:#EDEAE3; --mb:#9AA4B8; --m:#8A98B2;
+  --teal:#00C2A8; --amber:#F5A623; --violet:#A78BFA; --coral:#FF8080; --green:#4ADE80; --sky:#38BDF8;
+  --td:rgba(0,194,168,.13); --tb:rgba(0,194,168,.26);
+  --bd:rgba(255,255,255,.11); --bm:rgba(255,255,255,.2); --focus:#7FE6D4;
+  --font-display:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --radius:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);color:var(--w);font-family:var(--font-body);line-height:1.6;min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:2rem 1.25rem 3rem}
+h1{font-family:var(--font-display);font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.2;margin-bottom:.5rem}
+.lede{color:var(--mb);max-width:62ch;margin-bottom:1.5rem}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.25rem}
+label{display:block;font-family:var(--font-display);font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;color:var(--mb);margin-bottom:.4rem}
+input[type=datetime-local]{width:100%;background:var(--ink2);border:1px solid var(--bd);border-radius:var(--radius);color:var(--w);padding:.6rem .75rem;font-family:var(--font-body);font-size:1rem}
+input[type=checkbox]{accent-color:var(--teal);width:16px;height:16px}
+button{background:var(--td);border:1px solid var(--tb);border-radius:var(--radius);color:var(--teal);font-family:var(--font-display);font-weight:600;padding:.55rem 1rem;cursor:pointer;transition:background .2s}
+button:hover{background:var(--tb)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.controls{display:flex;gap:1rem;flex-wrap:wrap;align-items:end;margin-bottom:1rem}
+.controls>div{flex:1;min-width:220px}
+.toggle{display:flex;align-items:center;gap:.5rem;color:var(--w);font-family:var(--font-body);font-size:.9rem;text-transform:none;letter-spacing:0}
+canvas{width:100%;height:auto;display:block;background:var(--ink2);border:1px solid var(--bd);border-radius:var(--radius)}
+.readout{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:.75rem;font-size:.9rem;color:var(--mb)}
+.readout strong{color:var(--w);font-family:var(--font-display)}
+.note{font-size:.8rem;color:var(--m);margin-top:.75rem}
+footer{margin-top:2rem;font-size:.85rem;color:var(--m)}
+footer a{color:var(--teal);text-decoration:none}
+footer a:hover{text-decoration:underline}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Jupiter Moon Visualiser</h1>
+  <p class="lede">Edge-on view of Jupiter’s Galilean moons, with the viewing geometry computed from a Jupiter-centric ephemeris model.</p>
+
+  <section class="card">
+    <div class="controls">
+      <div>
+        <label for="datetime">Date and time (UTC)</label>
+        <input type="datetime-local" id="datetime">
+      </div>
+      <div style="flex:0 0 auto;display:flex;gap:.5rem">
+        <button id="now">Now</button>
+        <button id="play">Play</button>
+      </div>
+    </div>
+    <div class="controls">
+      <div>
+        <label class="toggle"><input type="checkbox" id="scope"> Telescope view (180° inverted)</label>
+      </div>
+    </div>
+    <canvas id="sky" width="880" height="360" role="img" aria-label="Edge-on diagram of Jupiter and its four Galilean moons"></canvas>
+    <div class="readout">
+      <span>Sub-Earth latitude: <strong id="lat">–</strong></span>
+      <span>View: <strong id="side">–</strong></span>
+    </div>
+    <p class="note">Viewing geometry (sub-Earth latitude and north/south orientation) is computed from simplified planetary orbital elements and Jupiter’s north-pole direction. Moon orbital phases use mean motion, so positions are approximate rather than a full Galilean-moon ephemeris.</p>
+  </section>
+
+  <footer>
+    Part of <a href="https://tools.rjmlaird.co.uk/">tools.rjmlaird.co.uk</a> · <a href="https://rjmlaird.co.uk/">rjmlaird.co.uk</a>
+  </footer>
+</main>
+
+<script>
+const cv=document.getElementById("sky"),ctx=cv.getContext("2d");
+const dt=document.getElementById("datetime");
+const scope=document.getElementById("scope");
+const latEl=document.getElementById("lat");
+const sideEl=document.getElementById("side");
+const D2R=Math.PI/180,R2D=180/Math.PI;
+function fmt(d){return d.toISOString().slice(0,16)}
+function setNow(){dt.value=fmt(new Date());draw()}
+
+// Low-precision ephemeris (Schlyter-style orbital elements)
+function elements(d){
+  return {
+    earth:{N:0,i:0,w:282.9404+4.70935e-5*d,a:1,e:0.016709-1.151e-9*d,M:356.0470+0.9856002585*d},
+    jupiter:{N:100.4542+2.72068e-5*d,i:1.3030-5.15e-7*d,w:14.3312+1.76676e-5*d,a:5.20867,e:0.048498+4.469e-9*d,M:19.8950+0.0830853001*d}
+  };
+}
+function helio(o){
+  const M=((o.M%360)+360)%360*D2R,e=o.e;
+  let E=M+e*Math.sin(M)*(1+e*Math.cos(M));
+  for(let k=0;k<5;k++){E=E-(E-e*Math.sin(E)-M)/(1-e*Math.cos(E));}
+  const xv=o.a*(Math.cos(E)-e),yv=o.a*Math.sqrt(1-e*e)*Math.sin(E);
+  const v=Math.atan2(yv,xv),r=Math.hypot(xv,yv);
+  const N=o.N*D2R,i=o.i*D2R,w=(o.w+v)*D2R;
+  return {
+    x:r*(Math.cos(N)*Math.cos(w)-Math.sin(N)*Math.sin(w)*Math.cos(i)),
+    y:r*(Math.sin(N)*Math.cos(w)+Math.cos(N)*Math.sin(w)*Math.cos(i)),
+    z:r*Math.sin(w)*Math.sin(i)
+  };
+}
+function subEarthLat(date){
+  const d=date.getTime()/86400000-10956;
+  const el=elements(d);
+  const E=helio(el.earth),J=helio(el.jupiter);
+  const vx=E.x-J.x,vy=E.y-J.y,vz=E.z-J.z;
+  const vn=Math.hypot(vx,vy,vz);
+  // Jupiter north pole (IAU J2000): RA 268.057°, Dec 64.496°
+  const ra=268.057*D2R,dec=64.496*D2R,eps=23.4393*D2R;
+  const px=Math.cos(dec)*Math.cos(ra),py=Math.cos(dec)*Math.sin(ra),pz=Math.sin(dec);
+  const pxe=px,pye=py*Math.cos(eps)+pz*Math.sin(eps),pze=-py*Math.sin(eps)+pz*Math.cos(eps);
+  const dot=(pxe*vx+pye*vy+pze*vz)/vn;
+  return Math.asin(dot)*R2D; // sub-Earth latitude, + = north side
+}
+const moons=[
+ {name:"Io",period:1.769138,color:"#F5A623",a:5.9,r:4,L0:0,rate:203.4889557902},
+ {name:"Europa",period:3.551181,color:"#00C2A8",a:9.4,r:4,L0:90,rate:101.3747235405},
+ {name:"Ganymede",period:7.154553,color:"#A78BFA",a:15.0,r:5,L0:180,rate:50.3176082077},
+ {name:"Callisto",period:16.689017,color:"#FF8080",a:26.3,r:5,L0:270,rate:21.5710710824}
+];
+const J2000=Date.UTC(2000,0,1,12,0,0);
+function draw(){
+  const d=new Date(dt.value+"Z");
+  const B=subEarthLat(d);
+  const W=cv.width,H=cv.height,cx=W/2,cy=H/2;
+  const jupR=10,scale=jupR;
+  const inv=scope.checked?-1:1;
+  const t=(d.getTime()-J2000)/86400000;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#0F1520";ctx.fillRect(0,0,W,H);
+  // Jupiter rotation axis
+  ctx.strokeStyle="rgba(255,255,255,.25)";ctx.lineWidth=1;
+  ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(cx,cy-140);ctx.lineTo(cx,cy+140);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle="#9AA4B8";
+  ctx.beginPath();ctx.arc(cx,cy-140,3,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy+140,3,0,Math.PI*2);ctx.fill();
+  // Jupiter
+  const g=ctx.createRadialGradient(cx-3,cy-3,2,cx,cy,jupR);
+  g.addColorStop(0,"#E8C39A");g.addColorStop(1,"#B5764A");
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,jupR,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;
+  for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(cx-jupR,cy+i*3);ctx.lineTo(cx+jupR,cy+i*3);ctx.stroke();}
+  // moons: projected onto tilted orbital plane
+  const Br=B*D2R;
+  moons.forEach(m=>{
+    const L=((m.L0+m.rate*t)%360)*D2R;
+    const x=cx+m.a*scale*Math.cos(L)*inv;
+    const y=cy+m.a*scale*Math.sin(L)*Math.sin(Br)*inv;
+    ctx.fillStyle=m.color;ctx.beginPath();ctx.arc(x,y,m.r,0,Math.PI*2);ctx.fill();
+  });
+  // compass
+  ctx.fillStyle="#9AA4B8";ctx.font="12px Space Grotesk,sans-serif";ctx.textAlign="center";
+  ctx.fillText(scope.checked?"W":"E",W-24,cy+4);
+  ctx.fillText(scope.checked?"E":"W",24,cy+4);
+  // scale bar
+  const barY=H-24,barX=24,barLen=5*scale;
+  ctx.strokeStyle="#9AA4B8";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(barX,barY);ctx.lineTo(barX+barLen,barY);ctx.stroke();
+  ctx.fillStyle="#9AA4B8";ctx.font="11px Inter,sans-serif";ctx.textAlign="left";
+  ctx.fillText("5 R_J",barX,barY-6);
+  // date label
+  ctx.fillStyle="#9AA4B8";ctx.font="12px Inter,sans-serif";ctx.textAlign="right";
+  ctx.fillText("UTC: "+dt.value.replace("T"," "),W-16,24);
+  // readouts
+  latEl.textContent=(B>=0?"+":"")+B.toFixed(2)+"°";
+  sideEl.textContent=B>0?"North side":(B<0?"South side":"Equator-on");
+}
+document.getElementById("now").addEventListener("click",setNow);
+let playing=false,raf;
+document.getElementById("play").addEventListener("click",e=>{
+  playing=!playing;e.target.textContent=playing?"Pause":"Play";
+  if(playing){(function step(){if(!playing)return;
+    const d=new Date(dt.value+"Z");d.setMinutes(d.getMinutes()+30);
+    dt.value=fmt(d);draw();raf=requestAnimationFrame(step);})();}
+  else cancelAnimationFrame(raf);
+});
+dt.addEventListener("input",draw);
+scope.addEventListener("change",draw);
+setNow();
+</script>
+</body>
+</html>

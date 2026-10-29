@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Velocity & Delta-v Calculator — tools.rjmlaird.co.uk</title>
+<meta name="description" content="Calculate escape velocity, rotational assist and required delta-v for planets and moons, with latitude and rotation effects.">
+<style>
+:root{
+  --ink:#0B0F1A; --ink2:#0F1520; --card:#141B29; --lift:#1A2236;
+  --w:#EDEAE3; --mb:#9AA4B8; --m:#8A98B2;
+  --teal:#00C2A8; --amber:#F5A623; --violet:#A78BFA; --coral:#FF8080; --green:#4ADE80; --sky:#38BDF8;
+  --td:rgba(0,194,168,.13); --tb:rgba(0,194,168,.26);
+  --bd:rgba(255,255,255,.11); --bm:rgba(255,255,255,.2); --focus:#7FE6D4;
+  --font-display:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --radius:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);color:var(--w);font-family:var(--font-body);line-height:1.6;min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:2rem 1.25rem 3rem}
+h1{font-family:var(--font-display);font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.2;margin-bottom:.5rem}
+.lede{color:var(--mb);max-width:62ch;margin-bottom:1.5rem}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.25rem}
+label{display:block;font-family:var(--font-display);font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;color:var(--mb);margin-bottom:.4rem}
+select,input[type=number]{width:100%;background:var(--ink2);border:1px solid var(--bd);border-radius:var(--radius);color:var(--w);padding:.6rem .75rem;font-family:var(--font-body);font-size:1rem}
+select:focus-visible,input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.row{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+.row>div{flex:1;min-width:180px}
+canvas{width:100%;height:auto;display:block;background:var(--ink2);border:1px solid var(--bd);border-radius:var(--radius);margin-bottom:1rem}
+.result{background:var(--lift);border:1px solid var(--bd);border-radius:var(--radius);padding:1rem;margin-top:.5rem}
+.result div{margin-bottom:.5rem;font-size:.95rem;color:var(--mb)}
+.result strong{color:var(--w);font-family:var(--font-display);font-size:1.1rem}
+.note{font-size:.8rem;color:var(--m);margin-top:.75rem}
+footer{margin-top:2rem;font-size:.85rem;color:var(--m)}
+footer a{color:var(--teal);text-decoration:none}
+footer a:hover{text-decoration:underline}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Escape Velocity & Delta-v Calculator</h1>
+  <p class="lede">Calculate escape velocity, rotational assist and the delta-v needed to reach escape trajectory, including the effect of launch latitude and planet rotation.</p>
+
+  <section class="card">
+    <canvas id="sky" width="880" height="320" role="img" aria-label="Illustration of the selected planet showing rotation and launch latitude"></canvas>
+    <div class="row">
+      <div>
+        <label for="body">Select body</label>
+        <select id="body">
+          <option value="mercury">Mercury</option>
+          <option value="venus">Venus</option>
+          <option value="earth" selected>Earth</option>
+          <option value="moon">Moon</option>
+          <option value="mars">Mars</option>
+          <option value="jupiter">Jupiter</option>
+          <option value="saturn">Saturn</option>
+          <option value="uranus">Uranus</option>
+          <option value="neptune">Neptune</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+      <div>
+        <label for="mass">Mass (kg)</label>
+        <input type="number" id="mass" step="any" value="5.972e24">
+      </div>
+      <div>
+        <label for="radius">Radius (km)</label>
+        <input type="number" id="radius" step="any" value="6371">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label for="rot">Rotation period (hours)</label>
+        <input type="number" id="rot" step="any" value="23.934">
+      </div>
+      <div>
+        <label for="lat">Launch latitude (degrees)</label>
+        <input type="number" id="lat" step="any" value="28.5">
+      </div>
+      <div>
+        <label for="incl">Launch inclination (degrees, eastward)</label>
+        <input type="number" id="incl" step="any" value="28.5">
+      </div>
+    </div>
+    <div class="result">
+      <div>Escape velocity (no rotation): <strong id="vesc">–</strong></div>
+      <div>Rotational speed at latitude: <strong id="vrot">–</strong></div>
+      <div>Effective delta-v to escape (eastward): <strong id="dv">–</strong></div>
+      <div>Formula: <strong>Δv ≈ v_esc − v_rot × cos(azimuth)</strong></div>
+    </div>
+    <p class="note">Escape velocity ignores atmosphere and other bodies. Rotational assist is largest at the equator and for an eastward launch; it is zero for a due-north or due-south launch. This is a simplified model: real launch vehicles also need gravity and drag losses.</p>
+  </section>
+
+  <footer>
+    Part of <a href="https://tools.rjmlaird.co.uk/">tools.rjmlaird.co.uk</a> · <a href="https://rjmlaird.co.uk/">rjmlaird.co.uk</a>
+  </footer>
+</main>
+
+<script>
+const cv=document.getElementById("sky"),ctx=cv.getContext("2d");
+const body=document.getElementById("body"),mass=document.getElementById("mass"),radius=document.getElementById("radius");
+const rot=document.getElementById("rot"),lat=document.getElementById("lat"),incl=document.getElementById("incl");
+const vescEl=document.getElementById("vesc"),vrotEl=document.getElementById("vrot"),dvEl=document.getElementById("dv");
+const G=6.674e-11;
+const data={
+ mercury:{m:3.301e23,r:2439.7,rot:1407.6,color:"#B5764A"},
+ venus:{m:4.867e24,r:6051.8,rot:-5832.5,color:"#E8C39A"},
+ earth:{m:5.972e24,r:6371,rot:23.934,color:"#4ADE80"},
+ moon:{m:7.342e22,r:1737.4,rot:655.7,color:"#9AA4B8"},
+ mars:{m:6.417e23,r:3389.5,rot:24.623,color:"#FF8080"},
+ jupiter:{m:1.898e27,r:69911,rot:9.925,color:"#E8C39A"},
+ saturn:{m:5.683e26,r:58232,rot:10.656,color:"#E8D9A8"},
+ uranus:{m:8.681e25,r:25362,rot:-17.24,color:"#38BDF8"},
+ neptune:{m:1.024e26,r:24622,rot:16.11,color:"#A78BFA"}
+};
+function draw(key,latitude){
+  const W=cv.width,H=cv.height,cx=W/2,cy=H/2;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#0F1520";ctx.fillRect(0,0,W,H);
+  const colors={mercury:"#B5764A",venus:"#E8C39A",earth:"#4ADE80",moon:"#9AA4B8",mars:"#FF8080",jupiter:"#E8C39A",saturn:"#E8D9A8",uranus:"#38BDF8",neptune:"#A78BFA",custom:"#00C2A8"};
+  const c=colors[key]||"#00C2A8";
+  const R=90;
+  const g=ctx.createRadialGradient(cx-R/3,cy-R/3,5,cx,cy,R);
+  g.addColorStop(0,"#FFF");g.addColorStop(1,c);
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle="rgba(255,255,255,.25)";ctx.lineWidth=1;
+  ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(cx,cy-R-30);ctx.lineTo(cx,cy+R+30);ctx.stroke();
+  ctx.setLineDash([]);
+  const latRad=latitude*Math.PI/180;
+  const ly=cy-R*Math.sin(latRad);
+  const lx=R*Math.cos(latRad);
+  ctx.strokeStyle="rgba(0,194,168,.7)";ctx.lineWidth=2;
+  ctx.beginPath();ctx.ellipse(cx,ly,lx,8,0,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle="#00C2A8";ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(cx+lx*0.7,ly);ctx.lineTo(cx+lx*0.7+50,ly);ctx.stroke();
+  ctx.fillStyle="#00C2A8";ctx.font="12px Inter,sans-serif";ctx.textAlign="left";
+  ctx.fillText("Eastward launch",cx+lx*0.7+55,ly+4);
+  ctx.fillStyle="#9AA4B8";ctx.font="12px Inter,sans-serif";ctx.textAlign="center";
+  ctx.fillText(key.charAt(0).toUpperCase()+key.slice(1),cx,cy+R+28);
+}
+function calc(){
+  const m=parseFloat(mass.value),r=parseFloat(radius.value);
+  const T=parseFloat(rot.value),latitude=parseFloat(lat.value),i=parseFloat(incl.value);
+  if([m,r,T,latitude,i].some(isNaN)||r<=0||m<=0||T===0){vescEl.textContent="–";vrotEl.textContent="–";dvEl.textContent="–";return;}
+  const vesc=Math.sqrt(2*G*m/(r*1000))/1000;
+  const omega=2*Math.PI/(T*3600);
+  const latRad=latitude*Math.PI/180;
+  const vrot=omega*(r*1000)*Math.cos(latRad)/1000;
+  const inclRad=i*Math.PI/180;
+  const assist=vrot*Math.cos(inclRad);
+  const dv=vesc-assist;
+  vescEl.textContent=vesc.toFixed(2)+" km/s";
+  vrotEl.textContent=vrot.toFixed(3)+" km/s";
+  dvEl.textContent=(dv>=0?dv.toFixed(2):"0.00 (rotation exceeds escape velocity)")+" km/s";
+  draw(body.value,latitude);
+}
+body.addEventListener("change",()=>{
+  const k=body.value;
+  if(k!=="custom"){
+    mass.value=data[k].m;
+    radius.value=data[k].r;
+    rot.value=data[k].rot;
+  }
+  calc();
+});
+[mass,radius,rot,lat,incl].forEach(el=>el.addEventListener("input",calc));
+calc();
+</script>
+</body>
+</html>

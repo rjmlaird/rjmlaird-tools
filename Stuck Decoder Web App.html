@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stuck Decoder – Gentle, local-first focus for ADHD</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontInter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            warm: {
+              50: '#fbf9f5',
+              100: '#f6f1e8',
+              200: '#ece1d0',
+              300: '#decca3',
+              700: '#544738',
+              800: '#382f25',
+              900: '#1c1917',
+            },
+            terracotta: {
+              50: '#fff7ed',
+              100: '#ffedd5',
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom accessibility & reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* Custom Focus Ring for High Accessibility */
+    *:focus-visible {
+      outline: 3px solid #ea580c !important;
+      outline-offset: 3px !important;
+    }
+
+    /* SVG Progress Ring Transitions */
+    .progress-ring-circle {
+      transition: stroke-dashoffset 0.35s linear;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+  </style>
+</head>
+<body class="h-full bg-warm-50 dark:bg-[#121214] text-warm-900 dark:text-gray-100 font-sans transition-colors duration-200 antialiased selection:bg-terracotta-100 dark:selection:bg-terracotta-700/30">
+
+  <!-- Live Region for Screen Reader Announcements -->
+  <div id="sr-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Root App Shell -->
+  <div class="min-h-full flex flex-col justify-between max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+
+    <!-- Header Navigation -->
+    <header class="flex items-center justify-between pb-6 border-b border-warm-200/60 dark:border-gray-800">
+      <button id="logo-btn" class="flex items-center space-x-3 text-left group rounded-xl p-1 -ml-1 hover:bg-warm-100 dark:hover:bg-gray-800/50 transition" aria-label="Stuck Decoder Home">
+        <div class="w-10 h-10 rounded-xl bg-terracotta-600 text-white flex items-center justify-center font-bold text-xl shadow-sm group-hover:scale-105 transition-transform">
+          <i data-lucide="compass" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <span class="text-lg font-bold tracking-tight block leading-tight">Stuck Decoder</span>
+          <span class="text-xs text-warm-700 dark:text-gray-400 font-normal">Radically minimal task unblocker</span>
+        </div>
+      </button>
+
+      <div class="flex items-center space-x-2">
+        <!-- Theme Toggle -->
+        <button id="theme-toggle" class="p-2.5 rounded-xl text-warm-700 dark:text-gray-300 hover:bg-warm-100 dark:hover:bg-gray-800 transition" aria-label="Toggle Light/Dark Theme">
+          <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+          <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+        </button>
+
+        <!-- Saved Tasks Drawer Trigger -->
+        <button id="saved-tasks-btn" class="relative p-2.5 rounded-xl text-warm-700 dark:text-gray-300 hover:bg-warm-100 dark:hover:bg-gray-800 transition flex items-center space-x-1.5" aria-label="View Saved Tasks">
+          <i data-lucide="bookmark" class="w-5 h-5"></i>
+          <span id="saved-count-badge" class="hidden text-xs bg-terracotta-600 text-white font-semibold px-2 py-0.5 rounded-full">0</span>
+        </button>
+
+        <!-- Developer Docs & Architecture Drawer -->
+        <button id="docs-btn" class="p-2.5 rounded-xl text-warm-700 dark:text-gray-300 hover:bg-warm-100 dark:hover:bg-gray-800 transition" aria-label="Developer Docs & Rulebook">
+          <i data-lucide="code" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Dynamic Content Container -->
+    <main id="app-viewport" class="my-auto py-8 transition-opacity duration-150">
+      <!-- Dynamic Views Rendered Here via JS State Machine -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="pt-6 border-t border-warm-200/60 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-center text-xs text-warm-700 dark:text-gray-400 gap-3">
+      <p>100% Local-first. No tracking, accounts, or dark patterns.</p>
+      <p class="italic">"You do not need to catch up."</p>
+    </footer>
+  </div>
+
+  <!-- MODAL / SLIDE-OVER: SAVED TASKS -->
+  <div id="saved-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex justify-end" aria-hidden="true" role="dialog" aria-labelledby="saved-modal-title">
+    <div class="w-full max-w-md bg-warm-50 dark:bg-gray-900 h-full p-6 shadow-2xl flex flex-col justify-between overflow-y-auto">
+      <div>
+        <div class="flex justify-between items-center pb-4 border-b border-warm-200 dark:border-gray-800">
+          <h2 id="saved-modal-title" class="text-xl font-bold flex items-center gap-2">
+            <i data-lucide="bookmark" class="w-5 h-5 text-terracotta-600"></i> Saved Tasks
+          </h2>
+          <button id="close-saved-btn" class="p-2 rounded-lg hover:bg-warm-100 dark:hover:bg-gray-800" aria-label="Close Saved Tasks Drawer">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <div id="saved-list-container" class="mt-6 space-y-4">
+          <!-- Saved items rendered here -->
+        </div>
+      </div>
+      <div class="pt-4 border-t border-warm-200 dark:border-gray-800 text-center text-xs text-warm-700 dark:text-gray-400">
+        Saved in your browser's local storage.
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL / SLIDE-OVER: ARCHITECTURE & README -->
+  <div id="docs-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex justify-end" aria-hidden="true" role="dialog" aria-labelledby="docs-modal-title">
+    <div class="w-full max-w-2xl bg-warm-50 dark:bg-gray-900 h-full p-6 sm:p-8 shadow-2xl flex flex-col justify-between overflow-y-auto">
+      <div>
+        <div class="flex justify-between items-center pb-4 border-b border-warm-200 dark:border-gray-800">
+          <h2 id="docs-modal-title" class="text-xl font-bold flex items-center gap-2">
+            <i data-lucide="book-open" class="w-5 h-5 text-terracotta-600"></i> Architecture & README
+          </h2>
+          <button id="close-docs-btn" class="p-2 rounded-lg hover:bg-warm-100 dark:hover:bg-gray-800" aria-label="Close Developer Specs Drawer">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div class="mt-6 space-y-6 text-sm text-warm-900 dark:text-gray-200">
+          <!-- Architecture Tree -->
+          <section>
+            <h3 class="font-bold text-base text-terracotta-600 dark:text-terracotta-500 mb-2">Project Structure (Astro / TS Simulation)</h3>
+            <pre class="bg-warm-100 dark:bg-gray-800 p-3 rounded-xl font-mono text-xs overflow-x-auto">
+stuck-decoder/
+├── src/
+│   ├── components/
+│   │   ├── BrainDump.astro
+│   │   ├── BarrierPicker.astro
+│   │   ├── InterventionCard.astro
+│   │   ├── FocusTimer.astro
+│   │   └── ResumeCard.astro
+│   ├── lib/
+│   │   ├── storage.ts      # localStorage wrapper & draft resilience
+│   │   ├── rules.ts        # 35+ micro-interventions JSON rulebook
+│   │   ├── heuristics.ts   # Keyword taxonomy matcher
+│   │   └── actions.ts     # State machine controller
+│   └── pages/
+│       └── index.astro     # Main viewport & entry point
+└── public/
+    └── rulebook.json       # Exportable offline rulebook</pre>
+          </section>
+
+          <!-- Module Responsibilities -->
+          <section class="space-y-2">
+            <h3 class="font-bold text-base text-terracotta-600 dark:text-terracotta-500">Modular Logic breakdown</h3>
+            <ul class="list-disc pl-5 space-y-1 text-xs">
+              <li><strong class="font-semibold">lib/storage.ts:</strong> Manages current task session, draft input auto-saving, and completed/saved list persistence.</li>
+              <li><strong class="font-semibold">lib/heuristics.ts:</strong> Deterministic keyword taxonomy parser for 8 domain categories (Email, Admin, Cleaning, Writing, Coding, Research, Call, General).</li>
+              <li><strong class="font-semibold">lib/rules.ts:</strong> Local rulebook holding 35+ physical, sub-10-minute interventions mapped by barrier and domain.</li>
+              <li><strong class="font-semibold">lib/actions.ts:</strong> Single-page reactive UI router & Web Audio synth for ambient chime feedback.</li>
+            </ul>
+          </section>
+
+          <!-- Rulebook JSON Preview -->
+          <section>
+            <h3 class="font-bold text-base text-terracotta-600 dark:text-terracotta-500 mb-2">Rulebook JSON Schema Sample</h3>
+            <pre class="bg-warm-100 dark:bg-gray-800 p-3 rounded-xl font-mono text-xs overflow-x-auto max-h-40">
+{
+  "barrier": "too_big",
+  "domain": "admin",
+  "interventions": [
+    "Open the tax/admin website and locate last year’s reference number or account ID.",
+    "Place the required paper document or card flat on your desk next to your keyboard."
+  ]
+}</pre>
+          </section>
+
+          <!-- Deferred V2 Features -->
+          <section class="bg-warm-100 dark:bg-gray-800/60 p-4 rounded-xl border border-warm-200 dark:border-gray-800">
+            <h3 class="font-bold text-sm text-warm-900 dark:text-gray-100 mb-1 flex items-center gap-1.5">
+              <i data-lucide="shield-alert" class="w-4 h-4 text-terracotta-600"></i> Deferred V2 Roadmap (Intentionally Excluded from MVP)
+            </h3>
+            <p class="text-xs text-warm-700 dark:text-gray-400 mb-2">To preserve speed, privacy, and zero cognitive friction, the following features are deferred:</p>
+            <ul class="list-disc pl-5 text-xs text-warm-700 dark:text-gray-400 space-y-1">
+              <li>AI LLM assistance or cloud-based text generation</li>
+              <li>Voice dictation capture & audio processing</li>
+              <li>Energy/chronotype-aware contextual scheduling</li>
+              <li>Calendar / Google Workspace integrations</li>
+              <li>Live peer body doubling / social rooms</li>
+              <li>Data sync, account auth & cloud export</li>
+            </ul>
+          </section>
+        </div>
+      </div>
+
+      <div class="pt-6 border-t border-warm-200 dark:border-gray-800 mt-6 text-center">
+        <button id="dismiss-docs-btn" class="w-full py-3 bg-warm-900 dark:bg-gray-100 text-white dark:text-gray-900 font-medium rounded-xl hover:opacity-90 transition">
+          Close Architecture Specs
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION LOGIC & IMPLEMENTATION -->
+  <script>
+    /**
+     * STUCK DECODER - Production Engine
+     * Architecture: Local-First Vanilla JS State Machine with High Accessibility
+     */
+
+    // --- 1. LOCAL RULEBOOK DATA ENGINE (35+ Micro-Interventions) ---
+    const RULEBOOK = {
+      too_vague: {
+        email: ["Write the draft subject line and leave the body completely blank.", "Put recipient address in the To field and save as draft."],
+        admin: ["Locate the exact name of the form or website and write it on a sticky note.", "Find the single 10-digit account or tax reference number."],
+        cleaning: ["Pick up exactly three physical objects off the floor and set them on a table.", "Walk to the room and touch the item that needs moving."],
+        writing: ["Write the sentence: 'This document is about [1 word]'.", "Write the title as: [Action Verb] + [Target Audience]."],
+        coding: ["Write a single-line code comment explaining what this file should do.", "Create an empty file named after the main function."],
+        research: ["Write down the single word you will search for in Google.", "Open one browser tab and go directly to the search bar."],
+        call: ["Write down the person's phone number on a piece of paper.", "Find the office opening hours and write them down."],
+        general: ["Write the task as: [Verb] + [Object] + [Location].", "Name the first physical thing you could see yourself doing.", "Choose the smallest visible output you could produce in five minutes."]
+      },
+      too_big: {
+        email: ["Open draft email window, type one-word greeting, then minimize it.", "Copy the sender's question into the email body as a quote."],
+        admin: ["Open the relevant website and log in. Do not click anything else.", "Place the single paper document you need next to your keyboard."],
+        cleaning: ["Clear only a 1-foot by 1-foot square space on your desk or counter.", "Fill the sink with warm soapy water and submerge one dish."],
+        writing: ["Open the document and write one deliberately bad first sentence.", "Set a 5-minute timer and write three bullet points."],
+        coding: ["Reproduce the issue with a single `console.log` or print statement.", "Locate the exact line number where the error occurs."],
+        research: ["Open the relevant document and read only the first paragraph.", "Bookmark the primary resource link and close all other tabs."],
+        call: ["Draft a 5-word script of what you will say when they answer.", "Type the phone digits into your dialer without pressing call."],
+        general: ["Open the file or document and find the first required piece of info.", "Write down the very first physical step, then do only that.", "Set a five-minute timer and complete only the first visible piece."]
+      },
+      boring: {
+        email: ["Put on music with a fast tempo and write the email in bullet points.", "Type the email in ALL CAPS first, then fix the case."],
+        admin: ["Pair this form with a cup of your favorite tea or coffee before starting.", "Do this form while standing up or pacing with a notepad."],
+        cleaning: ["Put on a 3-minute song and clean only until the song ends.", "Set a timer and see how many items you can put away in 180 seconds."],
+        writing: ["Change the document font to something fun (like comic sans) while writing.", "Dictate two sentences out loud or write the worst possible draft on purpose."],
+        coding: ["Refactor one variable name to make it amusingly descriptive.", "Set a 5-minute timer to fix a single warning or clean one function."],
+        research: ["Read only the summary or bullet points using speed-reader mode.", "Set a 5-minute timer and grab 2 key facts."],
+        call: ["Hold a stress ball or fidget item in your free hand while making the call.", "Stand up near a window while making the call."],
+        general: ["Set a five-minute timer and do the least unpleasant part.", "Pair the task with music, a cold drink, or a body-doubling video.", "Do the task badly on purpose for five minutes."]
+      },
+      scary: {
+        email: ["Type your reply in a plain text editor so you can't accidentally send it.", "Write the email assuming the recipient is already on your side."],
+        admin: ["Open the portal without committing to submitting anything today.", "Write down the worst realistic outcome, then one action that reduces risk."],
+        cleaning: ["Put on gloves or protective equipment to create a comfortable barrier.", "Open a window or door to get fresh air into the space."],
+        writing: ["Write 'DRAFT - NOT FOR PUBLISHING' at the top of the page.", "Write the hardest section as if explaining it to a friend."],
+        coding: ["Create a new git branch called 'experimental-trash' so nothing breaks.", "Write a failing test case first before touching real logic."],
+        research: ["Look at only the first option without comparing prices or reviews yet.", "Write down your single biggest doubt as a clear question."],
+        call: ["Write a script for leaving a voicemail in case they don't pick up.", "Remind yourself you can politely end the call at any moment."],
+        general: ["Open the tool or document without committing to completing it.", "Write the first sentence, draft email subject, or first question.", "Write down the worst realistic outcome, then one small action that reduces uncertainty."]
+      },
+      no_energy: {
+        email: ["Send a 1-sentence reply: 'Received, will review by [Day].'", "Archive or move 3 unrelated emails to clean your sightline."],
+        admin: ["Take a photo of the paper document with your phone so it's ready.", "Fill out only your name and email on the form."],
+        cleaning: ["Throw away exactly two pieces of obvious trash.", "Put one dirty glass into the sink or dishwasher."],
+        writing: ["Type just 5 words summarizing what you want to say.", "Fix two typos or formatting details in an existing draft."],
+        coding: ["Add or update a single docstring / documentation comment.", "Format the file indentations or clear one unused import."],
+        research: ["Click only the first search result link and read one sentence.", "Save a web page as a PDF on your desktop for later."],
+        call: ["Save the contact number into your phone contacts list.", "Send a brief text or email asking for their availability instead."],
+        general: ["Choose a two-minute version of this task.", "Do the easiest visible piece: open the file, fill a glass of water, or write one line.", "Set a two-minute timer and allow yourself to stop when it ends."]
+      },
+      dont_know_how: {
+        email: ["Search your inbox for how you phrased a similar email in the past.", "Find a 2-line template online and paste it into the body."],
+        admin: ["Search Google for: '[Form name] example completed pdf'.", "Find the 'Contact Help' phone number or FAQ link on the page."],
+        cleaning: ["Look up a 30-second YouTube shorts video on how to clean this specific item.", "Ask an AI or friend: 'What's the first step to clean [item]?'"],
+        writing: ["Find one article or newsletter you like and mirror its layout.", "Write 3 questions that this document needs to answer."],
+        coding: ["Search StackOverflow or docs for the exact error message string.", "Find one existing working example in the codebase."],
+        research: ["Find one authoritative article or Wikipedia entry and read the summary.", "Ask a colleague or forum for their #1 recommended resource."],
+        call: ["Look up the standard script or outline for this type of appointment.", "Check if an online booking system exists so you don't have to call."],
+        general: ["Write one specific question you need answered.", "Find one example of someone else doing this task.", "Open the relevant tool or document and look only for the first required field or step."]
+      },
+      too_many_options: {
+        email: ["Pick the first recipient on your list and ignore the rest for now.", "Choose between sending a bulleted list or a 2-sentence paragraph."],
+        admin: ["Pick the first filing option or standard payment method.", "Flip a coin between option A and option B to reveal your preference."],
+        cleaning: ["Clean the surface closest to your left hand right now.", "Put away only the clothing items, ignoring everything else."],
+        writing: ["Choose between writing the intro or writing the conclusion first.", "Pick the simplest outline format: 3 bullet points."],
+        coding: ["Pick the simplest library or approach even if it's not optimal.", "Comment out option B and implement only option A for 5 minutes."],
+        research: ["Choose between the top 2 search results and close all other tabs.", "Pick the option with the earliest available date/time."],
+        call: ["Pick the earliest available time slot on the calendar list.", "Choose the first service provider listed with high ratings."],
+        general: ["Choose between exactly two options.", "Pick the option you would regret not doing least.", "Set a two-minute timer and choose the first reasonable option."]
+      }
+    };
+
+    // --- 2. HEURISTICS ENGINE ---
+    function detectDomain(input) {
+      const text = input.toLowerCase();
+      if (/(email|message|reply|send|inbox|slack|text|draft)/.test(text)) return 'email';
+      if (/(tax|hmrc|form|invoice|admin|gov|bill|passport|renew|file|document|pdf)/.test(text)) return 'admin';
+      if (/(clean|tidy|washing|dishes|laundry|kitchen|desk|room|trash|organize)/.test(text)) return 'cleaning';
+      if (/(write|draft|newsletter|blog|report|essay|article|intro|paragraph)/.test(text)) return 'writing';
+      if (/(code|debug|website|bug|git|app|script|function|build|api)/.test(text)) return 'coding';
+      if (/(research|book|flight|hotel|planning|find|search|compare)/.test(text)) return 'research';
+      if (/(call|appointment|phone|doctor|dentist|schedule|ring)/.test(text)) return 'call';
+      return 'general';
+    }
+
+    // --- 3. LOCAL STORAGE ENGINE ---
+    const STORAGE_KEYS = {
+      DRAFT: 'stuck_decoder_draft_v1',
+      CURRENT_STATE: 'stuck_decoder_current_session_v1',
+      SAVED_TASKS: 'stuck_decoder_saved_tasks_v1',
+      THEME: 'stuck_decoder_theme_v1'
+    };
+
+    const Storage = {
+      getDraft: () => localStorage.getItem(STORAGE_KEYS.DRAFT) || '',
+      setDraft: (val) => localStorage.setItem(STORAGE_KEYS.DRAFT, val),
+      clearDraft: () => localStorage.removeItem(STORAGE_KEYS.DRAFT),
+      
+      getCurrentSession: () => {
+        try {
+          return JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_STATE));
+        } catch(e) { return null; }
+      },
+      setCurrentSession: (data) => localStorage.setItem(STORAGE_KEYS.CURRENT_STATE, JSON.stringify(data)),
+      clearCurrentSession: () => localStorage.removeItem(STORAGE_KEYS.CURRENT_STATE),
+
+      getSavedTasks: () => {
+        try {
+          return JSON.parse(localStorage.getItem(STORAGE_KEYS.SAVED_TASKS)) || [];
+        } catch(e) { return []; }
+      },
+      saveTask: (task) => {
+        const tasks = Storage.getSavedTasks();
+        tasks.unshift(task);
+        localStorage.setItem(STORAGE_KEYS.SAVED_TASKS, JSON.stringify(tasks));
+      },
+      deleteTask: (id) => {
+        const tasks = Storage.getSavedTasks().filter(t => t.id !== id);
+        localStorage.setItem(STORAGE_KEYS.SAVED_TASKS, JSON.stringify(tasks));
+      }
+    };
+
+    // --- 4. WEB AUDIO SYNTHESIZER ---
+    function playGentleChime() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        
+        const playTone = (freq, start, duration) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+          
+          gain.gain.setValueAtTime(0.01, ctx.currentTime + start);
+          gain.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + start + 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + start + duration);
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + start);
+          osc.stop(ctx.currentTime + start + duration);
+        };
+
+        // Gentle major chord progression (E major pentatonic)
+        playTone(329.63, 0.0, 1.2); // E4
+        playTone(415.30, 0.15, 1.2); // G#4
+        playTone(493.88, 0.30, 1.5); // B4
+        playTone(659.25, 0.45, 2.0); // E5
+      } catch(e) {
+        // Audio forbidden without interaction or unsupported
+      }
+    }
+
+    // --- 5. APP STATE MACHINE ---
+    const State = {
+      view: 'BRAIN_DUMP', // WELCOME_BACK | BRAIN_DUMP | BARRIER_PICKER | INTERVENTION | TIMER | SAVE_NOTE
+      raw_input: '',
+      barrier: null,
+      domain: 'general',
+      intervention: '',
+      intervention_index: 0,
+      timer_seconds: 300,
+      timer_initial: 300,
+      timer_running: false,
+      timer_interval: null,
+      resume_note: ''
+    };
+
+    function announceToSR(message) {
+      const el = document.getElementById('sr-announcer');
+      if (el) el.textContent = message;
+    }
+
+    // --- 6. RENDERERS & VIEWS ---
+
+    function render() {
+      const viewport = document.getElementById('app-viewport');
+      viewport.style.opacity = '0.4';
+
+      setTimeout(() => {
+        switch(State.view) {
+          case 'WELCOME_BACK':
+            viewport.innerHTML = ViewWelcomeBack();
+            bindWelcomeBackEvents();
+            break;
+          case 'BRAIN_DUMP':
+            viewport.innerHTML = ViewBrainDump();
+            bindBrainDumpEvents();
+            break;
+          case 'BARRIER_PICKER':
+            viewport.innerHTML = ViewBarrierPicker();
+            bindBarrierPickerEvents();
+            break;
+          case 'INTERVENTION':
+            viewport.innerHTML = ViewInterventionCard();
+            bindInterventionEvents();
+            break;
+          case 'TIMER':
+            viewport.innerHTML = ViewTimer();
+            bindTimerEvents();
+            break;
+          case 'SAVE_NOTE':
+            viewport.innerHTML = ViewSaveNote();
+            bindSaveNoteEvents();
+            break;
+        }
+        lucide.createIcons();
+        viewport.style.opacity = '1';
+        updateSavedCountBadge();
+      }, 70);
+    }
+
+    // --- VIEW 0: WELCOME BACK (Resume Prompt) ---
+    function ViewWelcomeBack() {
+      const session = Storage.getCurrentSession();
+      return `
+        <div class="max-w-xl mx-auto space-y-8 text-center animate-fade-in">
+          <div class="space-y-3">
+            <span class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-terracotta-100 text-terracotta-700 dark:bg-terracotta-700/30 dark:text-terracotta-500 inline-block">
+              Welcome back
+            </span>
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">You do not need to catch up.</h1>
+            <p class="text-warm-700 dark:text-gray-400 text-base">You left off working on: <strong class="text-warm-900 dark:text-gray-100">"${escapeHTML(session.raw_input)}"</strong></p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800/80 p-6 rounded-2xl border border-warm-200 dark:border-gray-800 text-left shadow-sm space-y-3">
+            <div class="text-xs uppercase tracking-wider font-semibold text-warm-700 dark:text-gray-400">Chosen Micro-Step</div>
+            <p class="text-lg font-medium text-warm-900 dark:text-gray-100">${escapeHTML(session.intervention)}</p>
+            ${session.resume_note ? `
+              <div class="pt-3 border-t border-warm-100 dark:border-gray-700 text-sm text-warm-700 dark:text-gray-400 italic">
+                Note: "${escapeHTML(session.resume_note)}"
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button id="resume-last-btn" class="flex-1 py-4 px-6 bg-terracotta-600 hover:bg-terracotta-700 text-white font-semibold rounded-2xl shadow-md transition flex items-center justify-center gap-2">
+              <i data-lucide="play" class="w-5 h-5"></i> Continue last thing
+            </button>
+            <button id="start-new-btn" class="flex-1 py-4 px-6 bg-warm-200/80 dark:bg-gray-800 hover:bg-warm-200 text-warm-900 dark:text-gray-200 font-semibold rounded-2xl transition">
+              Start something new
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function bindWelcomeBackEvents() {
+      document.getElementById('resume-last-btn')?.addEventListener('click', () => {
+        const session = Storage.getCurrentSession();
+        State.raw_input = session.raw_input;
+        State.barrier = session.barrier;
+        State.intervention = session.intervention;
+        State.resume_note = session.resume_note || '';
+        State.view = 'TIMER';
+        render();
+        announceToSR("Resuming timer for task");
+      });
+
+      document.getElementById('start-new-btn')?.addEventListener('click', () => {
+        Storage.clearCurrentSession();
+        State.view = 'BRAIN_DUMP';
+        render();
+      });
+    }
+
+    // --- VIEW 1: BRAIN DUMP ---
+    function ViewBrainDump() {
+      const draft = Storage.getDraft() || State.raw_input;
+      return `
+        <div class="max-w-xl mx-auto space-y-6">
+          <div class="space-y-2">
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-warm-900 dark:text-gray-100">What are you avoiding?</h1>
+            <p class="text-warm-700 dark:text-gray-400 text-sm">Type or paste anything. Tax return, clean kitchen, email Sam, write essay...</p>
+          </div>
+
+          <div class="space-y-4">
+            <div class="relative">
+              <textarea id="brain-dump-input" rows="4" 
+                class="w-full p-4 sm:p-5 rounded-2xl bg-white dark:bg-gray-800 border-2 border-warm-200 dark:border-gray-700 text-lg font-medium text-warm-900 dark:text-gray-100 placeholder-warm-700/50 dark:placeholder-gray-500 focus:border-terracotta-600 focus:ring-0 transition shadow-sm resize-none"
+                placeholder="e.g., reply to tax agency email about invoice..."
+                aria-label="What are you avoiding?">${escapeHTML(draft)}</textarea>
+            </div>
+
+            <button id="brain-dump-submit" ${!draft.trim() ? 'disabled' : ''} 
+              class="w-full py-4 px-6 bg-terracotta-600 disabled:opacity-40 hover:bg-terracotta-700 text-white text-lg font-semibold rounded-2xl shadow-md transition flex items-center justify-center gap-2">
+              Next: What's making this hard? <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function bindBrainDumpEvents() {
+      const textarea = document.getElementById('brain-dump-input');
+      const submitBtn = document.getElementById('brain-dump-submit');
+
+      textarea?.focus();
+
+      textarea?.addEventListener('input', (e) => {
+        const val = e.target.value;
+        State.raw_input = val;
+        Storage.setDraft(val);
+        if (submitBtn) {
+          submitBtn.disabled = !val.trim();
+        }
+      });
+
+      textarea?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          if (textarea.value.trim()) {
+            advanceToBarrierPicker();
+          }
+        }
+      });
+
+      submitBtn?.addEventListener('click', advanceToBarrierPicker);
+    }
+
+    function advanceToBarrierPicker() {
+      State.domain = detectDomain(State.raw_input);
+      State.view = 'BARRIER_PICKER';
+      render();
+      announceToSR("Selected task. Now choose what is making this hard.");
+    }
+
+    // --- VIEW 2: BARRIER PICKER ---
+    function ViewBarrierPicker() {
+      const barriers = [
+        { id: 'too_vague', label: 'Too vague', icon: 'help-circle', desc: 'Not sure where to start' },
+        { id: 'too_big', label: 'Too big', icon: 'layers', desc: 'Feels overwhelming in size' },
+        { id: 'boring', label: 'Boring', icon: 'zap-off', desc: 'Zero interest or motivation' },
+        { id: 'scary', label: 'Scary', icon: 'alert-triangle', desc: 'Fear of failure or response' },
+        { id: 'no_energy', label: 'No energy', icon: 'battery-low', desc: 'Physically or mentally drained' },
+        { id: 'dont_know_how', label: 'Don\'t know how', icon: 'book-open', desc: 'Missing information or skill' },
+        { id: 'too_many_options', label: 'Too many options', icon: 'split', desc: 'Decision paralysis' }
+      ];
+
+      return `
+        <div class="max-w-2xl mx-auto space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-xs uppercase tracking-wider font-semibold text-terracotta-600 dark:text-terracotta-500">Task: "${escapeHTML(State.raw_input)}"</span>
+              <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-warm-900 dark:text-gray-100 mt-0.5">What's making this hard?</h1>
+            </div>
+            <button id="back-to-dump" class="text-xs text-warm-700 dark:text-gray-400 hover:text-warm-900 dark:hover:text-gray-100 underline p-2">Edit task</button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label="Select your barrier">
+            ${barriers.map(b => `
+              <button data-barrier="${b.id}" class="barrier-option p-4 rounded-2xl bg-white dark:bg-gray-800 border-2 border-warm-200 dark:border-gray-700 hover:border-terracotta-600 dark:hover:border-terracotta-500 text-left transition flex items-start space-x-3.5 group focus:ring-2 focus:ring-terracotta-600">
+                <div class="p-2.5 rounded-xl bg-warm-100 dark:bg-gray-700 text-terracotta-600 dark:text-terracotta-500 group-hover:scale-110 transition-transform">
+                  <i data-lucide="${b.icon}" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <div class="font-bold text-base text-warm-900 dark:text-gray-100">${b.label}</div>
+                  <div class="text-xs text-warm-700 dark:text-gray-400">${b.desc}</div>
+                </div>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function bindBarrierPickerEvents() {
+      document.getElementById('back-to-dump')?.addEventListener('click', () => {
+        State.view = 'BRAIN_DUMP';
+        render();
+      });
+
+      document.querySelectorAll('.barrier-option').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const barrier = e.currentTarget.getAttribute('data-barrier');
+          State.barrier = barrier;
+          State.intervention_index = 0;
+          pickIntervention();
+          State.view = 'INTERVENTION';
+          render();
+          announceToSR("Intervention generated.");
+        });
+      });
+    }
+
+    function pickIntervention() {
+      const categoryRules = RULEBOOK[State.barrier] || RULEBOOK.too_big;
+      const domainList = categoryRules[State.domain] || categoryRules.general;
+      const index = State.intervention_index % domainList.length;
+      State.intervention = domainList[index];
+    }
+
+    // --- VIEW 3: INTERVENTION CARD ---
+    function ViewInterventionCard() {
+      return `
+        <div class="max-w-xl mx-auto space-y-6">
+          <div class="text-center space-y-1">
+            <span class="text-xs font-semibold uppercase tracking-wider text-terracotta-600 dark:text-terracotta-500">Suggested Action</span>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Here's one small physical step.</h1>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-3xl border-2 border-warm-200 dark:border-gray-700 shadow-md space-y-6 relative overflow-hidden">
+            <div class="space-y-2">
+              <div class="text-xs text-warm-700 dark:text-gray-400 font-medium flex items-center gap-1.5">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-terracotta-600"></i>
+                Completable in under 10 minutes
+              </div>
+              <p class="text-xl sm:text-2xl font-semibold leading-relaxed text-warm-900 dark:text-gray-100">
+                "${escapeHTML(State.intervention)}"
+              </p>
+            </div>
+
+            <div class="pt-4 border-t border-warm-100 dark:border-gray-700 flex flex-wrap gap-2 text-xs text-warm-700 dark:text-gray-400">
+              <span class="px-2.5 py-1 rounded-md bg-warm-100 dark:bg-gray-700">Task: ${escapeHTML(State.raw_input)}</span>
+              <span class="px-2.5 py-1 rounded-md bg-warm-100 dark:bg-gray-700">Barrier: ${State.barrier.replace('_', ' ')}</span>
+            </div>
+          </div>
+
+          <!-- Action Control Buttons -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <button id="try-this-btn" class="col-span-2 sm:col-span-2 py-4 px-4 bg-terracotta-600 hover:bg-terracotta-700 text-white font-bold rounded-2xl shadow-md transition flex items-center justify-center gap-2">
+              <i data-lucide="play" class="w-5 h-5"></i> Try this (5 min)
+            </button>
+            <button id="another-btn" class="col-span-1 py-4 px-3 bg-white dark:bg-gray-800 hover:bg-warm-100 dark:hover:bg-gray-700 border border-warm-200 dark:border-gray-700 text-warm-900 dark:text-gray-100 font-medium rounded-2xl transition flex items-center justify-center gap-1 text-xs sm:text-sm">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i> Another
+            </button>
+            <button id="save-later-btn" class="col-span-1 py-4 px-3 bg-white dark:bg-gray-800 hover:bg-warm-100 dark:hover:bg-gray-700 border border-warm-200 dark:border-gray-700 text-warm-900 dark:text-gray-100 font-medium rounded-2xl transition flex items-center justify-center gap-1 text-xs sm:text-sm">
+              <i data-lucide="bookmark" class="w-4 h-4"></i> Save
+            </button>
+          </div>
+
+          <div class="text-center">
+            <button id="done-now-btn" class="text-xs text-warm-700 dark:text-gray-400 hover:text-warm-900 dark:hover:text-gray-100 underline p-2">
+              Already done or finished? Mark complete
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function bindInterventionEvents() {
+      document.getElementById('try-this-btn')?.addEventListener('click', () => {
+        State.timer_seconds = 300;
+        State.timer_initial = 300;
+        State.timer_running = true;
+        State.view = 'TIMER';
+        
+        // Save state locally
+        Storage.setCurrentSession({
+          raw_input: State.raw_input,
+          barrier: State.barrier,
+          intervention: State.intervention,
+          resume_note: ''
+        });
+
+        render();
+        announceToSR("Starting 5-minute visual timer.");
+      });
+
+      document.getElementById('another-btn')?.addEventListener('click', () => {
+        State.intervention_index++;
+        pickIntervention();
+        render();
+        announceToSR("Swapped intervention suggestion.");
+      });
+
+      document.getElementById('save-later-btn')?.addEventListener('click', () => {
+        State.view = 'SAVE_NOTE';
+        render();
+      });
+
+      document.getElementById('done-now-btn')?.addEventListener('click', () => {
+        playGentleChime();
+        Storage.clearCurrentSession();
+        Storage.clearDraft();
+        alert("Nice work! Task finished without unnecessary pressure.");
+        State.view = 'BRAIN_DUMP';
+        State.raw_input = '';
+        render();
+      });
+    }
+
+    // --- VIEW 4: VISUAL FOCUS TIMER ---
+    function ViewTimer() {
+      const minutes = Math.floor(State.timer_seconds / 60);
+      const seconds = State.timer_seconds % 60;
+      const formattedTime = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+      // Ring SVG Calculations
+      const radius = 88;
+      const circumference = 2 * Math.PI * radius;
+      const progress = State.timer_seconds / State.timer_initial;
+      const dashoffset = circumference * (1 - progress);
+
+      const isFinished = State.timer_seconds <= 0;
+
+      return `
+        <div class="max-w-xl mx-auto space-y-8 text-center">
+          <div class="space-y-2">
+            <span class="text-xs font-semibold uppercase tracking-wider text-terracotta-600 dark:text-terracotta-500">
+              ${isFinished ? 'Time\'s Up' : 'Focus Window'}
+            </span>
+            <h1 class="text-2xl font-bold tracking-tight text-warm-900 dark:text-gray-100">
+              ${isFinished ? 'Great effort. How do you feel?' : escapeHTML(State.intervention)}
+            </h1>
+          </div>
+
+          <!-- Circular SVG Timer Ring -->
+          <div class="relative w-64 h-64 mx-auto flex items-center justify-center">
+            <svg class="w-full h-full" viewBox="0 0 200 200">
+              <!-- Background Circle -->
+              <circle cx="100" cy="100" r="${radius}" class="text-warm-200 dark:text-gray-800" stroke-width="12" stroke="currentColor" fill="transparent"/>
+              <!-- Progress Circle -->
+              <circle cx="100" cy="100" r="${radius}" class="text-terracotta-600 progress-ring-circle" stroke-width="12" 
+                stroke-dasharray="${circumference}" stroke-dashoffset="${dashoffset}" stroke-linecap="round" stroke="currentColor" fill="transparent"/>
+            </svg>
+            <div class="absolute flex flex-col items-center justify-center">
+              <span class="text-5xl font-extrabold tracking-tight tabular-nums text-warm-900 dark:text-gray-100">${formattedTime}</span>
+              <span class="text-xs text-warm-700 dark:text-gray-400 mt-1">${State.timer_running ? 'running' : 'paused'}</span>
+            </div>
+          </div>
+
+          ${!isFinished ? `
+            <div class="flex items-center justify-center gap-3">
+              <button id="toggle-timer-btn" class="py-3 px-6 bg-warm-200/80 dark:bg-gray-800 hover:bg-warm-200 text-warm-900 dark:text-gray-200 font-semibold rounded-2xl transition flex items-center gap-2">
+                <i data-lucide="${State.timer_running ? 'pause' : 'play'}" class="w-5 h-5"></i>
+                ${State.timer_running ? 'Pause' : 'Resume'}
+              </button>
+              <button id="stop-timer-btn" class="py-3 px-6 bg-white dark:bg-gray-800 hover:bg-warm-100 dark:hover:bg-gray-700 border border-warm-200 dark:border-gray-700 text-warm-900 dark:text-gray-200 font-semibold rounded-2xl transition">
+                Stop & Save
+              </button>
+            </div>
+          ` : `
+            <div class="space-y-3 animate-fade-in">
+              <button id="keep-going-btn" class="w-full py-4 px-6 bg-terracotta-600 hover:bg-terracotta-700 text-white font-bold rounded-2xl shadow-md transition flex items-center justify-center gap-2">
+                <i data-lucide="zap" class="w-5 h-5"></i> Keep going (+5 minutes)
+              </button>
+              <button id="finish-stop-btn" class="w-full py-4 px-6 bg-warm-200/80 dark:bg-gray-800 hover:bg-warm-200 text-warm-900 dark:text-gray-200 font-semibold rounded-2xl transition">
+                Stop and save where I left off
+              </button>
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function bindTimerEvents() {
+      // Clear existing interval
+      if (State.timer_interval) clearInterval(State.timer_interval);
+
+      if (State.timer_running && State.timer_seconds > 0) {
+        State.timer_interval = setInterval(() => {
+          State.timer_seconds--;
+          if (State.timer_seconds <= 0) {
+            State.timer_running = false;
+            clearInterval(State.timer_interval);
+            playGentleChime();
+            announceToSR("Timer finished. Choose to keep going or stop.");
+          }
+          render();
+        }, 1000);
+      }
+
+      document.getElementById('toggle-timer-btn')?.addEventListener('click', () => {
+        State.timer_running = !State.timer_running;
+        render();
+      });
+
+      document.getElementById('stop-timer-btn')?.addEventListener('click', () => {
+        State.timer_running = false;
+        if (State.timer_interval) clearInterval(State.timer_interval);
+        State.view = 'SAVE_NOTE';
+        render();
+      });
+
+      document.getElementById('keep-going-btn')?.addEventListener('click', () => {
+        State.timer_seconds = 300;
+        State.timer_initial = 300;
+        State.timer_running = true;
+        render();
+        announceToSR("Added 5 extra minutes.");
+      });
+
+      document.getElementById('finish-stop-btn')?.addEventListener('click', () => {
+        State.view = 'SAVE_NOTE';
+        render();
+      });
+    }
+
+    // --- VIEW 5: SAVE NOTE (Resume state prompt) ---
+    function ViewSaveNote() {
+      return `
+        <div class="max-w-xl mx-auto space-y-6">
+          <div class="space-y-2 text-center">
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Save where you left off</h1>
+            <p class="text-warm-700 dark:text-gray-400 text-sm">Leave a quick note for your future self so restarting is zero friction.</p>
+          </div>
+
+          <div class="space-y-4">
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-warm-200 dark:border-gray-700 shadow-sm space-y-3">
+              <label for="resume-note-input" class="block text-xs uppercase tracking-wider font-semibold text-terracotta-600 dark:text-terracotta-500">
+                Next time, start with...
+              </label>
+              <input id="resume-note-input" type="text" 
+                class="w-full p-3.5 rounded-xl bg-warm-50 dark:bg-gray-900 border border-warm-200 dark:border-gray-700 text-warm-900 dark:text-gray-100 placeholder-warm-700/50 dark:placeholder-gray-500 focus:ring-2 focus:ring-terracotta-600 outline-none text-sm"
+                placeholder="e.g., Open line 42 in editor or find reference #..."
+                value="${escapeHTML(State.resume_note)}" />
+            </div>
+
+            <div class="flex gap-3">
+              <button id="confirm-save-btn" class="flex-1 py-4 px-6 bg-terracotta-600 hover:bg-terracotta-700 text-white font-semibold rounded-2xl shadow-md transition">
+                Save & Exit
+              </button>
+              <button id="cancel-save-btn" class="py-4 px-6 bg-warm-200/80 dark:bg-gray-800 hover:bg-warm-200 text-warm-900 dark:text-gray-200 font-semibold rounded-2xl transition">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function bindSaveNoteEvents() {
+      const input = document.getElementById('resume-note-input');
+      input?.focus();
+
+      document.getElementById('confirm-save-btn')?.addEventListener('click', () => {
+        const note = input?.value || '';
+        const taskObj = {
+          id: 'task_' + Date.now(),
+          raw_input: State.raw_input,
+          barrier: State.barrier,
+          intervention: State.intervention,
+          created_at: new Date().toISOString(),
+          status: 'saved',
+          resume_note: note
+        };
+
+        Storage.saveTask(taskObj);
+        Storage.clearCurrentSession();
+        Storage.clearDraft();
+
+        alert("Saved safely. Nothing is lost.");
+        State.view = 'BRAIN_DUMP';
+        State.raw_input = '';
+        render();
+      });
+
+      document.getElementById('cancel-save-btn')?.addEventListener('click', () => {
+        State.view = 'INTERVENTION';
+        render();
+      });
+    }
+
+    // --- HELPER FUNCTIONS & SAVED TASKS DRAWER ---
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+
+    function updateSavedCountBadge() {
+      const tasks = Storage.getSavedTasks();
+      const badge = document.getElementById('saved-count-badge');
+      if (badge) {
+        if (tasks.length > 0) {
+          badge.textContent = tasks.length;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+    }
+
+    function renderSavedTasksModal() {
+      const container = document.getElementById('saved-list-container');
+      const tasks = Storage.getSavedTasks();
+
+      if (!container) return;
+
+      if (tasks.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-10 space-y-2 text-warm-700 dark:text-gray-400">
+            <i data-lucide="inbox" class="w-8 h-8 mx-auto opacity-50"></i>
+            <p class="text-sm">No saved tasks yet.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = tasks.map(t => `
+        <div class="p-4 rounded-2xl bg-white dark:bg-gray-800 border border-warm-200 dark:border-gray-700 shadow-sm space-y-2 relative group">
+          <div class="flex justify-between items-start">
+            <div class="font-semibold text-warm-900 dark:text-gray-100 text-sm">${escapeHTML(t.raw_input)}</div>
+            <button data-delete-id="${t.id}" class="delete-task-btn text-warm-700 dark:text-gray-400 hover:text-red-500 p-1" aria-label="Delete saved task">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <p class="text-xs text-warm-700 dark:text-gray-400">${escapeHTML(t.intervention)}</p>
+          ${t.resume_note ? `<div class="text-xs font-medium text-terracotta-600 dark:text-terracotta-500">Next time: "${escapeHTML(t.resume_note)}"</div>` : ''}
+          
+          <button data-resume-id="${t.id}" class="resume-saved-btn w-full mt-2 py-2 px-3 bg-warm-100 dark:bg-gray-700 hover:bg-terracotta-600 hover:text-white text-warm-900 dark:text-gray-200 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
+            <i data-lucide="play" class="w-3.5 h-3.5"></i> Resume this
+          </button>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+
+      // Delete handlers
+      container.querySelectorAll('.delete-task-btn').forEach(b => {
+        b.addEventListener('click', (e) => {
+          const id = e.currentTarget.getAttribute('data-delete-id');
+          Storage.deleteTask(id);
+          renderSavedTasksModal();
+          updateSavedCountBadge();
+        });
+      });
+
+      // Resume saved handler
+      container.querySelectorAll('.resume-saved-btn').forEach(b => {
+        b.addEventListener('click', (e) => {
+          const id = e.currentTarget.getAttribute('data-resume-id');
+          const task = Storage.getSavedTasks().find(t => t.id === id);
+          if (task) {
+            State.raw_input = task.raw_input;
+            State.barrier = task.barrier;
+            State.intervention = task.intervention;
+            State.resume_note = task.resume_note || '';
+            State.view = 'TIMER';
+            document.getElementById('saved-modal').classList.add('hidden');
+            render();
+          }
+        });
+      });
+    }
+
+    // --- INITIALIZATION & GLOBAL LISTENERS ---
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. Setup Theme
+      const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
+      if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+
+      document.getElementById('theme-toggle')?.addEventListener('click', () => {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem(STORAGE_KEYS.THEME, isDark ? 'dark' : 'light');
+      });
+
+      // 2. Saved Tasks Modal Trigger
+      document.getElementById('saved-tasks-btn')?.addEventListener('click', () => {
+        renderSavedTasksModal();
+        document.getElementById('saved-modal').classList.remove('hidden');
+      });
+
+      document.getElementById('close-saved-btn')?.addEventListener('click', () => {
+        document.getElementById('saved-modal').classList.add('hidden');
+      });
+
+      // 3. Architecture & Docs Modal Trigger
+      document.getElementById('docs-btn')?.addEventListener('click', () => {
+        document.getElementById('docs-modal').classList.remove('hidden');
+      });
+
+      document.getElementById('close-docs-btn')?.addEventListener('click', () => {
+        document.getElementById('docs-modal').classList.add('hidden');
+      });
+
+      document.getElementById('dismiss-docs-btn')?.addEventListener('click', () => {
+        document.getElementById('docs-modal').classList.add('hidden');
+      });
+
+      // 4. Logo / Home button
+      document.getElementById('logo-btn')?.addEventListener('click', () => {
+        if (State.timer_interval) clearInterval(State.timer_interval);
+        State.view = 'BRAIN_DUMP';
+        render();
+      });
+
+      // 5. Initial State Check (Welcome Back or Brain Dump)
+      const existingSession = Storage.getCurrentSession();
+      if (existingSession && existingSession.raw_input) {
+        State.view = 'WELCOME_BACK';
+      } else {
+        State.view = 'BRAIN_DUMP';
+      }
+
+      render();
+    });
+  </script>
+</body>
+</html>

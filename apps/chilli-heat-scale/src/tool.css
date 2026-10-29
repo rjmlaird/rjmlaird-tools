@@ -1,0 +1,107 @@
+/* Chilli Heat Scale Explorer: tool-specific styles on top of @rjmlaird/ui/brand.css. */
+
+/* ---- Controls above the scale ---- */
+.chs-tools { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr); align-items: end; margin: 1rem 0 1.25rem; }
+@media (min-width: 48rem) { .chs-tools { grid-template-columns: minmax(0, 1fr) minmax(0, 20rem); } }
+.chs-tools .row button[aria-pressed="true"] { border-color: var(--teal); background: rgba(0, 194, 168, 0.12); font-weight: 600; }
+.chs-search label { margin-top: 0; }
+
+/* ---- Readout ---- */
+.chs-readout { --heat: var(--teal); display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: 0.9rem 1.1rem; border: 1px solid var(--border); border-left: 6px solid var(--heat); border-radius: var(--radius-sm); background: var(--navy-sunken); }
+.chs-readout .big { display: inline; font-size: clamp(2.4rem, 11vw, 4rem); line-height: 1; }
+.chs-readout .lab { margin-left: 0.4rem; font-size: 1rem; }
+.chs-readout .chip { font-size: 0.95rem; padding: 0.25rem 0.85rem; }
+
+/* ---- The scale ---- */
+.chs-scale { margin: 1.25rem 0 0.25rem; }
+.chs-labels { position: relative; display: none; margin: 0 14px; }
+.chs-inner { position: relative; height: 44px; margin: 0 14px; }
+.chs-bar { position: absolute; inset: 15px 0 auto; height: 14px; border: 1px solid rgba(238, 242, 246, 0.3); border-radius: 999px; }
+.chs-band { position: absolute; top: 8px; height: 28px; border: 2px solid var(--amber); border-radius: 8px; background: rgba(245, 166, 35, 0.12); pointer-events: none; z-index: 1; }
+.chs-dots { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.chs-dot { position: absolute; top: 22px; width: 8px; height: 8px; border: 2px solid var(--navy); border-radius: 50%; background: var(--text-hi); transform: translate(-50%, -50%); }
+.chs-dot.on { width: 14px; height: 14px; box-shadow: 0 0 0 2px var(--teal); }
+.chs-dot.match { box-shadow: 0 0 0 2px var(--amber); }
+.chs-dot.on.match { box-shadow: 0 0 0 2px var(--teal), 0 0 0 4px var(--amber); }
+.chs-dot.big { display: grid; place-items: center; width: 26px; height: 26px; color: var(--navy); font: 700 0.75rem var(--font-display); border-width: 2px; }
+.chs-dot.big.a { background: var(--teal); }
+.chs-dot.big.b { background: var(--amber); }
+
+.chs-mk { position: absolute; z-index: 2; min-height: 26px; padding: 2px 8px; border-color: var(--border-strong); border-radius: 8px; background: var(--navy-raised); font-size: 0.8rem; white-space: nowrap; line-height: 1.3; }
+.chs-mk.on { border-color: var(--teal); background: #0c3a3a; font-weight: 600; }
+.chs-mk.match { border-color: var(--amber); }
+.chs-leader { position: absolute; bottom: 0; z-index: 1; display: none; width: 1px; background: rgba(238, 242, 246, 0.35); }
+.chs-leader.on { background: var(--teal); }
+@media (min-width: 48rem) {
+  .chs-labels { display: block; }
+  .chs-leader { display: block; }
+}
+
+/* Slider: the range input floats over the gradient. Its thumb centre travels exactly the width of
+   .chs-inner (the input is 14px wider each side, half the 28px thumb), so markers line up with it. */
+#slider { position: absolute; z-index: 3; top: 0; left: -14px; width: calc(100% + 28px); height: 44px; margin: 0; padding: 0; border: 0; background: transparent; appearance: none; -webkit-appearance: none; cursor: pointer; }
+#slider:hover { border: 0; }
+#slider:focus-visible { outline: none; }
+#slider::-webkit-slider-runnable-track { height: 44px; background: transparent; }
+#slider::-moz-range-track { height: 44px; background: transparent; }
+#slider::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; margin-top: 8px; border: 3px solid var(--navy); border-radius: 50%; background: var(--text-hi); box-shadow: 0 0 0 2px var(--teal), 0 2px 8px rgba(0, 0, 0, 0.5); }
+#slider::-moz-range-thumb { width: 22px; height: 22px; border: 3px solid var(--navy); border-radius: 50%; background: var(--text-hi); box-shadow: 0 0 0 2px var(--teal), 0 2px 8px rgba(0, 0, 0, 0.5); }
+#slider:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--navy), 0 0 0 6px var(--amber); }
+#slider:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px var(--navy), 0 0 0 6px var(--amber); }
+.chs-ends { display: flex; justify-content: space-between; margin: 0 14px; color: var(--text-lo); font: 0.78rem var(--font-mono); }
+.chs-bandnote { margin: 0.5rem 0 0; color: var(--amber); }
+
+/* ---- Pepper list (narrow screens only; wide screens use the labelled markers) ---- */
+.chs-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 0.5rem; margin: 1rem 0; padding: 0; list-style: none; }
+.chs-item { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; width: 100%; padding: 0.4rem 0.7rem; text-align: left; line-height: 1.25; }
+.chs-item small { color: var(--text-lo); font: 0.75rem var(--font-mono); }
+.chs-item[aria-pressed="true"] { border-color: var(--teal); background: rgba(0, 194, 168, 0.12); font-weight: 600; }
+.chs-item.match { box-shadow: inset 0 0 0 2px var(--amber); }
+@media (min-width: 48rem) { .chs-list { display: none; } }
+
+/* ---- Pepper card and heat meter ---- */
+.chs-cards { margin-top: 1.25rem; align-items: start; }
+.chs-card { padding: 1rem 1.1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--navy-sunken); }
+.chs-card.pop { animation: chs-pop 0.22s ease-out; }
+@keyframes chs-pop { from { opacity: 0.4; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.chs-cardhead { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem 0.75rem; }
+.chs-cardhead h3 { font-size: 1.3rem; line-height: 1.2; }
+.chs-range { margin: 0.5rem 0 0.75rem; font-variant-numeric: tabular-nums; }
+.chs-kv dd { font-family: var(--font-body); }
+.chs-kv { margin-bottom: 0.5rem; }
+.chs-kv dt { padding-top: 0.15rem; }
+.chs-warn { margin: 0.75rem 0 0; font-size: 0.9rem; }
+.chs-h3 { margin: 1.25rem 0 0.4rem; font-size: 1.05rem; }
+.chs-meterbox .chs-h3 { margin-top: 0; }
+.chs-meter { position: relative; height: 14px; margin-top: 1.1rem; border: 1px solid rgba(238, 242, 246, 0.3); border-radius: 999px; background: linear-gradient(90deg, #3ecf72 0%, #f2e14c 25%, #f59a23 50%, #e5383b 75%, #9d0b34 100%); }
+.chs-pin { position: absolute; top: -7px; width: 6px; height: 26px; border: 2px solid var(--navy); border-radius: 3px; background: var(--text-hi); transform: translateX(-50%); transition: left 0.15s ease-out; }
+.chs-tiers { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.15rem; margin: 0.5rem 0 0.75rem; padding: 0; list-style: none; color: var(--text-lo); font-size: 0.72rem; text-align: center; }
+
+/* ---- Compare ---- */
+.chs-cmpscale { margin: 1.5rem 0 0.5rem; }
+.chs-flagzone { position: relative; height: 56px; margin: 0 14px; }
+.chs-flag { position: absolute; width: max-content; max-width: calc(100% + 20px); padding: 2px 8px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--navy-sunken); font-size: 0.82rem; line-height: 1.3; text-align: center; }
+.chs-flagzone.top .chs-flag { bottom: 8px; }
+.chs-flagzone.bottom .chs-flag { top: 8px; }
+.chs-flagzone::after { content: ""; position: absolute; left: var(--tick, 0); width: 1px; height: 8px; background: rgba(238, 242, 246, 0.5); }
+.chs-flagzone.top::after { bottom: 0; }
+.chs-flagzone.bottom::after { top: 0; }
+.chs-statement.big { font-size: clamp(1.1rem, 3.6vw, 1.4rem); line-height: 1.35; margin-bottom: 0.75rem; }
+#cmp-table th[scope="row"] { width: 9rem; }
+
+/* ---- Quiz and calculator ---- */
+.chs-fs { min-width: 0; margin: 1.25rem 0 0; padding: 0; border: 0; }
+.chs-fs legend { margin-bottom: 0.5rem; padding: 0; font: 600 1.05rem var(--font-display); }
+.chs-opts { display: grid; gap: 0.5rem; }
+.chs-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.3rem 0 1rem; padding: 0; list-style: none; }
+.chs-chips .chip { white-space: normal; color: var(--text-hi); border-color: var(--border-strong); }
+#quiz-result:focus { outline: none; }
+#quiz-result .row { margin-top: 0.5rem; }
+.chs-ul { margin: 0.5rem 0 0; padding-left: 1.2rem; }
+.chs-ul li { margin: 0.3rem 0; }
+.error[hidden] { display: none; }
+#calc-result .notice { margin: 0.75rem 0 0; }
+.chs-copyrow { margin-top: 0.75rem; }
+#summary { resize: vertical; line-height: 1.5; }
+#cmp-swap { width: 100%; margin-top: 0.9rem; }
+@media (min-width: 52rem) { #cmp-swap { margin-top: 0; width: auto; } }

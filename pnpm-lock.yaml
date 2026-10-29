@@ -30,6 +30,32 @@ importers:
         specifier: ^4.0.0
         version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
 
+  apps/active-passive-satellites:
+    dependencies:
+      '@rjmlaird/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      vite:
+        specifier: ^8.1.4
+        version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: ^4.149.0
+        version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
+
+  apps/angular-size-calculator:
+    dependencies:
+      '@rjmlaird/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      vite:
+        specifier: ^8.1.4
+        version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: ^4.149.0
+        version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
+
   apps/astro-calc:
     dependencies:
       '@rjmlaird/ui':
@@ -53,6 +79,19 @@ importers:
         version: 5.0.5(@types/node@22.20.5)(vite@8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15))
       wrangler:
         specifier: ^4.0.0
+        version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
+
+  apps/carbon-intensity:
+    dependencies:
+      '@rjmlaird/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      vite:
+        specifier: ^8.1.4
+        version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: ^4.149.0
         version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
 
   apps/carbon-reduction-plan:
@@ -97,6 +136,19 @@ importers:
       globals:
         specifier: ^17.7.0
         version: 17.13.0
+      vite:
+        specifier: ^8.1.4
+        version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: ^4.149.0
+        version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
+
+  apps/chilli-heat-scale:
+    dependencies:
+      '@rjmlaird/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
       vite:
         specifier: ^8.1.4
         version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
@@ -167,6 +219,19 @@ importers:
         specifier: ^4.0.0
         version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
 
+  apps/cup-delta:
+    dependencies:
+      '@rjmlaird/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      vite:
+        specifier: ^8.1.4
+        version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: ^4.149.0
+        version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
+
   apps/deep-sky-objects:
     dependencies:
       '@rjmlaird/ui':
@@ -196,7 +261,46 @@ importers:
         specifier: ^4.149.0
         version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
 
+  apps/escape-velocity:
+    dependencies:
+      '@rjmlaird/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      vite:
+        specifier: ^8.1.4
+        version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: ^4.149.0
+        version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
+
   apps/flight-emissions:
+    dependencies:
+      '@rjmlaird/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      vite:
+        specifier: ^8.1.4
+        version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: ^4.149.0
+        version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
+
+  apps/galaxy-morphology:
+    dependencies:
+      '@rjmlaird/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      vite:
+        specifier: ^8.1.4
+        version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: ^4.149.0
+        version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
+
+  apps/greenhouse-effect:
     dependencies:
       '@rjmlaird/ui':
         specifier: workspace:*
@@ -263,6 +367,19 @@ importers:
         specifier: ^4.149.0
         version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
 
+  apps/how-satellites-see-earth:
+    dependencies:
+      '@rjmlaird/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      vite:
+        specifier: ^8.1.4
+        version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: ^4.149.0
+        version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
+
   apps/index:
     dependencies:
       '@rjmlaird/ui':
@@ -313,7 +430,59 @@ importers:
         specifier: ^4.0.0
         version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
 
+  apps/jupiter-moon-visualiser:
+    dependencies:
+      '@rjmlaird/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      vite:
+        specifier: ^8.1.4
+        version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: ^4.149.0
+        version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
+
   apps/light-pollution:
+    dependencies:
+      '@rjmlaird/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      vite:
+        specifier: ^8.1.4
+        version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: ^4.149.0
+        version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
+
+  apps/magnitude-dfference:
+    dependencies:
+      '@rjmlaird/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      vite:
+        specifier: ^8.1.4
+        version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: ^4.149.0
+        version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
+
+  apps/marketing-dash:
+    dependencies:
+      '@rjmlaird/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      vite:
+        specifier: ^8.1.4
+        version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: ^4.149.0
+        version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
+
+  apps/marketing-funnel:
     dependencies:
       '@rjmlaird/ui':
         specifier: workspace:*
@@ -416,6 +585,32 @@ importers:
         specifier: ^4.149.0
         version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
 
+  apps/satellite-link-budget:
+    dependencies:
+      '@rjmlaird/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      vite:
+        specifier: ^8.1.4
+        version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: ^4.149.0
+        version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
+
+  apps/saturn-ring-tilt:
+    dependencies:
+      '@rjmlaird/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      vite:
+        specifier: ^8.1.4
+        version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: ^4.149.0
+        version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
+
   apps/seo-meta-tag:
     dependencies:
       '@rjmlaird/ui':
@@ -455,6 +650,19 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: ^4.0.0
+        version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
+
+  apps/waiting-on-tracker:
+    dependencies:
+      '@rjmlaird/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      vite:
+        specifier: ^8.1.4
+        version: 8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: ^4.149.0
         version: 4.152.0(@cloudflare/workers-types@5.20261024.1)(@types/node@22.20.5)
 
   packages/config/eslint-config:

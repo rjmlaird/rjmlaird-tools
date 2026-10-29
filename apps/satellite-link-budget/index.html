@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Satellite Link Budget — tools.rjmlaird.co.uk</title>
+<meta name="description" content="Calculate a satellite link budget, including EIRP, free-space path loss, received power and link margin, with an Earth-satellite illustration.">
+<style>
+:root{
+  --ink:#0B0F1A; --ink2:#0F1520; --card:#141B29; --lift:#1A2236;
+  --w:#EDEAE3; --mb:#9AA4B8; --m:#8A98B2;
+  --teal:#00C2A8; --amber:#F5A623; --violet:#A78BFA; --coral:#FF8080; --green:#4ADE80; --sky:#38BDF8;
+  --td:rgba(0,194,168,.13); --tb:rgba(0,194,168,.26);
+  --bd:rgba(255,255,255,.11); --bm:rgba(255,255,255,.2); --focus:#7FE6D4;
+  --font-display:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --radius:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);color:var(--w);font-family:var(--font-body);line-height:1.6;min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:2rem 1.25rem 3rem}
+h1{font-family:var(--font-display);font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.2;margin-bottom:.5rem}
+.lede{color:var(--mb);max-width:62ch;margin-bottom:1.5rem}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.25rem}
+label{display:block;font-family:var(--font-display);font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;color:var(--mb);margin-bottom:.4rem}
+input[type=number],select{width:100%;background:var(--ink2);border:1px solid var(--bd);border-radius:var(--radius);color:var(--w);padding:.6rem .75rem;font-family:var(--font-body);font-size:1rem}
+input:focus-visible,select:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.row{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+.row>div{flex:1;min-width:200px}
+canvas{width:100%;height:auto;display:block;background:var(--ink2);border:1px solid var(--bd);border-radius:var(--radius);margin-bottom:1rem}
+.result{background:var(--lift);border:1px solid var(--bd);border-radius:var(--radius);padding:1rem;margin-top:.5rem}
+.result div{margin-bottom:.5rem;font-size:.95rem;color:var(--mb)}
+.result strong{color:var(--w);font-family:var(--font-display);font-size:1.1rem}
+.note{font-size:.8rem;color:var(--m);margin-top:.75rem}
+footer{margin-top:2rem;font-size:.85rem;color:var(--m)}
+footer a{color:var(--teal);text-decoration:none}
+footer a:hover{text-decoration:underline}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Satellite Link Budget</h1>
+  <p class="lede">Estimate the link budget between a ground station and a satellite, including EIRP, free-space path loss, received power and link margin.</p>
+
+  <section class="card">
+    <canvas id="sky" width="880" height="300" role="img" aria-label="Illustration of Earth and a satellite connected by a radio link"></canvas>
+    <div class="row">
+      <div>
+        <label for="freq">Frequency (GHz)</label>
+        <input type="number" id="freq" step="any" value="14">
+      </div>
+      <div>
+        <label for="power">Transmit power (W)</label>
+        <input type="number" id="power" step="any" value="10">
+      </div>
+      <div>
+        <label for="gt">Transmit antenna gain (dBi)</label>
+        <input type="number" id="gt" step="any" value="40">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label for="gr">Receive antenna gain (dBi)</label>
+        <input type="number" id="gr" step="any" value="30">
+      </div>
+      <div>
+        <label for="dist">Slant range (km)</label>
+        <input type="number" id="dist" step="any" value="40000">
+      </div>
+      <div>
+        <label for="loss">Other losses (dB)</label>
+        <input type="number" id="loss" step="any" value="3">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label for="threshold">Required receive power (dBm)</label>
+        <input type="number" id="threshold" step="any" value="-100">
+      </div>
+    </div>
+    <div class="result">
+      <div>EIRP: <strong id="eirp">–</strong></div>
+      <div>Free-space path loss: <strong id="fspl">–</strong></div>
+      <div>Received power: <strong id="prx">–</strong></div>
+      <div>Link margin: <strong id="margin">–</strong></div>
+    </div>
+    <p class="note">Uses the Friis free-space model: Prx = EIRP − FSPL + Grx − losses. FSPL = 20 log10(4πd/λ). This is a simplified clear-sky link budget; atmospheric fade, pointing loss and rain fade are not included unless added to “other losses”.</p>
+  </section>
+
+  <footer>
+    Part of <a href="https://tools.rjmlaird.co.uk/">tools.rjmlaird.co.uk</a> · <a href="https://rjmlaird.co.uk/">rjmlaird.co.uk</a>
+  </footer>
+</main>
+
+<script>
+const cv=document.getElementById("sky"),ctx=cv.getContext("2d");
+const freq=document.getElementById("freq"),power=document.getElementById("power"),gt=document.getElementById("gt");
+const gr=document.getElementById("gr"),dist=document.getElementById("dist"),loss=document.getElementById("loss");
+const threshold=document.getElementById("threshold");
+const eirpEl=document.getElementById("eirp"),fsplEl=document.getElementById("fspl");
+const prxEl=document.getElementById("prx"),marginEl=document.getElementById("margin");
+function draw(){
+  const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#0F1520";ctx.fillRect(0,0,W,H);
+  // Earth
+  const ex=120,ey=H/2,er=60;
+  const g=ctx.createRadialGradient(ex-15,ey-15,5,ex,ey,er);
+  g.addColorStop(0,"#4ADE80");g.addColorStop(1,"#1E3A5F");
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(ex,ey,er,0,Math.PI*2);ctx.fill();
+  // satellite
+  const sx=W-120,sy=H/2;
+  ctx.fillStyle="#9AA4B8";ctx.fillRect(sx-18,sy-8,36,16);
+  ctx.fillStyle="#00C2A8";
+  ctx.fillRect(sx-38,sy-4,16,8);ctx.fillRect(sx+22,sy-4,16,8);
+  // link line
+  ctx.strokeStyle="rgba(0,194,168,.6)";ctx.lineWidth=2;
+  ctx.setLineDash([6,6]);
+  ctx.beginPath();ctx.moveTo(ex+er,ey);ctx.lineTo(sx-20,sy);ctx.stroke();
+  ctx.setLineDash([]);
+  // labels
+  ctx.fillStyle="#9AA4B8";ctx.font="12px Inter,sans-serif";ctx.textAlign="center";
+  ctx.fillText("Ground station",ex,ey+er+20);
+  ctx.fillText("Satellite",sx,sy+28);
+  ctx.fillText("Link",W/2,ey-12);
+}
+function calc(){
+  const f=parseFloat(freq.value),p=parseFloat(power.value),gtx=parseFloat(gt.value);
+  const grx=parseFloat(gr.value),d=parseFloat(dist.value),l=parseFloat(loss.value);
+  const thr=parseFloat(threshold.value);
+  if([f,p,gtx,grx,d,l,thr].some(isNaN)||d<=0||f<=0||p<=0){eirpEl.textContent="–";fsplEl.textContent="–";prxEl.textContent="–";marginEl.textContent="–";return;}
+  const eirp=10*Math.log10(p)+gtx;
+  const fspl=20*Math.log10(4*Math.PI*d*1000*f*1e9/299792458);
+  const prx=eirp-fspl+grx-l;
+  const margin=prx-thr;
+  eirpEl.textContent=eirp.toFixed(2)+" dBm";
+  fsplEl.textContent=fspl.toFixed(2)+" dB";
+  prxEl.textContent=prx.toFixed(2)+" dBm";
+  marginEl.textContent=margin.toFixed(2)+" dB";
+}
+[freq,power,gt,gr,dist,loss,threshold].forEach(el=>el.addEventListener("input",()=>{draw();calc();}));
+draw();calc();
+</script>
+</body>
+</html>

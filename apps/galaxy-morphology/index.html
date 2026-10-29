@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Galaxy Morphology Guide — tools.rjmlaird.co.uk</title>
+<meta name="description" content="An interactive guide to galaxy morphology: spiral, barred spiral, lenticular, elliptical and irregular galaxies.">
+<style>
+:root{
+  --ink:#0B0F1A; --ink2:#0F1520; --card:#141B29; --lift:#1A2236;
+  --w:#EDEAE3; --mb:#9AA4B8; --m:#8A98B2;
+  --teal:#00C2A8; --amber:#F5A623; --violet:#A78BFA; --coral:#FF8080; --green:#4ADE80; --sky:#38BDF8;
+  --td:rgba(0,194,168,.13); --tb:rgba(0,194,168,.26);
+  --bd:rgba(255,255,255,.11); --bm:rgba(255,255,255,.2); --focus:#7FE6D4;
+  --font-display:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --radius:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);color:var(--w);font-family:var(--font-body);line-height:1.6;min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:2rem 1.25rem 3rem}
+h1{font-family:var(--font-display);font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.2;margin-bottom:.5rem}
+.lede{color:var(--mb);max-width:62ch;margin-bottom:1.5rem}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.25rem}
+.tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+button{background:var(--td);border:1px solid var(--tb);border-radius:var(--radius);color:var(--teal);font-family:var(--font-display);font-weight:600;padding:.5rem .9rem;cursor:pointer;transition:background .2s}
+button:hover{background:var(--tb)}
+button.active{background:var(--teal);color:var(--ink);border-color:var(--teal)}
+button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+canvas{width:100%;height:auto;display:block;background:var(--ink2);border:1px solid var(--bd);border-radius:var(--radius)}
+h2{font-family:var(--font-display);font-size:1.2rem;margin:1rem 0 .4rem}
+p{color:var(--mb);max-width:65ch}
+.meta{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:.75rem;font-size:.85rem;color:var(--m)}
+.meta strong{color:var(--w);font-family:var(--font-display)}
+.note{font-size:.8rem;color:var(--m);margin-top:.75rem}
+footer{margin-top:2rem;font-size:.85rem;color:var(--m)}
+footer a{color:var(--teal);text-decoration:none}
+footer a:hover{text-decoration:underline}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Galaxy Morphology Guide</h1>
+  <p class="lede">Explore the main galaxy types — spiral, barred spiral, lenticular, elliptical and irregular — with simple interactive diagrams and key differences.</p>
+
+  <section class="card">
+    <div class="tabs" role="tablist">
+      <button class="active" data-type="spiral">Spiral</button>
+      <button data-type="barred">Barred spiral</button>
+      <button data-type="lenticular">Lenticular</button>
+      <button data-type="elliptical">Elliptical</button>
+      <button data-type="irregular">Irregular</button>
+    </div>
+    <canvas id="sky" width="880" height="420" role="img" aria-label="Diagram of the selected galaxy type"></canvas>
+    <h2 id="title">Spiral galaxy</h2>
+    <p id="desc">Spiral galaxies have a flattened disc with spiral arms, ongoing star formation and a central bulge. The Milky Way and Andromeda are examples.</p>
+    <div class="meta">
+      <span>Star formation: <strong id="sf">High</strong></span>
+      <span>Typical mass: <strong id="mass">10^10–10^12 solar masses</strong></span>
+      <span>Examples: <strong id="ex">Milky Way, Andromeda, Whirlpool</strong></span>
+    </div>
+    <p class="note">Diagrams are schematic, not to scale. Real galaxies vary widely in size, colour and structure.</p>
+  </section>
+
+  <footer>
+    Part of <a href="https://tools.rjmlaird.co.uk/">tools.rjmlaird.co.uk</a> · <a href="https://rjmlaird.co.uk/">rjmlaird.co.uk</a>
+  </footer>
+</main>
+
+<script>
+const cv=document.getElementById("sky"),ctx=cv.getContext("2d");
+const titleEl=document.getElementById("title"),descEl=document.getElementById("desc");
+const sfEl=document.getElementById("sf"),massEl=document.getElementById("mass"),exEl=document.getElementById("ex");
+const types={
+ spiral:{t:"Spiral galaxy",d:"Spiral galaxies have a flattened disc with spiral arms, ongoing star formation and a central bulge. The Milky Way and Andromeda are examples.",sf:"High",mass:"10^10–10^12 solar masses",ex:"Milky Way, Andromeda, Whirlpool"},
+ barred:{t:"Barred spiral galaxy",d:"Barred spirals have a central bar of stars from which the spiral arms emerge. Roughly two-thirds of nearby spirals show some bar structure.",sf:"High",mass:"10^10–10^12 solar masses",ex:"Messier 83, NGC 1300, Milky Way (barred)"},
+ lenticular:{t:"Lenticular galaxy",d:"Lenticular (S0) galaxies are disc-like but lack well-defined spiral arms and have little ongoing star formation. They are intermediate between spirals and ellipticals.",sf:"Low",mass:"10^10–10^12 solar masses",ex:"Messier 84, NGC 5866"},
+ elliptical:{t:"Elliptical galaxy",d:"Elliptical galaxies are smooth, rounded systems with little gas, little star formation and mostly old stars. They range from nearly spherical to highly elongated.",sf:"Very low",mass:"10^9–10^13 solar masses",ex:"Messier 87, Messier 49"},
+ irregular:{t:"Irregular galaxy",d:"Irregular galaxies lack a clear symmetric shape or disc structure. They are often rich in gas and star formation, and are common among smaller galaxies.",sf:"High",mass:"10^7–10^10 solar masses",ex:"Large Magellanic Cloud, Small Magellanic Cloud"}
+};
+let current="spiral";
+function drawSpiral(barred){
+  const W=cv.width,H=cv.height,cx=W/2,cy=H/2;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle="#0F1520";ctx.fillRect(0,0,W,H);
+  // disc glow
+  const g=ctx.createRadialGradient(cx,cy,10,cx,cy,180);
+  g.addColorStop(0,"rgba(245,230,200,.9)");g.addColorStop(.4,"rgba(200,180,150,.35)");g.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,180,0,Math.PI*2);ctx.fill();
+  // arms
+  ctx.strokeStyle="rgba(180,200,255,.5)";ctx.lineWidth=6;
+  for(let arm=0;arm<2;arm++){
+    ctx.beginPath();
+    for(let a=0;a<=Math.PI*3;a+=0.05){
+      const r=20+a*18;
+      const ang=a+arm*Math.PI+(barred?0.4:0);
+      const x=cx+r*Math.cos(ang),y=cy+r*Math.sin(ang)*0.55;
+      if(a===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+  // bar
+  if(barred){
+    ctx.strokeStyle="rgba(245,230,200,.9)";ctx.lineWidth=10;
+    ctx.beginPath();ctx.moveTo(cx-60,cy);ctx.lineTo(cx+60,cy);ctx.stroke();
+  }
+  // bulge
+  const bg=ctx.createRadialGradient(cx,cy,2,cx,cy,30);
+  bg.addColorStop(0,"#FFF3D6");bg.addColorStop(1,"rgba(255,220,160,0)");
+  ctx.fillStyle=bg;ctx.beginPath();ctx.arc(cx,cy,30,0,Math.PI*2);ctx.fill();
+}
+function drawLenticular(){
+  const W=cv.width,H=cv.height,cx=W/2,cy=H/2;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle="#0F1520";ctx.fillRect(0,0,W,H);
+  const g=ctx.createRadialGradient(cx,cy,5,cx,cy,150);
+  g.addColorStop(0,"rgba(255,240,210,.9)");g.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,150,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle="rgba(200,190,170,.5)";ctx.lineWidth=14;
+  ctx.beginPath();ctx.ellipse(cx,cy,150,40,0,0,Math.PI*2);ctx.stroke();
+  const bg=ctx.createRadialGradient(cx,cy,2,cx,cy,35);
+  bg.addColorStop(0,"#FFF3D6");bg.addColorStop(1,"rgba(255,220,160,0)");
+  ctx.fillStyle=bg;ctx.beginPath();ctx.arc(cx,cy,35,0,Math.PI*2);ctx.fill();
+}
+function drawElliptical(){
+  const W=cv.width,H=cv.height,cx=W/2,cy=H/2;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle="#0F1520";ctx.fillRect(0,0,W,H);
+  const g=ctx.createRadialGradient(cx,cy,5,cx,cy,160);
+  g.addColorStop(0,"rgba(255,240,210,.95)");g.addColorStop(.6,"rgba(230,210,180,.4)");g.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(cx,cy,160,110,0,0,Math.PI*2);ctx.fill();
+}
+function drawIrregular(){
+  const W=cv.width,H=cv.height,cx=W/2,cy=H/2;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle="#0F1520";ctx.fillRect(0,0,W,H);
+  // blobby shape
+  const g=ctx.createRadialGradient(cx-20,cy-10,10,cx,cy,140);
+  g.addColorStop(0,"rgba(180,220,255,.8)");g.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=g;
+  ctx.beginPath();
+  ctx.moveTo(cx-120,cy+20);
+  ctx.bezierCurveTo(cx-80,cy-90,cx+40,cy-110,cx+110,cy-30);
+  ctx.bezierCurveTo(cx+150,cy+40,cx+60,cy+100,cx-30,cy+80);
+  ctx.bezierCurveTo(cx-100,cy+70,cx-140,cy+60,cx-120,cy+20);
+  ctx.fill();
+  // star-forming knots
+  ctx.fillStyle="rgba(120,220,255,.9)";
+  [[-60,-30],[20,-60],[70,10],[-10,40],[50,60]].forEach(([dx,dy])=>{
+    ctx.beginPath();ctx.arc(cx+dx,cy+dy,6,0,Math.PI*2);ctx.fill();
+  });
+}
+function draw(){
+  if(current==="spiral")drawSpiral(false);
+  else if(current==="barred")drawSpiral(true);
+  else if(current==="lenticular")drawLenticular();
+  else if(current==="elliptical")drawElliptical();
+  else drawIrregular();
+}
+function setType(t){
+  current=t;
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("active",b.dataset.type===t));
+  const d=types[t];
+  titleEl.textContent=d.t;descEl.textContent=d.d;
+  sfEl.textContent=d.sf;massEl.textContent=d.mass;exEl.textContent=d.ex;
+  draw();
+}
+document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>setType(b.dataset.type)));
+setType("spiral");
+</script>
+</body>
+</html>

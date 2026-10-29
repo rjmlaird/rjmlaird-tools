@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FunnelForge — Marketing Funnel Studio</title>
+<style>
+:root{
+  --bg:#0B0F1A;--surface:#0F1520;--surface2:#141B29;--surface3:#1A2236;
+  --text:#EDEAE3;--muted:#9AA4B8;--subtle:#8A98B2;--teal:#00C2A8;
+  --amber:#F5A623;--purple:#A78BFA;--red:#FF8080;--green:#4ADE80;--blue:#38BDF8;
+  --border:#293348;--focus:#7FE6D4;--radius:8px;--shadow:0 12px 35px #0003;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.app{min-height:100vh}
+.topbar{height:68px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:18px;padding:0 24px;background:var(--surface)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.4px;white-space:nowrap}
+.logo{width:32px;height:32px;border-radius:8px;background:var(--teal);color:#061a18;display:grid;place-items:center;font-weight:900}
+.brand small{display:block;font-size:10px;color:var(--muted);font-weight:600;letter-spacing:1.6px}
+.top-meta{color:var(--muted);font-size:12px;border-left:1px solid var(--border);padding-left:18px}
+.spacer{flex:1}
+.status{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12px}
+.dot{width:7px;height:7px;background:var(--green);border-radius:50%}
+.btn{border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:7px;padding:8px 12px;font-weight:650;display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.btn:hover{border-color:var(--subtle);background:var(--surface3)}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:#071c19}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--red)}
+.btn.small{padding:5px 8px;font-size:12px}
+.workspace{display:grid;grid-template-columns:220px minmax(300px,1fr) 300px;min-height:calc(100vh - 68px)}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:20px 14px}
+.sidebar.right{border-right:0;border-left:1px solid var(--border);padding:20px}
+.section-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--subtle);font-weight:800;margin:8px 8px 10px}
+.project-btn{width:100%;display:flex;align-items:center;gap:10px;text-align:left;background:transparent;border:1px solid transparent;color:var(--muted);padding:10px;border-radius:7px;margin:2px 0}
+.project-btn.active{background:#00c2a814;border-color:#00c2a83b;color:var(--text)}
+.project-icon{width:28px;height:28px;display:grid;place-items:center;border-radius:6px;background:var(--surface3);color:var(--teal)}
+.template-list{display:grid;gap:7px}
+.template{border:1px solid var(--border);border-radius:8px;padding:10px;background:var(--surface2);text-align:left;color:var(--text)}
+.template:hover{border-color:var(--teal)}
+.template b{display:block;font-size:12px;margin-bottom:3px}
+.template span{font-size:11px;color:var(--muted)}
+.sidebar-note{margin:20px 6px 0;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px}
+.main{min-width:0;display:flex;flex-direction:column}
+.main-head{padding:20px 22px 16px;border-bottom:1px solid var(--border);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.eyebrow{color:var(--teal);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:800}
+h1{font-size:22px;letter-spacing:-.7px;margin:2px 0 0;line-height:1.3}
+.subline{font-size:12px;color:var(--muted);margin-top:3px}
+.tabs{display:flex;gap:5px;margin-left:auto}
+.tab{background:transparent;border:0;color:var(--muted);padding:8px 10px;border-bottom:2px solid transparent}
+.tab.active{color:var(--text);border-color:var(--teal)}
+.toolbar{display:flex;align-items:center;gap:7px;padding:10px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;background:var(--surface)}
+.toolgroup{display:flex;gap:5px}
+.canvas-wrap{position:relative;flex:1;min-height:540px;overflow:hidden;background-color:var(--bg);background-image:radial-gradient(#293348 1px,transparent 1px);background-size:20px 20px}
+.canvas-hint{position:absolute;left:18px;bottom:14px;color:var(--subtle);font-size:11px;background:#0b0f1ae8;padding:6px 9px;border:1px solid var(--border);border-radius:6px;z-index:2}
+#canvas{width:100%;height:100%;min-height:540px;display:block;touch-action:pan-y}
+.edge{stroke:#52617a;stroke-width:2;fill:none}
+.edge-label{fill:var(--muted);font-size:11px}
+.node{cursor:pointer}
+.node rect{fill:var(--surface);stroke:var(--border);stroke-width:1.4;rx:9}
+.node.selected rect{stroke:var(--teal);stroke-width:2.2}
+.node text{pointer-events:none}
+.node-title{fill:var(--text);font-size:12px;font-weight:700}
+.node-type{font-size:9px;letter-spacing:1.1px;font-weight:800}
+.node-sub{fill:var(--muted);font-size:10px}
+.canvas-empty{display:none;position:absolute;inset:0;align-items:center;justify-content:center;pointer-events:none}
+.panel-title{font-weight:750;font-size:14px;margin:0 0 4px}
+.panel-desc{font-size:11px;color:var(--muted);margin:0 0 18px}
+.field{display:grid;gap:6px;margin-bottom:14px}
+.field label{font-size:11px;color:var(--muted);font-weight:700}
+.field input,.field textarea,.field select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--text);min-width:0}
+.field textarea{min-height:74px;resize:vertical}
+.field input[type=number]{max-width:120px}
+.field-help{font-size:10px;color:var(--subtle)}
+.pill{display:inline-flex;padding:4px 7px;border-radius:4px;font-size:10px;font-weight:800;letter-spacing:.6px;background:#00c2a81a;color:var(--teal)}
+.divider{height:1px;background:var(--border);margin:18px 0}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
+.metric{padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px}
+.metric span{display:block;font-size:10px;color:var(--muted)}
+.metric strong{display:block;font-size:23px;letter-spacing:-.6px;margin-top:4px}
+.metric small{font-size:10px;color:var(--subtle)}
+.stage-row{display:grid;grid-template-columns:minmax(0,1fr) 76px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.stage-row label{font-size:12px}
+.stage-row input{width:100%;padding:7px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:5px}
+.bar{height:5px;background:var(--surface3);border-radius:9px;margin-top:7px;overflow:hidden}
+.bar i{height:100%;display:block;background:var(--teal);border-radius:9px}
+.notice{padding:10px;border:1px solid #f5a62350;background:#f5a6230e;border-radius:7px;color:var(--muted);font-size:11px;margin:12px 0}
+.footer{padding:10px 18px;border-top:1px solid var(--border);display:flex;gap:12px;align-items:center;justify-content:space-between;color:var(--subtle);font-size:10px}
+.hidden{display:none!important}
+.mobile-nav{display:none}
+@media(max-width:1120px){.workspace{grid-template-columns:190px minmax(280px,1fr)}.sidebar.right{grid-column:1/-1;border-left:0;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:20px}.sidebar.right .divider{display:none}.canvas-wrap{min-height:470px}}
+@media(max-width:720px){.topbar{padding:0 13px;height:60px;gap:10px}.top-meta,.status{display:none}.workspace{display:flex;flex-direction:column}.sidebar.left{order:2;border-right:0;border-top:1px solid var(--border);padding:14px}.main{order:1}.sidebar.right{order:3;display:block;padding:16px}.sidebar.left .template-list{grid-template-columns:repeat(2,minmax(0,1fr))}.sidebar.left .section-label{margin-left:0}.sidebar-note{display:none}.main-head{padding:15px}.tabs{margin-left:0;width:100%}.tab{flex:1}.toolbar{padding:9px 12px}.canvas-wrap,#canvas{min-height:440px}.footer{align-items:flex-start}.footer span:last-child{max-width:50%;text-align:right}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand"><div class="logo">F</div><div>FunnelForge<small>MARKETING STUDIO</small></div></div>
+  <div class="top-meta">rjmlaird tools · MVP preview</div>
+  <div class="spacer"></div>
+  <div class="status"><span class="dot"></span><span id="saveStatus">Saved locally</span></div>
+  <button class="btn" id="newBtn">＋ New funnel</button>
+  <button class="btn primary" id="exportBtn">Export project ↗</button>
+</header>
+<div class="workspace">
+  <aside class="sidebar left">
+    <div class="section-label">Workspace</div>
+    <button class="project-btn active"><span class="project-icon">⌘</span><span><b>Funnel Studio</b><br><small>Current project</small></span></button>
+    <button class="project-btn" id="campaignTab"><span class="project-icon">▤</span><span>Campaign plan</span></button>
+    <button class="project-btn" id="measurementTab"><span class="project-icon">↗</span><span>Measurement</span></button>
+    <div class="divider"></div>
+    <div class="section-label">Start with a template</div>
+    <div class="template-list">
+      <button class="template" data-template="lead"><b>↗ Lead generation</b><span>Capture → qualify → book</span></button>
+      <button class="template" data-template="webinar"><b>▣ Webinar registration</b><span>Promote → register → attend</span></button>
+      <button class="template" data-template="newsletter"><b>✉ Newsletter growth</b><span>Discover → subscribe → engage</span></button>
+      <button class="template" data-template="product"><b>◇ Product conversion</b><span>Explore → trial → purchase</span></button>
+    </div>
+    <div class="sidebar-note"><b style="color:var(--text)">Local-first by design</b><br>Projects stay in this browser. Export a backup when you finish a session.</div>
+  </aside>
+  <main class="main">
+    <div class="main-head">
+      <div><div class="eyebrow">Funnel / Design</div><h1 id="projectTitle" contenteditable="true" spellcheck="false" aria-label="Project name">B2B Lead Generation</h1><div class="subline" id="projectSubtitle">A measurable journey from first touch to qualified consultation.</div></div>
+      <div class="tabs" role="tablist" aria-label="Workspace view">
+        <button class="tab active" data-view="canvas" role="tab" aria-selected="true">Canvas</button>
+        <button class="tab" data-view="plan" role="tab" aria-selected="false">Campaign plan</button>
+        <button class="tab" data-view="metrics" role="tab" aria-selected="false">Measurement</button>
+      </div>
+    </div>
+    <section id="canvasView">
+      <div class="toolbar">
+        <div class="toolgroup">
+          <button class="btn small" id="undoBtn" title="Undo">↶ Undo</button>
+          <button class="btn small" id="redoBtn" title="Redo">↷ Redo</button>
+        </div>
+        <div style="width:1px;height:23px;background:var(--border);margin:0 3px"></div>
+        <button class="btn small" id="addNodeBtn">＋ Add step</button>
+        <button class="btn small" id="connectBtn" aria-pressed="false">↗ Connect steps</button>
+        <button class="btn small" id="fitBtn">Fit view</button>
+        <div class="spacer"></div>
+        <span class="pill" id="nodeCount">5 STEPS</span>
+      </div>
+      <div class="canvas-wrap">
+        <svg id="canvas" viewBox="0 0 900 580" role="img" aria-label="Interactive marketing funnel canvas. Select a step to edit it in the properties panel.">
+          <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#52617a"/></marker></defs>
+          <g id="edges"></g><g id="nodes"></g>
+        </svg>
+        <div class="canvas-hint">Select a node to edit · Drag to arrange · Connect mode: select two nodes</div>
+      </div>
+    </section>
+    <section id="planView" class="hidden" style="padding:22px;max-width:850px">
+      <div class="eyebrow">Campaign strategy</div><h2 style="margin:5px 0 6px;font-size:20px">The brief behind the funnel</h2>
+      <p class="subline" style="margin-bottom:22px">Make the strategy explicit so each step has a reason to exist.</p>
+      <div class="field"><label for="audience">Target audience</label><textarea id="audience" placeholder="Who are you trying to reach?">B2B decision-makers evaluating specialist services.</textarea></div>
+      <div class="field"><label for="problem">Audience problem / desired outcome</label><textarea id="problem" placeholder="What problem do they need solved?">Need credible evidence and a clear route to expert advice.</textarea></div>
+      <div class="field"><label for="offer">Offer and value proposition</label><textarea id="offer" placeholder="What useful next step do you offer?">Practical guide followed by a tailored consultation.</textarea></div>
+      <div class="field"><label for="channels">Priority channels</label><input id="channels" value="Organic search, LinkedIn, partner referrals"></div>
+      <div class="field"><label for="budget">Campaign budget (£)</label><input id="budget" type="number" min="0" step="1" value="500"></div>
+      <div class="field"><label for="hypothesis">Core hypothesis</label><textarea id="hypothesis">A practical resource will attract better-qualified prospects than a generic service page.</textarea></div>
+      <button class="btn primary" id="saveBrief">Save campaign brief</button>
+    </section>
+    <section id="metricsView" class="hidden" style="padding:22px;max-width:900px">
+      <div class="eyebrow">Performance / Overview</div><h2 style="margin:5px 0 6px;font-size:20px">Funnel measurement</h2>
+      <p class="subline">Enter observed counts for a consistent cohort and period. Demo values are illustrative.</p>
+      <div class="metric-grid">
+        <div class="metric"><span>Entrants</span><strong id="mEntrants">1,200</strong><small>Top of funnel</small></div>
+        <div class="metric"><span>Final conversions</span><strong id="mConversions">24</strong><small>Goal completions</small></div>
+        <div class="metric"><span>Overall conversion</span><strong id="mOverall">2.0%</strong><small>Conversions ÷ entrants</small></div>
+        <div class="metric"><span>Campaign target</span><strong id="mTarget">3.0%</strong><small>Editable target</small></div>
+      </div>
+      <div class="field"><label for="targetRate">Target overall conversion (%)</label><input id="targetRate" type="number" min="0" max="100" step=".1" value="3"></div>
+      <div id="stageMetrics"></div>
+      <div class="notice">Reporting note: counts should represent the same cohort and reporting window. This MVP stores aggregate figures only; it does not collect visitor-level events.</div>
+      <button class="btn" id="exportMetrics">Export metrics CSV</button>
+    </section>
+    <div class="footer"><span>FUNNELFORGE MVP · LOCAL-FIRST</span><span id="footerStatus">No external services connected</span></div>
+  </main>
+  <aside class="sidebar right">
+    <section id="inspector">
+      <div class="section-label" style="margin-left:0">Properties inspector</div>
+      <h2 class="panel-title" id="inspectorTitle">Select a step</h2>
+      <p class="panel-desc" id="inspectorDesc">Choose a node on the canvas to configure its details.</p>
+      <div id="inspectorForm" class="hidden">
+        <div class="field"><label for="nodeLabel">Step name</label><input id="nodeLabel" maxlength="80"></div>
+        <div class="field"><label for="nodeType">Step type</label><select id="nodeType"><option value="entry">Entry</option><option value="touchpoint">Touchpoint</option><option value="action">Action</option><option value="decision">Decision</option><option value="wait">Wait</option><option value="event">Event</option><option value="goal">Goal</option><option value="exit">Exit</option></select></div>
+        <div class="field"><label for="nodeDescription">Purpose / description</label><textarea id="nodeDescription" maxlength="500"></textarea></div>
+        <div class="field"><label for="nodeCta">Call to action</label><input id="nodeCta" maxlength="160" placeholder="e.g. Download the guide"></div>
+        <div class="field"><label for="nodeEvent">Measurement event</label><input id="nodeEvent" maxlength="100" placeholder="e.g. form_submitted"></div>
+        <div class="field"><label for="nodeTarget">Target count (optional)</label><input id="nodeTarget" type="number" min="0" step="1"></div>
+        <div class="divider"></div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <button class="btn small" id="duplicateNode">Duplicate</button>
+          <button class="btn small danger" id="deleteNode">Delete step</button>
+        </div>
+      </div>
+      <div id="connectHelp" class="notice hidden">Connect mode is active. Select a source node, then a destination node. Press Escape to cancel.</div>
+    </section>
+    <div class="divider"></div>
+    <section>
+      <div class="section-label" style="margin-left:0">Journey health</div>
+      <div class="metric-grid">
+        <div class="metric"><span>Steps</span><strong id="healthSteps">5</strong></div>
+        <div class="metric"><span>Connections</span><strong id="healthEdges">4</strong></div>
+      </div>
+      <div id="validationList" style="font-size:11px;color:var(--muted)">Checking funnel…</div>
+    </section>
+  </aside>
+</div>
+</div>
+<input type="file" id="importFile" accept=".json,application/json" class="hidden">
+<script>
+(function(){
+"use strict";
+const STORAGE_KEY="funnelforge.mvp.project.v1";
+const TYPE_META={
+ entry:{label:"ENTRY",color:"#00C2A8",subtitle:"Journey starts here"},
+ touchpoint:{label:"TOUCHPOINT",color:"#38BDF8",subtitle:"Marketing interaction"},
+ action:{label:"ACTION",color:"#F5A623",subtitle:"Audience action"},
+ decision:{label:"DECISION",color:"#A78BFA",subtitle:"Branch by condition"},
+ wait:{label:"WAIT",color:"#9AA4B8",subtitle:"Intended delay"},
+ event:{label:"EVENT",color:"#4ADE80",subtitle:"Observable behaviour"},
+ goal:{label:"GOAL",color:"#00C2A8",subtitle:"Success outcome"},
+ exit:{label:"EXIT",color:"#FF8080",subtitle:"Journey ends"}
+};
+const uid=()=>Math.random().toString(36).slice(2,9)+"-"+Date.now().toString(36);
+function node(type,label,x,y,description="",eventName=""){return{id:uid(),type,label,position:{x,y},config:{description,cta:"",eventName,target:""}}}
+function makeTemplate(kind="lead"){
+ let defs;
+ if(kind==="webinar") defs=[
+ ["entry","Campaign reach",55,90,"Promote the event through owned and partner channels.","campaign_landing_view"],
+ ["touchpoint","Event landing page",285,90,"Explain the topic, speakers and practical value.","landing_view"],
+ ["action","Registration",515,90,"Make registration quick and accessible.","registration_submitted"],
+ ["wait","Reminder sequence",515,245,"Schedule reminders before the event.","reminder_sent"],
+ ["goal","Attended webinar",745,245,"Measure attendance, not just registrations.","webinar_attended"]];
+ else if(kind==="newsletter") defs=[
+ ["entry","Content discovery",55,90,"Attract relevant readers through useful content.","content_view"],
+ ["touchpoint","Newsletter page",285,90,"Set clear expectations about frequency and value.","newsletter_page_view"],
+ ["action","Subscribe",515,90,"Collect only the information needed.","subscription_submitted"],
+ ["touchpoint","Welcome email",515,245,"Deliver the promised value and set expectations.","welcome_email_clicked"],
+ ["goal","Engaged reader",745,245,"Measure meaningful engagement over time.","reader_engaged"]];
+ else if(kind==="product") defs=[
+ ["entry","Product discovery",55,90,"Reach prospects with a relevant problem.","product_page_view"],
+ ["touchpoint","Product overview",285,90,"Communicate value, proof and fit.","product_detail_view"],
+ ["action","Start trial",515,90,"Make the next step easy to understand.","trial_started"],
+ ["wait","Activation support",515,245,"Help new users reach an initial success.","activation_completed"],
+ ["goal","Paid conversion",745,245,"Track the first paid conversion.","purchase_completed"]];
+ else defs=[
+ ["entry","Organic visit",55,90,"Attract relevant visitors through useful content.","landing_view"],
+ ["touchpoint","Resource landing page",285,90,"Explain the value of the resource and who it helps.","landing_engaged"],
+ ["action","Lead captured",515,90,"Offer a relevant download in exchange for contact details.","form_submitted"],
+ ["decision","Qualification",515,245,"Assess fit using transparent criteria.","lead_qualified"],
+ ["goal","Consultation booked",745,245,"Measure a meaningful business outcome.","consultation_booked"]];
+ const nodes=defs.map(d=>node(...d));
+ const edges=[{id:uid(),source:nodes[0].id,target:nodes[1].id,label:""},{id:uid(),source:nodes[1].id,target:nodes[2].id,label:""},{id:uid(),source:nodes[2].id,target:nodes[3].id,label:""},{id:uid(),source:nodes[3].id,target:nodes[4].id,label:kind==="lead"?"Qualified":"Next step"}];
+ return {schemaVersion:1,id:uid(),name:({"lead":"B2B Lead Generation","webinar":"Webinar Registration","newsletter":"Newsletter Growth","product":"Product Conversion"}[kind]||"Untitled Funnel"),objective:"Create a measurable customer journey",createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),funnel:{id:uid(),nodes,edges},brief:{audience:"B2B decision-makers evaluating specialist services.",problem:"Need credible evidence and a clear route to expert advice.",offer:"Practical guide followed by a tailored consultation.",channels:"Organic search, LinkedIn, partner referrals",budget:500,hypothesis:"A practical resource will attract better-qualified prospects than a generic service page."},metrics:{targetRate:3,counts:{}}};
+}
+let project=makeTemplate("lead"), selectedId=project.funnel.nodes[2].id, view="canvas", connectMode=false, connectFrom=null, drag=null, undoStack=[],redoStack=[],saveTimer=null;
+const $=id=>document.getElementById(id);
+const svgNS="http://www.w3.org/2000/svg";
+function clone(x){return JSON.parse(JSON.stringify(x))}
+function snapshot(){undoStack.push(clone(project));if(undoStack.length>60)undoStack.shift();redoStack=[];updateUndoButtons()}
+function changed(){project.updatedAt=new Date().toISOString();$("saveStatus").textContent="Unsaved changes";render();clearTimeout(saveTimer);saveTimer=setTimeout(save,350)}
+function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(project));$("saveStatus").textContent="Saved locally";}catch(e){$("saveStatus").textContent="Save failed — export backup";}}
+function load(){try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const p=JSON.parse(raw);if(p.schemaVersion===1&&p.funnel&&Array.isArray(p.funnel.nodes)&&Array.isArray(p.funnel.edges)){project=p;selectedId=project.funnel.nodes[0]?.id||null;}}}catch(e){}}
+function updateUndoButtons(){$("undoBtn").disabled=!undoStack.length;$("redoBtn").disabled=!redoStack.length}
+function undo(){if(!undoStack.length)return;redoStack.push(clone(project));project=undoStack.pop();selectedId=project.funnel.nodes[0]?.id||null;save();render();updateUndoButtons()}
+function redo(){if(!redoStack.length)return;undoStack.push(clone(project));project=redoStack.pop();selectedId=project.funnel.nodes[0]?.id||null;save();render();updateUndoButtons()}
+function selected(){return project.funnel.nodes.find(n=>n.id===selectedId)}
+function el(tag,attrs={},text){const e=document.createElementNS(svgNS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));if(text!==undefined)e.textContent=text;return e}
+function nodeSize(n){return {w:170,h:84}}
+function anchor(n,side){const s=nodeSize(n);return{x:n.position.x+(side==="right"?s.w:0),y:n.position.y+s.h/2}}
+function render(){
+ $("projectTitle").textContent=project.name;$("nodeCount").textContent=project.funnel.nodes.length+" STEPS";
+ $("healthSteps").textContent=project.funnel.nodes.length;$("healthEdges").textContent=project.funnel.edges.length;
+ $("edges").replaceChildren();$("nodes").replaceChildren();
+ const byId=new Map(project.funnel.nodes.map(n=>[n.id,n]));
+ project.funnel.edges.forEach(edge=>{
+  const a=byId.get(edge.source),b=byId.get(edge.target);if(!a||!b)return;
+  const p1=anchor(a,"right"),p2=anchor(b,"left"),mid=(p1.x+p2.x)/2;
+  const path=el("path",{d:`M ${p1.x} ${p1.y} C ${mid} ${p1.y}, ${mid} ${p2.y}, ${p2.x} ${p2.y}`,class:"edge","marker-end":"url(#arrow)"});
+  $("edges").append(path);
+  if(edge.label){$("edges").append(el("text",{x:mid,y:(p1.y+p2.y)/2-8,"text-anchor":"middle",class:"edge-label"},edge.label))}
+ });
+ project.funnel.nodes.forEach(n=>{
+  const meta=TYPE_META[n.type]||TYPE_META.action,s=nodeSize(n),g=el("g",{class:"node"+(n.id===selectedId?" selected":""),transform:`translate(${n.position.x} ${n.position.y})`,tabindex:"0",role:"button","aria-label":`${meta.label}: ${n.label}`,"data-id":n.id});
+  g.append(el("rect",{width:s.w,height:s.h}));
+  g.append(el("rect",{x:0,y:0,width:4,height:s.h,fill:meta.color,stroke:"none",rx:2}));
+  g.append(el("text",{x:13,y:17,class:"node-type",fill:meta.color},meta.label));
+  g.append(el("text",{x:13,y:39,class:"node-title"},n.label.length>22?n.label.slice(0,21)+"…":n.label));
+  const subtitle=(n.config.eventName||meta.subtitle||"").replace(/_/g," ");
+  g.append(el("text",{x:13,y:60,class:"node-sub"},subtitle.length>25?subtitle.slice(0,24)+"…":subtitle));
+  g.append(el("circle",{cx:s.w-13,cy:14,r:3.5,fill:meta.color}));
+  g.addEventListener("click",e=>{e.stopPropagation();selectNode(n.id)});
+  g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selectNode(n.id)}});
+  g.addEventListener("pointerdown",e=>{if(connectMode)return;e.preventDefault();selectNode(n.id);const pt=toSvgPoint(e);drag={id:n.id,dx:pt.x-n.position.x,dy:pt.y-n.position.y,startX:pt.x,startY:pt.y,moved:false};g.setPointerCapture?.(e.pointerId)});
+  $("nodes").append(g);
+ });
+ $("projectSubtitle").textContent=project.objective||"Marketing funnel project";
+ renderInspector();renderValidation();renderMetrics();
+}
+function toSvgPoint(e){const pt=$("canvas").createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform($("canvas").getScreenCTM().inverse())}
+$("canvas").addEventListener("pointermove",e=>{if(!drag)return;const pt=toSvgPoint(e),n=project.funnel.nodes.find(x=>x.id===drag.id);if(!n)return;if(Math.abs(pt.x-drag.startX)+Math.abs(pt.y-drag.startY)>3)drag.moved=true;n.position.x=Math.max(0,Math.min(710,pt.x-drag.dx));n.position.y=Math.max(0,Math.min(480,pt.y-drag.dy));render();});
+$("canvas").addEventListener("pointerup",()=>{if(drag?.moved){project.updatedAt=new Date().toISOString();save();render()}drag=null});
+$("canvas").addEventListener("pointercancel",()=>drag=null);
+$("canvas").addEventListener("click",e=>{if(e.target===$("canvas")){selectedId=null;renderInspector();render()}});
+function selectNode(id){
+ if(connectMode){
+  if(!connectFrom){connectFrom=id;$("connectHelp").textContent="Source selected. Now choose the destination node.";return}
+  if(connectFrom!==id&&!project.funnel.edges.some(e=>e.source===connectFrom&&e.target===id)){
+   snapshot();project.funnel.edges.push({id:uid(),source:connectFrom,target:id,label:""});connectMode=false;connectFrom=null;$("connectBtn").setAttribute("aria-pressed","false");$("connectHelp").classList.add("hidden");changed();
+  }else{connectFrom=null;$("connectHelp").textContent="Choose a source node, then a different destination."}
+  return;
+ }
+ selectedId=id;render();
+}
+function renderInspector(){
+ const n=selected();$("inspectorTitle").textContent=n?n.label:"Select a step";$("inspectorDesc").textContent=n?"Configure this stage's purpose and measurement.":"Choose a node on the canvas to configure its details.";
+ $("inspectorForm").classList.toggle("hidden",!n);
+ if(!n)return;
+ $("nodeLabel").value=n.label;$("nodeType").value=n.type;$("nodeDescription").value=n.config.description||"";$("nodeCta").value=n.config.cta||"";$("nodeEvent").value=n.config.eventName||"";$("nodeTarget").value=n.config.target??"";
+}
+function bindNodeField(id,key,config=false,transform=x=>x){
+ $(id).addEventListener("change",()=>{const n=selected();if(!n)return;snapshot();if(config)n.config[key]=transform($(id).value);else n[key]=transform($(id).value);changed()});
+}
+bindNodeField("nodeLabel","label");bindNodeField("nodeType","type");bindNodeField("nodeDescription","description",true);bindNodeField("nodeCta","cta",true);bindNodeField("nodeEvent","eventName",true);bindNodeField("nodeTarget","target",true,x=>x===""?"":Math.max(0,Number(x)));
+$("duplicateNode").addEventListener("click",()=>{const n=selected();if(!n)return;snapshot();const copy=clone(n);copy.id=uid();copy.label=n.label+" copy";copy.position.x=Math.min(700,n.position.x+35);copy.position.y=Math.min(480,n.position.y+35);project.funnel.nodes.push(copy);selectedId=copy.id;changed()});
+$("deleteNode").addEventListener("click",()=>{const n=selected();if(!n)return;if(!confirm(`Delete "${n.label}" and its connected edges?`))return;snapshot();project.funnel.nodes=project.funnel.nodes.filter(x=>x.id!==n.id);project.funnel.edges=project.funnel.edges.filter(e=>e.source!==n.id&&e.target!==n.id);selectedId=project.funnel.nodes[0]?.id||null;changed()});
+function addNode(type="touchpoint"){
+ snapshot();const n=node(type,({"entry":"New entry","touchpoint":"New touchpoint","action":"New action","decision":"New decision","wait":"New wait step","event":"New event","goal":"New goal","exit":"New exit"}[type]||"New step"),100+Math.random()*240,100+Math.random()*280,"Describe the purpose of this step.","");project.funnel.nodes.push(n);selectedId=n.id;changed()
+}
+$("addNodeBtn").addEventListener("click",()=>addNode("touchpoint"));
+$("connectBtn").addEventListener("click",()=>{connectMode=!connectMode;connectFrom=null;$("connectBtn").setAttribute("aria-pressed",String(connectMode));$("connectHelp").classList.toggle("hidden",!connectMode);$("connectHelp").textContent="Connect mode is active. Select a source node, then a destination node. Press Escape to cancel."});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&connectMode){connectMode=false;connectFrom=null;$("connectBtn").setAttribute("aria-pressed","false");$("connectHelp").classList.add("hidden")}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){e.preventDefault();e.shiftKey?redo():undo()}});
+$("undoBtn").addEventListener("click",undo);$("redoBtn").addEventListener("click",redo);
+$("fitBtn").addEventListener("click",()=>{const ns=project.funnel.nodes;if(!ns.length)return;const minX=Math.min(...ns.map(n=>n.position.x)),minY=Math.min(...ns.map(n=>n.position.y)),maxX=Math.max(...ns.map(n=>n.position.x+170)),maxY=Math.max(...ns.map(n=>n.position.y+84));const w=Math.max(400,maxX-minX+100),h=Math.max(300,maxY-minY+100);$("canvas").setAttribute("viewBox",`${minX-40} ${minY-40} ${w} ${h}`)});
+function renderValidation(){
+ const ns=project.funnel.nodes,ids=new Set(ns.map(n=>n.id)),issues=[];
+ if(!ns.length)issues.push("Add at least one step.");
+ if(ns.length&&!ns.some(n=>n.type==="goal"))issues.push("Consider defining a conversion goal.");
+ ns.forEach(n=>{if(!project.funnel.edges.some(e=>e.source===n.id||e.target===n.id)&&ns.length>1)issues.push(`“${n.label}” is unconnected.`)});
+ project.funnel.edges.forEach(e=>{if(!ids.has(e.source)||!ids.has(e.target))issues.push("A connection references a missing step.")});
+ if(!issues.length){$("validationList").innerHTML='<span style="color:var(--green)">✓ No structural issues detected.</span><p style="margin:6px 0 0">Review the journey logic and ensure each step supports the campaign objective.</p>'}
+ else $("validationList").innerHTML=issues.slice(0,5).map(x=>`<div style="margin:6px 0">• ${escapeHtml(x)}</div>`).join("");
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function switchView(v){
+ view=v;["canvas","plan","metrics"].forEach(k=>{$(k+"View").classList.toggle("hidden",k!==v)});
+ document.querySelectorAll(".tab").forEach(t=>{t.classList.toggle("active",t.dataset.view===v);t.setAttribute("aria-selected",String(t.dataset.view===v))});
+ $("campaignTab").classList.toggle("active",v==="plan");$("measurementTab").classList.toggle("active",v==="metrics");
+}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchView(t.dataset.view)));
+$("campaignTab").addEventListener("click",()=>switchView("plan"));$("measurementTab").addEventListener("click",()=>switchView("metrics"));
+document.querySelectorAll("[data-template]").forEach(b=>b.addEventListener("click",()=>{if(!confirm("Replace the current funnel with this template? Export first if you want to keep the current project."))return;snapshot();project=makeTemplate(b.dataset.template);selectedId=project.funnel.nodes[2]?.id||null;applyBrief();changed();switchView("canvas")}));
+function applyBrief(){const b=project.brief||{};["audience","problem","offer","channels","budget","hypothesis"].forEach(k=>{if($(k))$(k).value=b[k]??""})}
+function readBrief(){project.brief={audience:$("audience").value,problem:$("problem").value,offer:$("offer").value,channels:$("channels").value,budget:Number($("budget").value)||0,hypothesis:$("hypothesis").value}}
+["audience","problem","offer","channels","budget","hypothesis"].forEach(id=>$(id).addEventListener("change",()=>{readBrief();snapshot();changed()}));
+$("saveBrief").addEventListener("click",()=>{readBrief();snapshot();changed();alert("Campaign brief saved locally.")});
+$("projectTitle").addEventListener("blur",()=>{const name=$("projectTitle").textContent.trim().slice(0,100)||"Untitled Funnel";snapshot();project.name=name;changed()});
+$("projectTitle").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("projectTitle").blur()}});
+function download(name,content,type){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+$("exportBtn").addEventListener("click",()=>{readBrief();project.updatedAt=new Date().toISOString();download((project.name||"funnelforge").toLowerCase().replace(/[^a-z0-9]+/g,"-")+".json",JSON.stringify(project,null,2),"application/json");save()});
+$("newBtn").addEventListener("click",()=>{if(!confirm("Start a new funnel? Export the current project first if you want to keep it."))return;snapshot();project=makeTemplate("lead");project.name="Untitled Funnel";selectedId=project.funnel.nodes[0].id;applyBrief();changed();switchView("canvas")});
+$("importFile").addEventListener("change",async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>2*1024*1024)throw Error("File exceeds the 2 MB import limit.");const p=JSON.parse(await file.text());if(p.schemaVersion!==1||!p.funnel||!Array.isArray(p.funnel.nodes)||!Array.isArray(p.funnel.edges))throw Error("Unsupported project schema.");const ids=new Set();for(const n of p.funnel.nodes){if(!n.id||ids.has(n.id)||!TYPE_META[n.type]||!n.position||!Number.isFinite(n.position.x)||!Number.isFinite(n.position.y))throw Error("Invalid or duplicate node data.");ids.add(n.id)}for(const edge of p.funnel.edges){if(!ids.has(edge.source)||!ids.has(edge.target))throw Error("A connection references a missing node.")}if(!confirm("Import this project and replace the current funnel?"))return;snapshot();project=p;selectedId=project.funnel.nodes[0]?.id||null;applyBrief();save();render();switchView("canvas");alert("Project imported successfully.")}catch(err){alert("Import failed: "+err.message)}finally{e.target.value=""}});
+function renderMetrics(){
+ const ns=project.funnel.nodes,metrics=project.metrics||(project.metrics={targetRate:3,counts:{}}),counts=metrics.counts||(metrics.counts={});
+ const entrants=Number(counts[ns[0]?.id]??1200),lastGoal=[...ns].reverse().find(n=>n.type==="goal"),conversions=Number(counts[lastGoal?.id]??24),rate=entrants>0?conversions/entrants*100:0,target=Number(metrics.targetRate??3);
+ $("mEntrants").textContent=entrants.toLocaleString();$("mConversions").textContent=conversions.toLocaleString();$("mOverall").textContent=rate.toFixed(1)+"%";$("mTarget").textContent=target.toFixed(1)+"%";$("targetRate").value=target;
+ $("stageMetrics").replaceChildren();
+ ns.forEach((n,i)=>{
+  const row=document.createElement("div");row.className="stage-row";
+  const left=document.createElement("div");const lab=document.createElement("label");lab.textContent=n.label;const bar=document.createElement("div");bar.className="bar";const fill=document.createElement("i");const count=Number(counts[n.id]??(i===0?1200:(n.type==="goal"?24:"")));const max=entrants||1;fill.style.width=(count===""?0:Math.min(100,Math.max(0,Number(count)/max*100)))+"%";bar.append(fill);left.append(lab,bar);
+  const input=document.createElement("input");input.type="number";input.min="0";input.step="1";input.value=counts[n.id]??(i===0?1200:(n.type==="goal"?24:""));input.setAttribute("aria-label",n.label+" count");input.placeholder="Count";
+  input.addEventListener("change",()=>{snapshot();metrics.counts[n.id]=input.value===""?"":Math.max(0,Math.floor(Number(input.value)));changed()});row.append(left,input);$("stageMetrics").append(row);
+ });
+}
+$("targetRate").addEventListener("change",()=>{snapshot();project.metrics.targetRate=Math.max(0,Math.min(100,Number($("targetRate").value)||0));changed()});
+$("exportMetrics").addEventListener("click",()=>{const rows=[["step_id","step_name","type","count","event_name"],...project.funnel.nodes.map(n=>[n.id,n.label,n.type,project.metrics?.counts?.[n.id]??"",n.config.eventName||""])];download("funnelforge-metrics.csv",rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\r\n"),"text/csv")});
+load();applyBrief();render();updateUndoButtons();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Active vs Passive Sensor Explorer — tools.rjmlaird.co.uk</title>
+<meta name="description" content="Interactive explorer comparing active and passive Earth-observation sensors, with animated visuals of optical, radar and lidar sensing.">
+<style>
+:root{
+  --ink:#0B0F1A; --ink2:#0F1520; --card:#141B29; --lift:#1A2236;
+  --w:#EDEAE3; --mb:#9AA4B8; --m:#8A98B2;
+  --teal:#00C2A8; --amber:#F5A623; --violet:#A78BFA; --coral:#FF8080; --green:#4ADE80; --sky:#38BDF8;
+  --td:rgba(0,194,168,.13); --tb:rgba(0,194,168,.26);
+  --bd:rgba(255,255,255,.11); --bm:rgba(255,255,255,.2); --focus:#7FE6D4;
+  --font-display:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --radius:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);color:var(--w);font-family:var(--font-body);line-height:1.6;min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:2rem 1.25rem 3rem}
+h1{font-family:var(--font-display);font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.2;margin-bottom:.5rem}
+.lede{color:var(--mb);max-width:62ch;margin-bottom:1.5rem}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.25rem}
+.tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+button{background:var(--td);border:1px solid var(--tb);border-radius:var(--radius);color:var(--teal);font-family:var(--font-display);font-weight:600;padding:.5rem .9rem;cursor:pointer;transition:background .2s}
+button:hover{background:var(--tb)}
+button.active{background:var(--teal);color:var(--ink);border-color:var(--teal)}
+button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+canvas{width:100%;height:auto;display:block;background:var(--ink2);border:1px solid var(--bd);border-radius:var(--radius)}
+h2{font-family:var(--font-display);font-size:1.2rem;margin:1rem 0 .4rem}
+p{color:var(--mb);max-width:65ch}
+.meta{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:.75rem;font-size:.85rem;color:var(--m)}
+.meta strong{color:var(--w);font-family:var(--font-display)}
+.note{font-size:.8rem;color:var(--m);margin-top:.75rem}
+footer{margin-top:2rem;font-size:.85rem;color:var(--m)}
+footer a{color:var(--teal);text-decoration:none}
+footer a:hover{text-decoration:underline}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Active vs Passive Sensor Explorer</h1>
+  <p class="lede">Compare active and passive Earth-observation sensors with animated visuals showing how each type measures the planet.</p>
+
+  <section class="card">
+    <div class="tabs" role="tablist">
+      <button class="active" data-type="passive">Passive optical</button>
+      <button data-type="radar">Active radar</button>
+      <button data-type="lidar">Active lidar</button>
+    </div>
+    <canvas id="sky" width="880" height="380" role="img" aria-label="Animated diagram of the selected sensor type"></canvas>
+    <h2 id="title">Passive optical sensor</h2>
+    <p id="desc">Passive sensors measure sunlight reflected or emitted by the Earth. They need daylight (for reflected light) and cannot see through clouds.</p>
+    <div class="meta">
+      <span>Energy source: <strong id="src">Sun</strong></span>
+      <span>Works at night: <strong id="night">No</strong></span>
+      <span>Sees through cloud: <strong id="cloud">No</strong></span>
+      <span>Examples: <strong id="ex">Landsat, Sentinel-2, MODIS</strong></span>
+    </div>
+    <p class="note">Diagrams are schematic and animated for illustration, not to scale. Real sensors vary widely in wavelength, resolution and orbit.</p>
+  </section>
+
+  <footer>
+    Part of <a href="https://tools.rjmlaird.co.uk/">tools.rjmlaird.co.uk</a> · <a href="https://rjmlaird.co.uk/">rjmlaird.co.uk</a>
+  </footer>
+</main>
+
+<script>
+const cv=document.getElementById("sky"),ctx=cv.getContext("2d");
+const titleEl=document.getElementById("title"),descEl=document.getElementById("desc");
+const srcEl=document.getElementById("src"),nightEl=document.getElementById("night");
+const cloudEl=document.getElementById("cloud"),exEl=document.getElementById("ex");
+const types={
+ passive:{t:"Passive optical sensor",d:"Passive sensors measure sunlight reflected or emitted by the Earth. They need daylight (for reflected light) and cannot see through clouds.",src:"Sun",night:"No",cloud:"No",ex:"Landsat, Sentinel-2, MODIS"},
+ radar:{t:"Active radar sensor",d:"Radar sends out microwave pulses and measures the reflected signal. It works day and night and can see through clouds.",src:"Satellite",night:"Yes",cloud:"Yes",ex:"Sentinel-1, TerraSAR-X"},
+ lidar:{t:"Active lidar sensor",d:"Lidar sends out laser pulses and measures the reflected light. It can measure height and structure precisely, but is affected by cloud.",src:"Satellite",night:"Yes",cloud:"Partly",ex:"ICESat-2, GEDI"}
+};
+let current="passive",t0=performance.now();
+function drawSatellite(x,y){
+  ctx.fillStyle="#9AA4B8";ctx.fillRect(x-18,y-8,36,16);
+  ctx.fillStyle="#00C2A8";
+  ctx.fillRect(x-38,y-4,16,8);ctx.fillRect(x+22,y-4,16,8);
+}
+function drawEarth(x,y,r){
+  const g=ctx.createRadialGradient(x-r/3,y-r/3,5,x,y,r);
+  g.addColorStop(0,"#4ADE80");g.addColorStop(1,"#1E3A5F");
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+}
+function drawScene(){
+  const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle="#0F1520";ctx.fillRect(0,0,W,H);
+  const t=(performance.now()-t0)/1000;
+  const cx=W/2,sy=90,ey=H-100,er=70;
+  if(current==="passive"){
+    const sx=110,sy2=70;
+    const g=ctx.createRadialGradient(sx,sy2,5,sx,sy2,40);
+    g.addColorStop(0,"#F5A623");g.addColorStop(1,"rgba(245,166,35,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(sx,sy2,40,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#F5A623";ctx.font="12px Inter,sans-serif";ctx.textAlign="center";
+    ctx.fillText("Sun",sx,sy2+55);
+    drawSatellite(cx,sy);
+    ctx.fillStyle="#9AA4B8";ctx.fillText("Satellite",cx,sy-28);
+    drawEarth(cx,ey,er);
+    // animated sunlight
+    const p1=(t%2)/2;
+    ctx.strokeStyle="rgba(245,166,35,.8)";ctx.lineWidth=2;
+    ctx.setLineDash([6,6]);ctx.lineDashOffset=-t*40;
+    ctx.beginPath();ctx.moveTo(sx+30,sy2+25);ctx.lineTo(cx-40,ey-er+10);ctx.stroke();
+    // reflected light
+    ctx.strokeStyle="rgba(120,220,255,.8)";
+    ctx.beginPath();ctx.moveTo(cx+20,ey-er+5);ctx.lineTo(cx+8,sy+12);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle="#9AA4B8";ctx.fillText("Reflected sunlight",cx+150,H/2);
+  }else{
+    drawSatellite(cx,sy);
+    ctx.fillStyle="#9AA4B8";ctx.font="12px Inter,sans-serif";ctx.textAlign="center";
+    ctx.fillText("Satellite",cx,sy-28);
+    drawEarth(cx,ey,er);
+    const col=current==="radar"?"rgba(0,194,168,.85)":"rgba(167,139,250,.85)";
+    const ret=current==="radar"?"rgba(255,128,128,.75)":"rgba(56,189,248,.75)";
+    const pulseY=sy+20+((t*160)%(ey-er-sy-20));
+    ctx.strokeStyle=col;ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(cx,sy+14);ctx.lineTo(cx,pulseY);ctx.stroke();
+    // return pulse
+    const retY=ey-er+((t*160)%(ey-er-sy-20));
+    ctx.strokeStyle=ret;ctx.lineWidth=2;
+    ctx.setLineDash([5,5]);ctx.lineDashOffset=-t*40;
+    ctx.beginPath();ctx.moveTo(cx+10,retY);ctx.lineTo(cx+10,sy+14);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle=current==="radar"?"#00C2A8":"#A78BFA";
+    ctx.fillText(current==="radar"?"Microwave pulse":"Laser pulse",cx+150,H/2-20);
+    ctx.fillStyle=current==="radar"?"#FF8080":"#38BDF8";
+    ctx.fillText(current==="radar"?"Backscatter":"Reflected photons",cx+150,H/2+20);
+  }
+  requestAnimationFrame(drawScene);
+}
+function setType(t){
+  current=t;
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("active",b.dataset.type===t));
+  const d=types[t];
+  titleEl.textContent=d.t;descEl.textContent=d.d;
+  srcEl.textContent=d.src;nightEl.textContent=d.night;
+  cloudEl.textContent=d.cloud;exEl.textContent=d.ex;
+}
+document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>setType(b.dataset.type)));
+setType("passive");
+requestAnimationFrame(drawScene);
+</script>
+</body>
+</html>

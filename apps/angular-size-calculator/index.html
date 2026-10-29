@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Angular Size Calculator — tools.rjmlaird.co.uk</title>
+<meta name="description" content="Calculate the angular size of an astronomical object from its physical size and distance.">
+<style>
+:root{
+  --ink:#0B0F1A; --ink2:#0F1520; --card:#141B29; --lift:#1A2236;
+  --w:#EDEAE3; --mb:#9AA4B8; --m:#8A98B2;
+  --teal:#00C2A8; --amber:#F5A623; --violet:#A78BFA; --coral:#FF8080; --green:#4ADE80; --sky:#38BDF8;
+  --td:rgba(0,194,168,.13); --tb:rgba(0,194,168,.26);
+  --bd:rgba(255,255,255,.11); --bm:rgba(255,255,255,.2); --focus:#7FE6D4;
+  --font-display:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --radius:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);color:var(--w);font-family:var(--font-body);line-height:1.6;min-height:100vh}
+.wrap{max-width:720px;margin:0 auto;padding:2rem 1.25rem 3rem}
+h1{font-family:var(--font-display);font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.2;margin-bottom:.5rem}
+.lede{color:var(--mb);max-width:60ch;margin-bottom:1.5rem}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.25rem}
+label{display:block;font-family:var(--font-display);font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;color:var(--mb);margin-bottom:.4rem}
+input[type=number],select{width:100%;background:var(--ink2);border:1px solid var(--bd);border-radius:var(--radius);color:var(--w);padding:.6rem .75rem;font-family:var(--font-body);font-size:1rem}
+input:focus-visible,select:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.row{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+.row>div{flex:1;min-width:200px}
+.result{background:var(--lift);border:1px solid var(--bd);border-radius:var(--radius);padding:1rem;margin-top:.5rem}
+.result div{margin-bottom:.5rem;font-size:.95rem;color:var(--mb)}
+.result strong{color:var(--w);font-family:var(--font-display);font-size:1.1rem}
+.note{font-size:.8rem;color:var(--m);margin-top:.75rem}
+footer{margin-top:2rem;font-size:.85rem;color:var(--m)}
+footer a{color:var(--teal);text-decoration:none}
+footer a:hover{text-decoration:underline}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Angular Size Calculator</h1>
+  <p class="lede">Calculate the angular size of an astronomical object from its physical diameter and distance.</p>
+
+  <section class="card">
+    <div class="row">
+      <div>
+        <label for="size">Physical diameter</label>
+        <input type="number" id="size" step="any" value="3474">
+      </div>
+      <div>
+        <label for="sizeUnit">Size unit</label>
+        <select id="sizeUnit">
+          <option value="km" selected>km</option>
+          <option value="au">AU</option>
+          <option value="ly">light-years</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label for="dist">Distance</label>
+        <input type="number" id="dist" step="any" value="384400">
+      </div>
+      <div>
+        <label for="distUnit">Distance unit</label>
+        <select id="distUnit">
+          <option value="km" selected>km</option>
+          <option value="au">AU</option>
+          <option value="ly">light-years</option>
+        </select>
+      </div>
+    </div>
+    <div class="result">
+      <div>Angular size: <strong id="deg">–</strong></div>
+      <div>Equivalent: <strong id="amin">–</strong></div>
+    </div>
+    <p class="note">Uses the small-angle approximation: angular size (radians) = diameter / distance. Accurate for objects whose angular size is much smaller than the field of view. Default values show the Moon’s mean diameter and distance.</p>
+  </section>
+
+  <footer>
+    Part of <a href="https://tools.rjmlaird.co.uk/">tools.rjmlaird.co.uk</a> · <a href="https://rjmlaird.co.uk/">rjmlaird.co.uk</a>
+  </footer>
+</main>
+
+<script>
+const size=document.getElementById("size"),sizeUnit=document.getElementById("sizeUnit");
+const dist=document.getElementById("dist"),distUnit=document.getElementById("distUnit");
+const degEl=document.getElementById("deg"),aminEl=document.getElementById("amin");
+const KM_PER_AU=1.495978707e8,KM_PER_LY=9.4607e12;
+function toKm(v,u){return v*(u==="km"?1:u==="au"?KM_PER_AU:KM_PER_LY);}
+function calc(){
+  const s=parseFloat(size.value),d=parseFloat(dist.value);
+  if(isNaN(s)||isNaN(d)||d<=0||s<=0){degEl.textContent="–";aminEl.textContent="–";return;}
+  const skm=toKm(s,sizeUnit.value),dkm=toKm(d,distUnit.value);
+  const rad=2*Math.atan((skm/2)/dkm);
+  const deg=rad*R2D;
+  degEl.textContent=deg.toFixed(4)+"°";
+  aminEl.textContent=(deg*60).toFixed(2)+" arcmin ("+(deg*3600).toFixed(2)+" arcsec)";
+}
+const R2D=180/Math.PI;
+[size,sizeUnit,dist,distUnit].forEach(el=>el.addEventListener("input",calc));
+calc();
+</script>
+</body>
+</html>

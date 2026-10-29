@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Greenhouse Effect Explorer — Physics and Chemistry</title>
+<style>
+:root{--ink:#0B0F1A;--ink2:#0F1520;--card:#141B29;--lift:#1A2236;--w:#EDEAE3;--mb:#9AA4B8;--m:#8A98B2;--teal:#00C2A8;--amber:#F5A623;--violet:#A78BFA;--coral:#FF8080;--green:#4ADE80;--sky:#38BDF8;--td:rgba(0,194,168,.13);--bd:rgba(255,255,255,.11);--bm:rgba(255,255,255,.2);--focus:#7FE6D4;--font-display:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;--font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;--radius:6px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);color:var(--w);font-family:var(--font-body);line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:82rem;margin:0 auto;padding:2.5rem 1.5rem 4rem}
+.kicker{display:flex;align-items:center;gap:.7rem;margin-bottom:1rem;font-family:var(--font-display);font-size:.75rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--teal)}
+.kicker::before{content:"";width:26px;height:1px;background:var(--teal)}
+h1{font-family:var(--font-display);font-size:clamp(2rem,4.6vw,3.2rem);line-height:1.08;letter-spacing:-.025em;margin-bottom:1rem}
+.lead{max-width:54rem;color:var(--mb);font-size:1.05rem;line-height:1.75;margin-bottom:2rem}
+.layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(350px,.95fr);gap:1.5rem;align-items:start}
+@media(max-width:1000px){.layout{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--bd);border-left:3px solid var(--teal);border-radius:var(--radius);padding:1.25rem}
+.panel h2{font-family:var(--font-display);font-size:1.15rem;margin-bottom:.9rem}
+.controls{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
+.chip{font:inherit;font-size:.85rem;padding:.45rem .85rem;border:1px solid var(--bm);border-radius:999px;background:transparent;color:var(--mb);cursor:pointer;min-height:44px}
+.chip[aria-pressed=true]{background:var(--td);border-color:var(--teal);color:var(--w)}
+.chip:hover,.chip:focus-visible{border-color:var(--teal)}
+.stage{border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;background:linear-gradient(180deg,#05070d,#0B0F1A)}
+.stage svg{display:block;width:100%;height:auto}
+.results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem;margin-top:1.25rem}
+@media(max-width:520px){.results{grid-template-columns:1fr}}
+.result{background:var(--lift);border:1px solid var(--bd);border-radius:var(--radius);padding:.8rem}
+.result b{display:block;font-family:var(--font-display);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mb);margin-bottom:.25rem}
+.result strong{font-family:var(--font-display);font-size:1.15rem;color:var(--amber)}
+.control{margin:1rem 0}
+label{display:flex;justify-content:space-between;gap:1rem;font-family:var(--font-display);font-size:.85rem;color:var(--w);margin-bottom:.4rem}
+label span{color:var(--amber);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--teal)}
+.equation{background:var(--ink2);border:1px solid var(--bd);border-radius:var(--radius);padding:1rem;margin:1rem 0;overflow-x:auto}
+.equation code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--amber);white-space:nowrap}
+.plain-list{list-style:none;display:grid;gap:.55rem}
+.plain-list li{position:relative;padding-left:1.25rem;color:var(--mb);line-height:1.65}
+.plain-list li::before{content:"";position:absolute;left:0;top:.72em;width:.5rem;height:1px;background:var(--teal)}
+.plain-list strong{color:var(--w);font-weight:600}
+.subhead{font-family:var(--font-display);font-size:.75rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mb);margin:1.25rem 0 .6rem}
+.note{margin-top:1.5rem;padding:1rem 1.25rem;background:var(--ink2);border:1px solid var(--bd);border-radius:var(--radius);color:var(--mb);font-size:.92rem}
+.note strong{color:var(--w)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+</style>
+</head>
+<body>
+<main class="wrap">
+<p class="kicker">Climate Explainer</p>
+<h1>The greenhouse effect: physics and chemistry</h1>
+<p class="lead">Explore how sunlight, infrared radiation and greenhouse-gas molecules shape Earth’s temperature. The physics tab shows Earth’s energy balance; the chemistry tab explains why molecules such as CO₂, CH₄ and H₂O absorb infrared radiation.</p>
+<div class="layout">
+<section class="panel">
+<div class="controls" role="group" aria-label="Explainer view">
+<button class="chip view-chip" data-view="physics" aria-pressed="true">Physics</button>
+<button class="chip view-chip" data-view="chemistry" aria-pressed="false">Chemistry</button>
+</div>
+<div id="stage" class="stage" aria-live="polite"></div>
+<div id="physicsControls">
+<div class="control"><label for="ghg">Greenhouse effect <span id="ghgLabel">Modern-like Earth</span></label><input id="ghg" type="range" min="0" max="100" value="55"></div>
+<div class="control"><label for="albedo">Planetary albedo <span id="albedoLabel">0.30</span></label><input id="albedo" type="range" min="0.1" max="0.5" value="0.3" step="0.01"></div>
+<div class="control"><label for="distance">Earth–Sun distance <span id="distanceLabel">1.00 AU</span></label><input id="distance" type="range" min="0.7" max="1.5" value="1" step="0.01"></div>
+</div>
+<div class="results" id="results">
+<div class="result"><b>Absorbed sunlight</b><strong id="absorbed">—</strong></div>
+<div class="result"><b>Effective temperature</b><strong id="effective">—</strong></div>
+<div class="result"><b>Surface temperature</b><strong id="surface">—</strong></div>
+<div class="result"><b>Greenhouse warming</b><strong id="warming">—</strong></div>
+</div>
+</section>
+<aside class="panel" id="info" aria-live="polite"></aside>
+</div>
+<p class="note"><strong>Key distinction:</strong> greenhouse gases do not trap heat forever. Energy still escapes to space. They make it harder for infrared radiation from the surface to escape directly, so the surface and lower atmosphere warm until outgoing energy again balances absorbed sunlight.</p>
+</main>
+<script>
+const stage=document.getElementById("stage"),info=document.getElementById("info");
+const ghg=document.getElementById("ghg"),albedo=document.getElementById("albedo"),distance=document.getElementById("distance");
+let view="physics",molecule="co2";
+const L=3.828e26,sigma=5.670374419e-8,AU=1.495978707e11;
+function physicsSVG(tau){
+ let incoming="",outgoing="",down="";
+ for(let i=0;i<7;i++){const y=90+i*42;incoming+=`<line x1="${655-i*18}" y1="${y}" x2="430" y2="${y+42}" stroke="#FDE68A" stroke-width="3" opacity=".85"/>`;}
+ for(let i=0;i<6;i++){const x=330+i*24;outgoing+=`<line x1="${x}" y1="330" x2="${x+55}" y2="105" stroke="#FF8080" stroke-width="${tau>.9?2:3.2}" opacity="${tau>.9?.45:.8}"/>`;if(tau>.35)down+=`<line x1="${x+25}" y1="185" x2="${x-10}" y2="300" stroke="#FF8080" stroke-width="${tau>.9?3:1.8}" opacity="${tau>.9?.75:.35}" stroke-dasharray="7 5"/>`;}
+ return `<svg viewBox="0 0 760 480" role="img" aria-label="Earth energy balance and greenhouse effect"><defs><radialGradient id="atmos"><stop offset="0" stop-color="#38BDF8" stop-opacity=".22"/><stop offset="1" stop-color="#38BDF8" stop-opacity="0"/></radialGradient><radialGradient id="sun"><stop offset="0" stop-color="#F5A623"/><stop offset="1" stop-color="#F5A623" stop-opacity="0"/></radialGradient></defs><rect width="760" height="480" fill="#05070d"/><circle cx="675" cy="65" r="65" fill="url(#sun)"/><circle cx="675" cy="65" r="18" fill="#F5A623"/><circle cx="380" cy="260" r="185" fill="url(#atmos)"/><circle cx="380" cy="260" r="105" fill="#166534"/><path d="M300 285 q35 -35 70 -8 q35 27 70 -5 q35 -32 70 -5" fill="none" stroke="#4ADE80" stroke-width="4" opacity=".8"/><text x="336" y="268" fill="#EDEAE3" font-family="Space Grotesk" font-size="15" font-weight="700">EARTH</text>${incoming}${outgoing}${down}<text x="30" y="32" fill="#9AA4B8" font-family="Inter" font-size="12">Yellow: incoming sunlight · Red: outgoing infrared · Dashed red: infrared re-emitted downward</text></svg>`;
+}
+function moleculeSVG(m){
+ const shapes={
+  co2:`<circle cx="300" cy="190" r="28" fill="#9AA4B8"/><text x="292" y="197" fill="#0B0F1A" font-weight="700">C</text><line x1="272" y1="190" x2="228" y2="190" stroke="#9AA4B8" stroke-width="4"/><line x1="328" y1="190" x2="428" y2="190" stroke="#9AA4B8" stroke-width="4"/><circle cx="245" cy="190" r="32" fill="#FF8080"/><circle cx="455" cy="190" r="32" fill="#FF8080"/><text x="232" y="197" fill="#0B0F1A" font-weight="700">O</text><text x="442" y="197" fill="#0B0F1A" font-weight="700">O</text>`,
+  ch4:`<circle cx="300" cy="190" r="30" fill="#9AA4B8"/><text x="292" y="197" fill="#0B0F1A" font-weight="700">C</text><circle cx="225" cy="140" r="22" fill="#EDEAE3"/><circle cx="375" cy="140" r="22" fill="#EDEAE3"/><circle cx="225" cy="240" r="22" fill="#EDEAE3"/><circle cx="375" cy="240" r="22" fill="#EDEAE3"/><line x1="278" y1="172" x2="245" y2="152" stroke="#9AA4B8" stroke-width="4"/><line x1="322" y1="172" x2="355" y2="152" stroke="#9AA4B8" stroke-width="4"/><line x1="278" y1="208" x2="245" y2="228" stroke="#9AA4B8" stroke-width="4"/><line x1="322" y1="208" x2="355" y2="228" stroke="#9AA4B8" stroke-width="4"/><text x="217" y="146" fill="#0B0F1A" font-weight="700">H</text><text x="367" y="146" fill="#0B0F1A" font-weight="700">H</text><text x="217" y="246" fill="#0B0F1A" font-weight="700">H</text><text x="367" y="246" fill="#0B0F1A" font-weight="700">H</text>`,
+  h2o:`<circle cx="300" cy="175" r="32" fill="#FF8080"/><text x="292" y="182" fill="#0B0F1A" font-weight="700">O</text><circle cx="235" cy="245" r="22" fill="#EDEAE3"/><circle cx="365" cy="245" r="22" fill="#EDEAE3"/><line x1="278" y1="198" x2="252" y2="228" stroke="#9AA4B8" stroke-width="4"/><line x1="322" y1="198" x2="348" y2="228" stroke="#9AA4B8" stroke-width="4"/><text x="227" y="251" fill="#0B0F1A" font-weight="700">H</text><text x="357" y="251" fill="#0B0F1A" font-weight="700">H</text>`,
+  n2o:`<circle cx="230" cy="190" r="28" fill="#38BDF8"/><circle cx="300" cy="190" r="28" fill="#38BDF8"/><circle cx="375" cy="190" r="32" fill="#FF8080"/><line x1="258" y1="190" x2="272" y2="190" stroke="#9AA4B8" stroke-width="4"/><line x1="328" y1="190" x2="343" y2="190" stroke="#9AA4B8" stroke-width="4"/><text x="222" y="197" fill="#0B0F1A" font-weight="700">N</text><text x="292" y="197" fill="#0B0F1A" font-weight="700">N</text><text x="363" y="197" fill="#0B0F1A" font-weight="700">O</text>`,
+  o3:`<circle cx="235" cy="190" r="32" fill="#FF8080"/><circle cx="300" cy="150" r="32" fill="#FF8080"/><circle cx="365" cy="190" r="32" fill="#FF8080"/><line x1="262" y1="178" x2="275" y2="168" stroke="#9AA4B8" stroke-width="4"/><line x1="325" y1="168" x2="338" y2="178" stroke="#9AA4B8" stroke-width="4"/><text x="227" y="197" fill="#0B0F1A" font-weight="700">O</text><text x="292" y="158" fill="#0B0F1A" font-weight="700">O</text><text x="357" y="197" fill="#0B0F1A" font-weight="700">O</text>`
+ };
+ return shapes[m];
+}
+const moleculeData={
+ co2:{name:"Carbon dioxide",formula:"CO₂",sources:"Volcanic degassing, respiration, land-use change and fossil-fuel combustion.",points:["CO₂ is linear: O=C=O.","Its bending and stretching vibrations change its electric-field distribution.","That lets it absorb infrared radiation, especially around 15 micrometres.","Human emissions add CO₂ faster than natural land and ocean sinks absorb it."]},
+ ch4:{name:"Methane",formula:"CH₄",sources:"Wetlands, livestock, rice cultivation, landfills and fossil-fuel production.",points:["Methane has four C–H bonds arranged around a central carbon atom.","Its vibrations absorb infrared radiation strongly.","Per molecule, it has a much larger short-term warming effect than CO₂.","It is mainly removed by chemical reactions with hydroxyl radicals (OH)."]},
+ h2o:{name:"Water vapour",formula:"H₂O",sources:"Evaporation from oceans, lakes and land, plus transpiration from plants.",points:["Water vapour is a bent molecule with two O–H bonds.","Its vibrations absorb infrared radiation across several important wavelength ranges.","Warmer air can hold more water vapour, amplifying warming from other greenhouse gases.","It responds quickly to temperature and weather, so it is mainly a feedback rather than the primary long-term driver."]},
+ n2o:{name:"Nitrous oxide",formula:"N₂O",sources:"Soil microbes, fertilisers, manure management and some industrial processes.",points:["N₂O is a linear N–N–O molecule.","Its vibrations absorb infrared radiation effectively.","It also contributes to ozone depletion in the stratosphere.","Agricultural soil management is a major human-related source."]},
+ o3:{name:"Ozone",formula:"O₃",sources:"Formed naturally in the stratosphere; also formed near the surface through pollution chemistry.",points:["Ozone has three oxygen atoms in a bent arrangement.","Stratospheric ozone absorbs harmful ultraviolet radiation and helps heat the upper atmosphere.","Ground-level ozone is a greenhouse gas and an air pollutant.","Its climate effect depends strongly on altitude."]}
+};
+function physicsInfo(tau){
+ const message=tau<.18?"With almost no greenhouse effect, the surface temperature is close to the effective temperature. Earth would be far below freezing on average.":tau<.8?"A moderate greenhouse effect raises the surface above its effective temperature. The surface emits more infrared radiation until enough escapes to space to balance absorbed sunlight.":"A stronger greenhouse effect absorbs and re-emits more outgoing infrared radiation. The surface must warm further before energy escaping to space again balances absorbed sunlight.";
+ return `<h2>Energy balance</h2><p>${message}</p><div class="subhead">Airless planet</div><p>Without an atmosphere, Earth’s temperature is set by the balance between absorbed sunlight and infrared radiation emitted directly from the surface.</p><div class="equation"><code>T_effective = [ L(1 − A) / (16πσd²) ]^(1/4)</code></div><p>Here, L is solar luminosity, A is planetary albedo, d is Earth–Sun distance and σ is the Stefan–Boltzmann constant. For today’s albedo and distance, this gives about −18 °C.</p><div class="subhead">Adding greenhouse gases</div><p>A simple grey-atmosphere approximation uses infrared optical depth, τ:</p><div class="equation"><code>T_surface = T_effective × (1 + τ/2)^(1/4)</code></div><p>As τ increases, more outgoing infrared radiation is absorbed and re-emitted, including downward. The surface warms until the energy escaping to space again balances absorbed sunlight.</p><div class="subhead">What this model leaves out</div><ul class="plain-list"><li>Greenhouse gases absorb at particular wavelengths rather than equally across all infrared radiation.</li><li>Clouds reflect sunlight but also affect infrared radiation.</li><li>Water vapour, ice, aerosols and the carbon cycle create feedbacks.</li><li>This is a teaching model, not a detailed regional climate projection.</li></ul>`;
+}
+function chemistryInfo(m){
+ const d=moleculeData[m];
+ return `<h2>${d.name} (${d.formula})</h2><p><strong>Sources:</strong> ${d.sources}</p><div class="subhead">Why it absorbs infrared</div><ul class="plain-list">${d.points.map(t=>`<li>${t}</li>`).join("")}</ul><div class="subhead">Molecular shape</div><p>A molecule absorbs infrared radiation when a vibration changes its distribution of electric charge. This is why CO₂, CH₄, H₂O, N₂O and O₃ interact with infrared radiation, while N₂ and O₂—the main gases in air—are largely transparent to it.</p><div class="subhead">Choose a molecule</div><div class="controls">${Object.keys(moleculeData).map(k=>`<button class="chip molecule-chip" data-molecule="${k}" aria-pressed="${m===k}">${moleculeData[k].formula}</button>`).join("")}</div>`;
+}
+function render(){
+ if(view==="physics"){
+  const A=+albedo.value,d=+distance.value*AU,tau=+(ghg.value/100)*1.8;
+  const absorbed=L*(1-A)/(16*Math.PI*d*d),Teff=Math.pow(absorbed/sigma,.25),Ts=Teff*Math.pow(1+tau/2,.25);
+  stage.innerHTML=physicsSVG(tau);
+  info.innerHTML=physicsInfo(tau);
+  document.getElementById("absorbed").textContent=absorbed.toExponential(2)+" W/m²";
+  document.getElementById("effective").textContent=(Teff-273.15).toFixed(1)+" °C";
+  document.getElementById("surface").textContent=(Ts-273.15).toFixed(1)+" °C";
+  document.getElementById("warming").textContent="+"+(Ts-Teff).toFixed(1)+" °C";
+  document.getElementById("ghgLabel").textContent=tau<.18?"Airless Earth":tau<.55?"Weak greenhouse":tau<1.05?"Modern-like Earth":tau<1.45?"Strong greenhouse":"Very strong greenhouse";
+  document.getElementById("albedoLabel").textContent=A.toFixed(2);
+  document.getElementById("distanceLabel").textContent=(d/AU).toFixed(2)+" AU";
+ }else{
+  stage.innerHTML=`<svg viewBox="0 0 760 480" role="img" aria-label="Molecular structure of ${moleculeData[molecule].name}"><rect width="760" height="480" fill="#05070d"/><text x="30" y="48" fill="#EDEAE3" font-family="Space Grotesk" font-size="22" font-weight="700">${moleculeData[molecule].formula}</text><text x="30" y="78" fill="#9AA4B8" font-family="Inter" font-size="13">${moleculeData[molecule].name}</text>${moleculeSVG(molecule)}<text x="30" y="440" fill="#9AA4B8" font-family="Inter" font-size="12">A molecule absorbs infrared radiation when a vibration changes its electric-field distribution.</text></svg>`;
+  info.innerHTML=chemistryInfo(molecule);
+  document.querySelectorAll(".molecule-chip").forEach(b=>b.addEventListener("click",()=>{molecule=b.dataset.molecule;render();}));
+ }
+}
+document.querySelectorAll(".view-chip").forEach(btn=>btn.addEventListener("click",()=>{
+ document.querySelectorAll(".view-chip").forEach(b=>b.setAttribute("aria-pressed","false"));
+ btn.setAttribute("aria-pressed","true");view=btn.dataset.view;
+ document.getElementById("physicsControls").hidden=view!=="physics";
+ document.getElementById("results").hidden=view!=="physics";
+ render();
+}));
+[ghg,albedo,distance].forEach(x=>x.addEventListener("input",render));
+render();
+</script>
+</body>
+</html>

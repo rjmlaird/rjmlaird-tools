@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cup Delta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#E8EEF0;--sf:#fff;--ink:#14232B;--mut:#4F626B;--ln:#C3D0D5;--ac:#0E5A66;--acs:#D6EBEE;--am:#9A4F00;--on:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1A1E;--sf:#17252A;--ink:#E6F0F2;--mut:#9FB4BA;--ln:#2E4249;--ac:#5CC3D2;--acs:#1B3A41;--am:#F0A64D;--on:#0A1417}}
+:root[data-theme="dark"]{--bg:#0F1A1E;--sf:#17252A;--ink:#E6F0F2;--mut:#9FB4BA;--ln:#2E4249;--ac:#5CC3D2;--acs:#1B3A41;--am:#F0A64D;--on:#0A1417}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1.0625rem/1.55 "Atkinson Hyperlegible",system-ui,sans-serif}
+.wrap{max-width:44rem;margin:0 auto;padding:1.25rem 1rem 4rem}
+h1,h2,h3{font-family:"Familjen Grotesk",system-ui,sans-serif;line-height:1.15;margin:0}
+h1{font-size:2.5rem;letter-spacing:-.02em}
+h1 span{color:var(--ac)}
+h2{font-size:1.3rem;margin:1.2rem 0 .5rem}h3{font-size:1.05rem;margin:1rem 0 .3rem}
+.tag,.hint{color:var(--mut)}.tag{margin:.25rem 0 1rem}.hint{font-size:.9rem}
+nav{display:flex;gap:.25rem;border-bottom:2px solid var(--ln);margin-bottom:1rem;overflow-x:auto}
+nav button{background:none;border:0;border-bottom:4px solid transparent;margin-bottom:-2px;padding:.7rem .8rem;font:700 1rem inherit;color:var(--mut);cursor:pointer;white-space:nowrap}
+nav button[aria-current="page"]{color:var(--ink);border-color:var(--ac)}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:1rem;margin:.8rem 0}
+label,legend{font-weight:700}
+input[type=text],input[type=number],input[type=date],select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--ln);border-radius:6px;padding:.55rem .7rem;margin:.2rem 0 .7rem}
+textarea{min-height:6rem;font-family:ui-monospace,monospace;font-size:.85rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:0 .8rem}
+details{border-top:1px solid var(--ln);padding:.7rem 0}summary{cursor:pointer;font-weight:700;padding:.2rem 0}
+.row{padding:.6rem 0;border-bottom:1px dashed var(--ln)}.row:last-child{border:0}
+.row .top{display:flex;justify-content:space-between;gap:.5rem;align-items:baseline}
+.row output{font-weight:700;color:var(--ac)}.row output.unset{color:var(--mut);font-weight:400}
+input[type=range]{width:100%;accent-color:var(--ac);height:2rem;margin:.2rem 0}input.unset{opacity:.55}
+.ends{display:flex;justify-content:space-between;color:var(--mut);font-size:.85rem}
+.chip{font:inherit;font-size:.95rem;background:var(--sf);color:var(--ink);border:1.5px solid var(--ln);border-radius:99px;padding:.3rem .8rem;margin:.15rem .15rem .15rem 0;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ac);border-color:var(--ac);color:var(--on);font-weight:700}
+.chip[aria-pressed="true"]::before{content:"✓ "}
+.tab{border-radius:6px}
+.tab[aria-expanded="true"]{border-color:var(--ac);border-width:2.5px;font-weight:700}
+.tab small{color:var(--mut)}
+.prof{background:var(--acs);border-radius:8px;padding:.6rem .8rem;margin-top:.8rem}
+.btn{font:700 1rem inherit;background:var(--ac);color:var(--on);border:2px solid var(--ac);border-radius:8px;padding:.7rem 1.2rem;cursor:pointer}
+.btn.sec{background:none;color:var(--ink);border-color:var(--ln)}.btn.sm{padding:.35rem .7rem;font-size:.9rem}
+.acts{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.6rem}
+.badge{display:inline-block;border:1.5px solid var(--am);color:var(--am);border-radius:4px;padding:0 .4rem;font-size:.85rem;font-weight:700}
+.conf{display:inline-block;background:var(--acs);border-radius:4px;padding:.1rem .5rem;font-weight:700;font-size:.9rem}
+.dx{border-left:6px solid var(--ac)}
+dl{margin:.5rem 0}dt{font-weight:700;margin-top:.6rem}dd{margin:0}ul{padding-left:1.2rem;margin:.3rem 0}
+.item{display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;align-items:center}
+.msg{color:var(--am);font-weight:700;min-height:1.4rem}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:no-preference){.dx{animation:in .3s ease-out}@keyframes in{from{opacity:0;transform:translateX(-8px)}}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Cup <span>Δ</span></h1>
+<p class="tag">Taste the cup, find the cause, change one thing, brew again.</p>
+<nav aria-label="Sections"><button data-v="taste" aria-current="page">Taste</button><button data-v="hist">History</button><button data-v="cmp">Compare</button><button data-v="data">Your data</button></nav>
+
+<section id="v-taste">
+<form id="form" novalidate>
+<div class="card">
+<label for="method">Brew method</label>
+<select id="method"><option value="">Choose a method</option><option>Pour-over</option><option>French press</option><option>AeroPress</option><option>Espresso</option><option>Other</option></select>
+<label for="coffee">Coffee name <span class="hint">(optional, used to match cups for comparison)</span></label>
+<input type="text" id="coffee" autocomplete="off" placeholder="e.g. Ethiopia Guji natural">
+</div>
+
+<div class="card"><h2 style="margin-top:0">How did it taste?</h2><p class="hint">Move a slider to rate it. Leave the ones you can’t judge alone.</p><div id="sliders"></div>
+<label for="pref" style="display:block;margin-top:.6rem">Overall preference</label>
+<select id="pref"><option value="">Not rated</option><option value="1">1 – poor</option><option value="2">2</option><option value="3">3 – good</option><option value="4">4</option><option value="5">5 – excellent</option></select></div>
+
+<div class="card"><h2 style="margin-top:0">Flavours</h2>
+<p class="hint">Pick a family, then a sub-family, then tap descriptors. Optional.</p>
+<div id="fs"></div>
+<div class="prof" aria-live="polite"><strong>Tasting profile</strong><div id="prof"></div></div></div>
+
+<div class="card"><details style="border:0;padding:0"><summary>Coffee details (optional)</summary>
+<div class="g2"><div><label for="roaster">Roaster</label><input type="text" id="roaster"></div><div><label for="origin">Origin</label><input type="text" id="origin"></div>
+<div><label for="variety">Variety</label><input type="text" id="variety"></div>
+<div><label for="process">Process</label><select id="process"><option value="">Unknown</option><option>Washed</option><option>Natural</option><option>Honey</option><option>Anaerobic</option><option>Other</option></select></div>
+<div><label for="roast">Roast level</label><select id="roast"><option value="">Unknown</option><option>Light</option><option>Medium</option><option>Medium-dark</option><option>Dark</option></select></div>
+<div><label for="rdate">Roast date</label><input type="date" id="rdate"></div>
+<div><label for="age">Days after roast <span class="hint">(auto from date)</span></label><input type="number" id="age" min="0" inputmode="numeric"></div></div></details>
+<details><summary>Brew recipe (optional)</summary>
+<div class="g2"><div><label for="dose">Dose (g)</label><input type="number" id="dose" min="0" step="0.1" inputmode="decimal"></div><div><label for="water">Water (g)</label><input type="number" id="water" min="0" step="1" inputmode="decimal"></div>
+<div><label for="gset">Grind setting <span class="hint">(lower = finer)</span></label><input type="number" id="gset" step="0.5" inputmode="decimal"></div>
+<div><label for="gfeel">Grind feel</label><select id="gfeel"><option value="">Not stated</option><option>very fine</option><option>fine</option><option>medium</option><option>coarse</option><option>very coarse</option></select></div>
+<div><label for="temp">Water temp (°C)</label><input type="number" id="temp" min="0" max="100" inputmode="decimal"></div>
+<div><label for="time">Total time <span class="hint">(m:ss or seconds)</span></label><input type="text" id="time" inputmode="text" placeholder="3:00"></div></div>
+<p class="hint" id="ratio"></p></details>
+<details><summary>Equipment and notes (optional)</summary>
+<label for="grinder">Grinder</label><input type="text" id="grinder"><label for="filter">Filter</label><input type="text" id="filter"><label for="wprof">Water profile</label><input type="text" id="wprof" placeholder="e.g. filtered tap, soft">
+<label for="notes">Note</label><textarea id="notes" style="font-family:inherit;font-size:1rem;min-height:4rem"></textarea></details></div>
+
+<p class="msg" id="err" role="alert"></p>
+<div class="acts"><button class="btn" type="submit">Save and diagnose</button><button class="btn sec" type="button" id="reset">Start over</button></div>
+</form>
+<div id="result" hidden></div>
+</section>
+<section id="v-hist" hidden></section>
+<section id="v-cmp" hidden></section>
+<section id="v-data" hidden>
+<div class="card"><h2 style="margin-top:0">Private by design</h2><p>No account, no analytics, no tracking. Your cups are stored only in this browser and nothing is sent anywhere.</p>
+<p class="hint">The flavour list is an original starter vocabulary, inspired by public coffee-tasting frameworks. It is not a copy of the SCA/WCR Coffee Taster’s Flavor Wheel.</p></div>
+<div class="card"><h3>Export</h3><p class="hint">Copies all cups as JSON. Paste it into a note to keep a backup.</p><button class="btn sec" id="exp" type="button">Copy export</button>
+<h3>Import</h3><label for="imp">Paste exported JSON</label><textarea id="imp"></textarea><div class="acts"><button class="btn sec" id="impb" type="button">Import and merge</button></div><p class="msg" id="dmsg" role="status"></p></div>
+<div class="card"><h3>Delete everything</h3><p class="hint">Removes every cup from this browser. Export first if you want a copy.</p><button class="btn sec" id="del" type="button">Delete all data</button></div>
+</section>
+</div>
+
+<script>
+const SL=[{k:"sb",n:"Sour ↔ Bitter",l:["sour","leaning sour","balanced","leaning bitter","bitter"]},
+{k:"ws",n:"Weak/thin ↔ Strong/heavy",l:["weak or thin","light","medium","full","strong or heavy"]},
+{k:"cm",n:"Clean ↔ Muddled",l:["clean","mostly clean","slightly hazy","fuzzy","muddled"]},
+{k:"dl",n:"Dislike ↔ Love",l:["dislike","not keen","okay","like","love"]}];
+const FL={"Fruity":{"Citrus":["lemon","lime","orange peel","grapefruit"],"Berry":["blackcurrant","strawberry","blueberry","raspberry"],"Orchard and stone":["apple","pear","peach","apricot","plum"],"Tropical and dried":["pineapple","mango","raisin","date","fig"]},
+"Floral":{"Blossom":["jasmine","orange blossom","elderflower"],"Tea-like":["black tea","chamomile","bergamot"]},
+"Sweet":{"Caramelised":["brown sugar","caramel","molasses","toffee"],"Light sweetness":["honey","vanilla","maple","marshmallow"]},
+"Nutty and cocoa":{"Nuts":["almond","hazelnut","peanut","walnut"],"Cocoa and malt":["milk chocolate","dark chocolate","cocoa nib","malt"]},
+"Roasted":{"Toasted":["toast","biscuit","cereal"],"Burnt":["smoke","ashy","charred","tobacco"]},
+"Spices":{"Warm":["cinnamon","clove","nutmeg","cardamom"],"Sharp":["black pepper","ginger","anise"]},
+"Sour and fermented":{"Bright acids":["tart","tangy","vinegar"],"Fermented":["winey","boozy","yoghurt-like","funky"]},
+"Green and vegetal":{"Green":["grassy","herbal","green pepper","hay"],"Woody and earthy":["woody","cedar","earthy"]},
+"Other":{"Faults":["papery","cardboard","flat","rubbery","stale"],"Mouthfeel":["drying","astringent","harsh","watery"]}};
+const FAM={};Object.entries(FL).forEach(([f,s])=>Object.entries(s).forEach(([sf,d])=>d.forEach(x=>FAM[x]=f)));
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const KEY="cup-delta-v1";let db={tastings:[]};
+try{const r=localStorage.getItem(KEY);if(r)db=JSON.parse(r)}catch(e){}
+const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}};
+const lab=(k,v)=>v==null?"not rated":SL.find(t=>t.k===k).l[v];
+const when=t=>new Date(t.date).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+const secs=s=>{s=String(s||"").trim();if(!s)return null;if(s.includes(":")){const[m,x]=s.split(":");return(+m||0)*60+(+x||0)}const n=+s;return isNaN(n)?null:n};
+const fmt=n=>n==null?"–":Math.floor(n/60)+":"+String(Math.round(n%60)).padStart(2,"0");
+const num=v=>v===""||v==null||isNaN(+v)?null:+v;
+
+/* ---- form ---- */
+const rated={},picked=new Set();let fam=null,sub=null;
+$("#sliders").innerHTML=SL.map(t=>`<div class="row"><div class="top"><label for="s-${t.k}">${t.n}</label><output id="o-${t.k}" class="unset" for="s-${t.k}">not rated</output></div>
+<input type="range" id="s-${t.k}" data-k="${t.k}" min="0" max="4" step="1" value="2" class="unset" aria-valuetext="not rated"><div class="ends" aria-hidden="true"><span>${t.l[0]}</span><span>${t.l[4]}</span></div></div>`).join("");
+function rate(e){const el=e.target,k=el.dataset.k,v=+el.value,t=SL.find(x=>x.k===k);rated[k]=v;el.classList.remove("unset");const o=$("#o-"+k);o.classList.remove("unset");o.textContent=t.l[v];el.setAttribute("aria-valuetext",t.l[v])}
+$$("#sliders input").forEach(i=>{i.addEventListener("input",rate);i.addEventListener("click",rate);i.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();rate(e)}})});
+
+function fs(focus){const cnt=f=>[...picked].filter(x=>FAM[x]===f).length;
+let h=`<div role="group" aria-label="Flavour families">${Object.keys(FL).map(f=>`<button type="button" class="chip tab" data-f="${f}" aria-expanded="${fam===f}">${f}${cnt(f)?` <small>(${cnt(f)})</small>`:""}</button>`).join("")}</div>`;
+if(fam)h+=`<h3>${fam}</h3><div role="group" aria-label="Sub-families of ${fam}">${Object.keys(FL[fam]).map(s=>`<button type="button" class="chip tab" data-s="${s}" aria-expanded="${sub===s}">${s}</button>`).join("")}</div>`;
+if(fam&&sub)h+=`<h3>${sub}</h3><div role="group" aria-label="${sub} descriptors">${FL[fam][sub].map(d=>`<button type="button" class="chip" data-d="${d}" aria-pressed="${picked.has(d)}">${d}</button>`).join("")}</div>`;
+$("#fs").innerHTML=h;
+$("#prof").innerHTML=picked.size?[...picked].map(d=>`<button type="button" class="chip" aria-pressed="true" data-rm="${d}" aria-label="Remove ${d}">${d} ×</button>`).join(""):`<p class="hint" style="margin:.3rem 0">Nothing selected yet.</p>`;
+if(focus){const el=$(focus);el&&el.focus()}}
+$("#fs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const d=b.dataset;
+if(d.f){fam=fam===d.f?null:d.f;sub=null;fs(`[data-f="${d.f}"]`)}
+else if(d.s){sub=sub===d.s?null:d.s;fs(`[data-s="${d.s}"]`)}
+else if(d.d){picked.has(d.d)?picked.delete(d.d):picked.add(d.d);fs(`[data-d="${d.d}"]`)}});
+$("#fs").addEventListener("keydown",e=>{const k=e.key;if(!["ArrowRight","ArrowLeft","ArrowDown","ArrowUp"].includes(k))return;const g=e.target.closest("[role=group]");if(!g)return;const bs=[...g.querySelectorAll("button")],i=bs.indexOf(e.target);if(i<0)return;e.preventDefault();bs[(i+(k==="ArrowRight"||k==="ArrowDown"?1:-1)+bs.length)%bs.length].focus()});
+$("#prof").addEventListener("click",e=>{const b=e.target.closest("[data-rm]");if(b){picked.delete(b.dataset.rm);fs()}});
+
+const ageOf=()=>{const m=num($("#age").value);if(m!=null)return m;const d=$("#rdate").value;if(!d)return null;const n=Math.round((Date.now()-new Date(d))/864e5);return n>=0?n:null};
+const ratioOf=()=>{const d=num($("#dose").value),w=num($("#water").value);return d&&w?"1:"+(w/d).toFixed(1):""};
+["dose","water"].forEach(i=>$("#"+i).addEventListener("input",()=>{const r=ratioOf();$("#ratio").textContent=r?"Ratio "+r:""}));
+
+function reset(keep){const m=keep?$("#method").value:"",c=keep?$("#coffee").value:"";$("#form").reset();$("#method").value=m;$("#coffee").value=c;picked.clear();fam=sub=null;Object.keys(rated).forEach(k=>delete rated[k]);
+$$("#sliders input").forEach(i=>{i.value=2;i.classList.add("unset");i.setAttribute("aria-valuetext","not rated")});$$("#sliders output").forEach(o=>{o.className="unset";o.textContent="not rated"});
+$("#ratio").textContent="";$("#err").textContent="";fs();$("#form").hidden=false;$("#result").hidden=true}
+$("#reset").onclick=()=>reset(false);
+
+$("#form").addEventListener("submit",e=>{e.preventDefault();const g=id=>$("#"+id).value.trim();
+if(!g("method")){$("#err").textContent="Choose a brew method to save this cup.";$("#method").focus();return}
+const t={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),date:new Date().toISOString(),method:g("method"),coffee:g("coffee"),roaster:g("roaster"),origin:g("origin"),variety:g("variety"),process:g("process"),roast:g("roast"),rdate:g("rdate"),age:ageOf(),
+dose:num(g("dose")),water:num(g("water")),ratio:ratioOf(),gset:num(g("gset")),gfeel:g("gfeel"),temp:num(g("temp")),time:secs(g("time")),grinder:g("grinder"),filter:g("filter"),wprof:g("wprof"),notes:g("notes"),
+s:Object.fromEntries(SL.map(x=>[x.k,rated[x.k]??null])),desc:[...picked],pref:g("pref")?+g("pref"):null,best:false};
+db.tastings.push(t);persist();show(t)});
+
+/* ---- diagnosis engine (rule-based) ---- */
+const TIME={"Pour-over":[150,270],"French press":[210,300],"AeroPress":[75,210],"Espresso":[22,35]};
+const GI=["very fine","fine","medium","coarse","very coarse"];
+function diagnose(t){
+const v=t.s,D=t.desc,done=Object.values(v).filter(x=>x!=null).length,has=l=>D.filter(x=>l.includes(x)),H=[];
+if(done<2&&D.length<2)return{main:{title:"Not enough to go on yet",text:`Only ${done} of 4 sliders and ${D.length} flavour${D.length===1?"":"s"} recorded, so any diagnosis would be a guess.`,ev:["Too little tasting data"],next:"Rate at least two sliders (sour↔bitter and weak↔strong matter most), or pick two flavours, then diagnose again. Adding time, grind and temperature helps too.",trade:"None. This avoids guessing.",conf:"low"},others:[]};
+const tr=TIME[t.method],gi=GI.indexOf(t.gfeel),age=t.age;
+const fast=tr&&t.time!=null&&t.time<tr[0],slow=tr&&t.time!=null&&t.time>tr[1];
+const conf=(tc,bc)=>tc>=2&&bc>=2?"high":bc>=1||tc>=2?"medium":"low";
+const push=(title,text,te,be,next,trade)=>H.push({title,text,ev:[...te,...be],next,trade,conf:conf(te.length,be.length),w:te.length*2+be.length});
+/* under-extraction */
+{const te=[],be=[];if(v.sb!=null&&v.sb<=1)te.push(`Sour-leaning (“${lab("sb",v.sb)}”)`);if(v.ws!=null&&v.ws<=1)te.push(`Thin or weak (“${lab("ws",v.ws)}”)`);const sd=has(["tart","tangy","vinegar","watery"]);if(sd.length)te.push("Flavours noted: "+sd.join(", "));
+if(fast)be.push(`Brew time ${fmt(t.time)} is short for ${t.method.toLowerCase()}`);if(gi>=3)be.push(`Grind feels ${t.gfeel}`);if(t.temp!=null&&t.temp<90)be.push(`Water at ${t.temp}°C is on the cool side`);
+if(te.length)push("Likely under-extracted","The cup reads sour or thin, which usually means not enough has been pulled from the coffee.",te,be,gi>=0&&gi<=1?"Raise the water temperature by 2°C (or extend contact time slightly) and keep everything else the same. The grind is already fine.":"Grind one step finer, keeping every other variable the same.","More sweetness and body; watch for rising bitterness.")}
+/* over-extraction */
+{const te=[],be=[];if(v.sb!=null&&v.sb>=3)te.push(`Bitter-leaning (“${lab("sb",v.sb)}”)`);const od=has(["drying","astringent","harsh"]);if(od.length)te.push("Flavours noted: "+od.join(", "));
+if(slow)be.push(`Brew time ${fmt(t.time)} is long for ${t.method.toLowerCase()}`);if(gi>=0&&gi<=1)be.push(`Grind feels ${t.gfeel}`);if(t.temp!=null&&t.temp>96)be.push(`Water at ${t.temp}°C is very hot`);
+if(te.length)push("Likely over-extracted","The cup reads bitter or drying, which usually means too much has been pulled from the coffee.",te,be,gi>=3?"Lower the water temperature by 2°C and keep everything else the same. The grind is already coarse.":"Grind one step coarser, keeping every other variable the same.","Less bitterness and astringency; watch for sourness and a thinner body.")}
+/* stale */
+{const sd=has(["papery","cardboard","flat","stale"]);if(sd.length&&(age==null||age>35)||(sd.length&&age>35)){const be=age!=null&&age>35?[`Roasted ${age} days ago`]:[];if(sd.length)push("Likely stale coffee","Papery or flat notes in an older coffee point to lost aroma rather than a brewing error.",["Flavours noted: "+sd.join(", ")],be,"Brew a fresher bag with the same recipe. If you can’t, try grinding one step finer and brewing slightly hotter.","Fresher coffee gives more aroma and sweetness; an older one will stay muted whatever you change.")}}
+/* roast-driven */
+{const rd=has(["smoke","dark chocolate","ashy","charred"]);if(rd.length&&/dark/i.test(t.roast))push("Likely roast-driven profile","Smoky, ashy or dark-chocolate notes in a dark roast mostly come from the roast, not the brew.",["Flavours noted: "+rd.join(", ")],[`Roast level: ${t.roast.toLowerCase()}`],"Lower the water temperature by 3°C and keep everything else the same. For a different profile, try a lighter roast.","Less smoke and bitterness, with a little less body; roast character will never fully disappear.")}
+/* process / fermentation */
+{const pd=D.filter(x=>["winey","boozy","yoghurt-like","funky"].includes(x)||FAM[x]==="Fruity");if(pd.length&&/natural|honey|anaerobic/i.test(t.process)&&(has(["winey","boozy","yoghurt-like","funky"]).length||pd.length>=2))push("Likely process or fermentation character","Winey, funky or fruity notes in a natural, honey or anaerobic coffee are probably the coffee’s own character.",["Flavours noted: "+pd.join(", ")],[`Process: ${t.process.toLowerCase()}`],"Keep the recipe. If it’s too intense, lower the temperature by 2°C and keep everything else the same.","Less fermented intensity and slightly more clarity, at some cost to fruitiness.")}
+if(!H.length){const good=(t.pref!=null&&t.pref>=4)||v.dl>=3;return{main:{title:good?"Already in a good place":"No clear fault in these ratings",text:good?"Nothing points to a problem and you rate it well.":"Nothing is clearly out of range.",ev:[good?"Positive rating, no extraction signals":"No extraction, age, roast or process signals"],next:good?"Keep this recipe and mark it best so far. If you’re curious, change one variable (grind or temperature) and compare.":"Add more brew detail (time, grind, temperature, roast date) or more flavours, then try again.",trade:good?"Any change is a trade-off against a cup you already like.":"Unknown until you try it.",conf:"low"},others:[]}}
+H.sort((a,b)=>b.w-a.w);return{main:H[0],others:H.slice(1).map(h=>h.title)}}
+function dx(t){const d=diagnose(t),m=d.main;return `<div class="card dx"><h2 style="margin-top:0">${esc(m.title)}</h2><p><span class="conf">Confidence: ${m.conf}</span></p><p>${esc(m.text)}</p><dl><dt>Evidence</dt><dd><ul>${m.ev.map(e=>`<li>${esc(e)}</li>`).join("")}</ul></dd><dt>Next change (just one)</dt><dd>${esc(m.next)}</dd><dt>Expected trade-off</dt><dd>${esc(m.trade)}</dd></dl>${d.others.length?`<p class="hint">Also possible: ${d.others.map(esc).join(", ")}.</p>`:""}</div>`}
+function show(t){$("#form").hidden=true;const r=$("#result");r.hidden=false;
+r.innerHTML=`<h2>${esc(t.coffee||"Unnamed coffee")} · ${esc(t.method)}</h2><p class="hint">Saved ${when(t)}</p>${dx(t)}<div class="acts"><button class="btn" id="again">Brew again with one change</button><button class="btn sec" id="bb">${t.best?"Best so far ✓":"Mark as best so far"}</button></div>`;
+$("#again").onclick=()=>{const m=t.method,c=t.coffee,old=t;reset(false);$("#method").value=m;$("#coffee").value=c;["roaster","origin","variety","process","roast","rdate","gfeel","grinder","filter","wprof"].forEach(k=>$("#"+k).value=old[k]||"");["dose","water","gset","temp"].forEach(k=>$("#"+k).value=old[k]??"");$("#time").value=old.time!=null?fmt(old.time):"";$("#ratio").textContent=old.ratio?"Ratio "+old.ratio:"";$("#form details").open=true;$("#method").focus()};
+$("#bb").onclick=()=>{setBest(t.id);show(t)};window.scrollTo(0,0)}
+const key=t=>(t.coffee||"Unnamed coffee").toLowerCase();
+function setBest(id){const t=db.tastings.find(x=>x.id===id),was=t.best;db.tastings.filter(x=>key(x)===key(t)).forEach(x=>x.best=false);t.best=!was;persist()}
+
+/* ---- history ---- */
+function hist(){const el=$("#v-hist"),L=[...db.tastings].sort((a,b)=>b.date.localeCompare(a.date));
+if(!L.length){el.innerHTML=`<div class="card"><h2 style="margin-top:0">No cups yet</h2><p>Taste a cup on the Taste tab. Brew it again with one change, then compare the two.</p></div>`;return}
+el.innerHTML=L.map(t=>`<div class="card"><div class="item"><div><strong>${esc(t.coffee||"Unnamed coffee")}</strong> · ${esc(t.method)} ${t.best?'<span class="badge">Best so far</span>':""}<br><span class="hint">${when(t)}${t.pref?" · preference "+t.pref+"/5":""}</span></div><div class="acts" style="margin:0"><button class="btn sec sm" data-open="${t.id}">Open</button><button class="btn sec sm" data-best="${t.id}">${t.best?"Unmark best":"Mark best"}</button><button class="btn sec sm" data-del="${t.id}">Delete</button></div></div></div>`).join("")}
+$("#v-hist").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const d=b.dataset;
+if(d.open){go("taste");show(db.tastings.find(x=>x.id===d.open))}else if(d.best){setBest(d.best);hist()}
+else if(d.del){if(d.arm){db.tastings=db.tastings.filter(x=>x.id!==d.del);persist();hist()}else{b.dataset.arm=1;b.textContent="Tap again to delete";setTimeout(()=>{b.dataset.arm="";b.textContent="Delete"},4000)}}});
+
+/* ---- compare ---- */
+let cs={c:null,a:null,b:null};
+function cmp(){const el=$("#v-cmp"),G={};db.tastings.forEach(t=>(G[key(t)]??=[]).push(t));const ds=Object.entries(G).filter(([,x])=>x.length>1);
+if(!ds.length){el.innerHTML=`<div class="card"><h2 style="margin-top:0">Nothing to compare yet</h2><p>Save two cups with the same coffee name. After a diagnosis, use “Brew again with one change” to set up the second one.</p></div>`;return}
+if(!G[cs.c]||G[cs.c].length<2)cs={c:ds[0][0],a:null,b:null};
+const L=G[cs.c].sort((x,y)=>x.date.localeCompare(y.date));if(!L.find(x=>x.id===cs.a))cs.a=L[L.length-2].id;if(!L.find(x=>x.id===cs.b))cs.b=L[L.length-1].id;
+const A=L.find(x=>x.id===cs.a),B=L.find(x=>x.id===cs.b),opt=id=>L.map(t=>`<option value="${t.id}" ${t.id===id?"selected":""}>${when(t)} · ${esc(t.method)}${t.best?" ★":""}</option>`).join("");
+el.innerHTML=`<div class="card"><label for="cc">Coffee</label><select id="cc">${ds.map(([k,x])=>`<option value="${esc(k)}" ${k===cs.c?"selected":""}>${esc(x[0].coffee||"Unnamed coffee")}</option>`).join("")}</select><label for="ca">Cup A (before)</label><select id="ca">${opt(cs.a)}</select><label for="cb">Cup B (after)</label><select id="cb">${opt(cs.b)}</select></div>${cmpH(A,B)}`;
+$("#cc").onchange=e=>{cs={c:e.target.value,a:null,b:null};cmp()};$("#ca").onchange=e=>{cs.a=e.target.value;cmp()};$("#cb").onchange=e=>{cs.b=e.target.value;cmp()}}
+function cmpH(A,B){if(A.id===B.id)return `<p class="hint">Pick two different cups.</p>`;
+const ch=[],f=(n,x,y,u="")=>{if(x!==y)ch.push(`${n}: ${x==null||x===""?"–":esc(x)+u} → ${y==null||y===""?"–":esc(y)+u}`)};
+f("Method",A.method,B.method);f("Grind setting",A.gset,B.gset);f("Grind feel",A.gfeel,B.gfeel);f("Dose",A.dose,B.dose," g");f("Water",A.water,B.water," g");f("Ratio",A.ratio,B.ratio);f("Temperature",A.temp,B.temp,"°C");
+if(A.time!==B.time)ch.push(`Time: ${fmt(A.time)} → ${fmt(B.time)}`);f("Bean age",A.age,B.age," days");f("Grinder",A.grinder,B.grinder);f("Filter",A.filter,B.filter);f("Water profile",A.wprof,B.wprof);
+let shift=0;if(A.gset!=null&&B.gset!=null&&A.gset!==B.gset)shift+=B.gset<A.gset?1:-1;else if(A.gfeel!==B.gfeel&&A.gfeel&&B.gfeel)shift+=GI.indexOf(B.gfeel)<GI.indexOf(A.gfeel)?1:-1;
+if(A.temp!=null&&B.temp!=null&&A.temp!==B.temp)shift+=B.temp>A.temp?1:-1;if(A.time!=null&&B.time!=null&&A.time!==B.time)shift+=B.time>A.time?1:-1;
+const sl=[],ph=[],W={sb:["more sour","more bitter"],ws:["thinner","fuller"],cm:["cleaner","muddier"],dl:["less liked","more liked"]};
+SL.forEach(t=>{const x=A.s[t.k],y=B.s[t.k];if(x==null||y==null||x===y)return;sl.push(`${t.n}: ${t.l[x]} → ${t.l[y]}`);ph.push(W[t.k][y>x?1:0])});
+const pd=A.pref!=null&&B.pref!=null?B.pref-A.pref:null,sbd=A.s.sb!=null&&B.s.sb!=null?B.s.sb-A.s.sb:0;
+const dir=shift>0?"Extracting more":shift<0?"Extracting less":"The recipe change";
+let sum=(ch.length?`${dir} (${ch.length} change${ch.length===1?"":"s"}) made the cup ${ph.length?ph.join(" and "):"taste about the same"}. `:"Nothing in the recipe changed, so differences are tasting noise. ")+(pd==null?"":pd>0?`Preference rose from ${A.pref} to ${B.pref}: keep the change. `:pd<0?`Preference fell from ${A.pref} to ${B.pref}. `:"Preference didn’t change. ");
+if(pd==null||pd<=0){if(shift>0&&sbd>0)sum+="More extraction added bitterness without improving the cup; revert or extract slightly less.";else if(shift<0&&sbd<0)sum+="Less extraction made it more sour; revert or extract slightly more.";else if(ch.length)sum+="Revert, then change a different single variable."}
+if(ch.length>1)sum+=" Several variables changed together, so the cause is uncertain; change one at a time.";
+const li=x=>x.length?`<ul>${x.map(i=>`<li>${i}</li>`).join("")}</ul>`:`<p class="hint">No differences recorded.</p>`;
+return `<div class="card dx"><h2 style="margin-top:0">What the delta says</h2><p>${esc(sum)}</p></div><div class="card"><h3>What changed</h3>${li(ch)}<h3>Sensory ratings</h3>${li(sl.map(esc))}<h3>Preference</h3><p>${A.pref??"–"} → ${B.pref??"–"}</p><div class="acts"><button class="btn sec" data-bb="${B.id}">${B.best?"B is best so far ✓":"Mark B as best so far"}</button></div></div>`}
+$("#v-cmp").addEventListener("click",e=>{const b=e.target.closest("[data-bb]");if(b){setBest(b.dataset.bb);cmp()}});
+
+/* ---- data ---- */
+const dm=t=>{$("#dmsg").textContent=t};
+$("#exp").onclick=async()=>{const j=JSON.stringify({app:"cup-delta",version:1,tastings:db.tastings},null,1);$("#imp").value=j;try{await navigator.clipboard.writeText(j);dm("Copied to clipboard. The JSON is also in the box below.")}catch(e){$("#imp").select();dm("Select and copy the JSON in the box below.")}};
+$("#impb").onclick=()=>{try{const o=JSON.parse($("#imp").value),L=Array.isArray(o)?o:o.tastings;if(!Array.isArray(L))throw 0;const ids=new Set(db.tastings.map(t=>t.id));let n=0;L.forEach(t=>{if(t&&t.method&&t.s&&!ids.has(t.id)){t.desc=t.desc||[];t.id=t.id||Date.now().toString(36)+n;t.date=t.date||new Date().toISOString();db.tastings.push(t);n++}});persist();dm(`Imported ${n} new cup${n===1?"":"s"}.`)}catch(e){dm("That isn’t valid Cup Δ JSON. Paste the full export and try again.")}};
+$("#del").onclick=e=>{const b=e.target;if(b.dataset.arm){db.tastings=[];persist();b.dataset.arm="";b.textContent="Delete all data";dm("All data deleted.")}else{b.dataset.arm=1;b.textContent="Tap again to delete everything";setTimeout(()=>{b.dataset.arm="";b.textContent="Delete all data"},4000)}};
+
+/* ---- nav ---- */
+function go(v){$$("nav button").forEach(b=>b.dataset.v===v?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));["taste","hist","cmp","data"].forEach(x=>$("#v-"+x).hidden=x!==v);if(v==="hist")hist();if(v==="cmp")cmp()}
+$$("nav button").forEach(b=>b.onclick=()=>go(b.dataset.v));
+fs();
+</script>
+</body>
+</html>

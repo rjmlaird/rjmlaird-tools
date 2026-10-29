@@ -1,0 +1,141 @@
+/* Waiting-On Tracker: tool styles on top of @rjmlaird/ui/brand.css (dark brand theme). */
+
+:root {
+  --wo-surface: var(--navy-raised);
+  --wo-surface-2: var(--navy-sunken);
+  --wo-muted: var(--text-lo);
+  --wo-accent-soft: color-mix(in srgb, var(--teal) 14%, transparent);
+  --wo-amber-bg: color-mix(in srgb, var(--amber) 14%, transparent);
+  --wo-amber-ink: #ffd98e;
+  --wo-green: #4c9a64;
+  --wo-green-bg: rgba(76, 154, 100, 0.16);
+  --wo-green-ink: #a9e3bb;
+  --wo-grey-bg: rgba(238, 242, 246, 0.08);
+}
+/* Calm mode: one neutral slate instead of teal, amber and green. The brand accents are remapped, so
+   buttons, links and focus rings follow. */
+:root.calm {
+  --teal: #c9cfdd;
+  --teal-hover: #e0e4ee;
+  --amber: #8f99ab;
+  --wo-amber-ink: #d6dae5;
+  --wo-green: #8b948c;
+  --wo-green-bg: rgba(139, 148, 140, 0.14);
+  --wo-green-ink: #cfd8d1;
+}
+
+.skip { position: absolute; left: -999px; top: 0; z-index: 100; padding: 0.6rem 1rem; border-radius: 0 0 10px 10px; background: var(--teal); color: var(--navy); font-weight: 600; text-decoration: none; }
+.skip:focus { left: 1rem; }
+
+/* ---- Intro and calm switch ---- */
+.wo-top { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
+.wo-top .lede { margin-bottom: 0; }
+.wo .switch { display: inline-flex; align-items: center; gap: 0.6rem; min-height: 44px; margin: 0; padding: 0 0.9rem; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--wo-surface); font-weight: 600; cursor: pointer; }
+.wo .switch input { width: 1.3rem; height: 1.3rem; min-height: 0; margin: 0; padding: 0; accent-color: var(--teal); }
+
+/* ---- Forms ---- */
+.wo .panel { margin-bottom: 1.25rem; }
+.wo .panel + .panel { margin-top: 0; }
+.wo label, .wo legend { display: block; margin: 0 0 0.3rem; padding: 0; font-weight: 600; }
+.wo .check { display: inline-flex; margin: 0; font-weight: 500; }
+.wo select { padding-right: 2.2rem; background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%); background-position: calc(100% - 1.15rem) 55%, calc(100% - 0.8rem) 55%; background-size: 0.35rem 0.35rem; background-repeat: no-repeat; -webkit-appearance: none; appearance: none; }
+.wo textarea { min-height: 5.5rem; resize: vertical; }
+.quick { display: flex; gap: 0.6rem; align-items: flex-end; }
+.quick .grow { flex: 1; min-width: 0; }
+.quick .btn { flex: none; }
+.field { margin-bottom: 0.9rem; }
+.wo .grid { display: grid; gap: 0 1rem; grid-template-columns: 1fr; }
+@media (min-width: 36rem) { .wo .grid { grid-template-columns: 1fr 1fr; } .wo .grid .wide { grid-column: 1 / -1; } }
+.wo fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.hint { margin: 0.3rem 0 0; color: var(--wo-muted); font-size: 0.875rem; }
+.field-error { margin: 0.5rem 0 0; padding: 0.4rem 0.7rem; border: 1px solid var(--amber); border-radius: 8px; background: var(--wo-amber-bg); color: var(--wo-amber-ink); font-size: 0.95rem; }
+
+/* details and summary: brand adds a rule and top margin to every details, so reset it here. */
+.wo details { margin: 0; padding: 0; border: 0; }
+.wo details.more-fields { margin-top: 0.9rem; }
+.wo details > summary { color: var(--teal); }
+.wo .foot details > summary { color: var(--teal); }
+
+.seg-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.wo .seg { position: relative; margin: 0; font-weight: 600; }
+.wo .seg input { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; margin: 0; padding: 0; opacity: 0; cursor: pointer; }
+.seg span { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1rem; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--navy); }
+.seg input:checked + span { border-color: var(--teal); background: var(--wo-accent-soft); box-shadow: inset 0 0 0 1px var(--teal); }
+.seg input:focus-visible + span { outline: 3px solid var(--amber); outline-offset: 3px; }
+
+/* ---- Buttons (the brand supplies the base button and .btn-primary) ---- */
+.wo .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; min-width: 44px; font-weight: 600; }
+.btn-quiet { border-color: transparent; background: transparent; color: var(--teal); }
+.btn-quiet:hover { background: var(--wo-accent-soft); }
+.btn-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
+
+/* ---- Filters ---- */
+.filters { margin-bottom: 1.25rem; padding: 0.9rem 1rem 0.4rem; border: 1px dashed var(--border-strong); border-radius: 14px; }
+.filters h2 { margin-bottom: 0.5rem; color: var(--wo-muted); font-size: 0.95rem; }
+.filters label { color: var(--wo-muted); font-size: 0.9rem; font-weight: 500; }
+.filters .check { color: var(--text-hi); font-size: 1rem; }
+.filters .grid { grid-template-columns: 1fr 1fr; }
+.filters .search { grid-column: 1 / -1; }
+@media (min-width: 36rem) { .filters .grid { grid-template-columns: 2fr 1fr 1fr 1fr; } .filters .search { grid-column: auto; } }
+.filter-foot { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; align-items: center; margin-bottom: 0.4rem; }
+
+/* ---- Groups and cards ---- */
+.group { margin-bottom: 1.75rem; }
+.group h2 .count { margin-left: 0.2rem; color: var(--wo-muted); font-size: 1rem; font-weight: 500; }
+.wo details.group { margin-top: 0; }
+.sub { margin: -0.2rem 0 0.7rem; color: var(--wo-muted); font-size: 0.9rem; }
+.quiet { padding: 0.8rem 1rem; border: 1px dashed var(--border-strong); border-radius: 12px; color: var(--wo-muted); background: var(--wo-surface); }
+.cards { display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+.card { padding: 1rem 1rem 0.8rem; border: 1px solid var(--border); border-radius: 14px; background: var(--wo-surface); }
+.card.is-due { border-left: 5px solid var(--amber); }
+.card.is-resolved { border-left: 5px solid var(--wo-green); }
+.card-head { display: flex; gap: 0.6rem; justify-content: space-between; align-items: flex-start; }
+.item-title { font-size: 1.05rem; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+.item-title:focus { outline: none; }
+.item-title:focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; border-radius: 4px; }
+.badges { display: flex; gap: 0.35rem; flex-wrap: wrap; justify-content: flex-end; flex-shrink: 0; }
+.wo-badge, .wo-chip { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.12rem 0.65rem; border: 1px solid transparent; border-radius: 999px; background: var(--wo-grey-bg); color: var(--text-hi); font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
+.wo-chip { font-size: 0.875rem; font-weight: 500; white-space: normal; }
+.wo-badge-waiting { border-color: var(--border-strong); background: var(--wo-accent-soft); }
+.wo-badge-nudged { border-color: var(--amber); background: var(--wo-amber-bg); color: var(--wo-amber-ink); }
+.wo-badge-resolved { border-color: var(--wo-green); background: var(--wo-green-bg); color: var(--wo-green-ink); }
+.wo-badge-cancelled { border-color: var(--border-strong); color: var(--text-lo); }
+.wo-badge-example { border: 1px dashed var(--border-strong); background: transparent; color: var(--wo-muted); }
+.wo-chip-amber { border-color: var(--amber); background: var(--wo-amber-bg); color: var(--wo-amber-ink); font-weight: 600; }
+.wo-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.55rem 0 0; }
+.meta { margin: 0.35rem 0 0; color: var(--wo-muted); font-size: 0.95rem; }
+.dots { font-size: 0.7rem; letter-spacing: 0.05em; }
+.wo .notes { margin-top: 0.35rem; }
+.notes summary { min-height: 40px; font-size: 0.95rem; }
+.notes-text { margin: 0.1rem 0 0.5rem; color: var(--wo-muted); white-space: pre-wrap; overflow-wrap: anywhere; }
+.resolution { margin: 0.5rem 0 0; font-size: 0.95rem; overflow-wrap: anywhere; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.8rem; }
+.more { flex-basis: 100%; }
+.more > summary { display: inline-flex; color: var(--wo-muted) !important; }
+.more-body { padding: 0.25rem 0 0.4rem; }
+.more-body .label { margin: 0.5rem 0 0.25rem; color: var(--wo-muted); font-size: 0.9rem; font-weight: 600; }
+.note-banner { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; align-items: center; margin-bottom: 1rem; color: var(--wo-muted); }
+
+/* Calm mode shows title, status and the next action only. */
+:root.calm .secondary { display: none !important; }
+:root.calm .actions > .btn:not(.next) { display: none; }
+:root.calm .card { padding-bottom: 0.9rem; }
+
+/* ---- Empty state, banner, toast, footer ---- */
+.empty p.lead { font-size: 1.1rem; }
+.banner { margin-bottom: 1rem; padding: 0.7rem 1rem; border: 1px solid var(--amber); border-radius: 12px; background: var(--wo-amber-bg); color: var(--wo-amber-ink); }
+.toast { position: fixed; left: 50%; bottom: 1rem; z-index: 50; display: flex; gap: 0.5rem; align-items: center; width: min(34rem, calc(100vw - 1.5rem)); padding: 0.5rem 0.6rem 0.5rem 1rem; border-radius: 14px; background: var(--text-hi); color: var(--navy); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); transform: translateX(-50%); }
+.toast-msg { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.toast .btn { min-height: 40px; border-color: currentColor; background: transparent; color: var(--navy); }
+.toast .btn:hover { background: rgba(11, 15, 26, 0.12); border-color: var(--navy); }
+.toast :focus-visible { outline-color: var(--navy); }
+.foot { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--wo-muted); font-size: 0.95rem; }
+
+/* ---- Dialogs ---- */
+dialog { width: min(34rem, calc(100vw - 1.5rem)); max-height: calc(100dvh - 1.5rem); padding: 0; overflow: auto; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--wo-surface); color: var(--text-hi); }
+dialog::backdrop { background: rgba(5, 8, 15, 0.7); }
+.dlg-body { padding: 1.25rem 1.25rem 0.5rem; }
+.dlg-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; padding: 0.5rem 1.25rem 1.25rem; }
+.err-list { margin: 0.25rem 0 0.75rem; padding-left: 1.2rem; }
+.err-list li { margin-bottom: 0.35rem; overflow-wrap: anywhere; }
+dialog details { margin: 0; }

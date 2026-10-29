@@ -60,8 +60,8 @@ export const STACK = ["TypeScript", "Hono", "Cloudflare Workers"];
 /**
  * Fetches badge metadata from the CV API and indexes items by tech name.
  */
-export async function fetchTechBadgesMap(): Promise<Map<string, TechItem>> {
-  const map = new Map<string, TechItem>();
+export async function fetchTechBadgesMap(): Promise<Record<string, TechItem>> {
+  const map: Record<string, TechItem> = {};
   try {
     const response = await fetch(API_URL);
     if (!response.ok) {
@@ -70,7 +70,7 @@ export async function fetchTechBadgesMap(): Promise<Map<string, TechItem>> {
     const json: ToolsApiResponse = await response.json();
     for (const category of json.data.categories) {
       for (const item of category.items) {
-        map.set(item.name, item);
+        map[item.name] = item;
       }
     }
   } catch (error) {
@@ -82,8 +82,8 @@ export async function fetchTechBadgesMap(): Promise<Map<string, TechItem>> {
 /**
  * Generates a Shields.io badge URL using metadata from the API.
  */
-export function getBadgeUrl(techName: string, badgesMap: Map<string, TechItem>): string {
-  const badge = badgesMap.get(techName);
+export function getBadgeUrl(techName: string, badgesMap: Record<string, TechItem>): string {
+  const badge = badgesMap[techName];
   if (!badge) {
     return `https://img.shields.io/badge/${encodeURIComponent(techName)}-gray?style=flat-square`;
   }
@@ -148,7 +148,7 @@ export const TOOLS: Tool[] = [
     description:
       "Explore deep-sky objects, coordinates, magnitudes, and visibility from your observing site.",
     group: "space",
-    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    tech: STACK,
     status: "active",
     updated: "2026-10-24",
     path: "/deep-sky-objects",
@@ -160,7 +160,7 @@ export const TOOLS: Tool[] = [
     description:
       "Estimate local sky brightness and Bortle class from a UK location, with practical guidance for visual observing.",
     group: "space",
-    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    tech: STACK,
     status: "active",
     updated: "2026-10-25",
     path: "/light-pollution",
@@ -172,7 +172,7 @@ export const TOOLS: Tool[] = [
     description:
       "Move sliders for aperture, focal length and eyepiece to see magnification, exit pupil, field of view and resolution update beside a schematic ray diagram.",
     group: "space",
-    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    tech: STACK,
     status: "active",
     updated: "2026-10-24",
     path: "/optics-visualiser",
@@ -184,7 +184,7 @@ export const TOOLS: Tool[] = [
     description:
       "Animate a two-body orbit from a central body, semi-major axis and eccentricity, with live distance, speed and true anomaly alongside the vis-viva quantities.",
     group: "space",
-    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    tech: STACK,
     status: "active",
     updated: "2026-10-24",
     path: "/orbit-simulator",
@@ -196,11 +196,107 @@ export const TOOLS: Tool[] = [
     description:
       "Calculate sunrise, sunset, twilight times, moonrise and moonset, Moon phase and illumination for a location and date.",
     group: "space",
-    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    tech: STACK,
     status: "active",
     updated: "2026-10-22",
     path: "/moon-sun-calc",
     source: "apps/moon-sun-calc",
+  },
+  {
+    id: "how-satellites-see-earth",
+    title: "How Satellites See Earth",
+    description:
+      "Explore Earth observation imaging bands, spatial resolution, and swath widths across satellite sensors.",
+    group: "space",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-24",
+    path: "/how-satellites-see-earth",
+    source: "apps/how-satellites-see-earth",
+  },
+  {
+    id: "satellite-link-budget",
+    title: "Satellite Link Budget Calculator",
+    description:
+      "Calculate free space path loss, received power, and link margins for Earth-to-space RF communications.",
+    group: "space",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-24",
+    path: "/satellite-link-budget",
+    source: "apps/satellite-link-budget",
+  },
+  {
+    id: "galaxy-morphology",
+    title: "Galaxy Morphology Explorer",
+    description:
+      "Classify and explore galaxy types using the Hubble tuning fork sequence and structural parameters.",
+    group: "space",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-24",
+    path: "/galaxy-morphology",
+    source: "apps/galaxy-morphology",
+  },
+  {
+    id: "active-passive-satellites",
+    title: "Active vs Passive Satellites",
+    description:
+      "Compare active radar (SAR) and passive optical Earth observation payloads and their observational capabilities.",
+    group: "space",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-24",
+    path: "/active-passive-satellites",
+    source: "apps/active-passive-satellites",
+  },
+  {
+    id: "magnitude-dfference",
+    title: "Magnitude Difference Calculator",
+    description:
+      "Calculate brightness ratios and magnitude differences for stellar astronomy.",
+    group: "space",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-24",
+    path: "/magnitude-dfference",
+    source: "apps/magnitude-dfference",
+  },
+  {
+    id: "jupiter-moon-visualiser",
+    title: "Jupiter Moon Visualiser",
+    description:
+      "Simulate and visualise the orbital positions of Jupiter's Galilean moons (Io, Europa, Ganymede, Callisto).",
+    group: "space",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-24",
+    path: "/jupiter-moon-visualiser",
+    source: "apps/jupiter-moon-visualiser",
+  },
+  {
+    id: "angular-size-calculator",
+    title: "Angular Size Calculator",
+    description:
+      "Calculate the angular diameter or physical size of astronomical objects using distance and subtended angle.",
+    group: "space",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-24",
+    path: "/angular-size-calculator",
+    source: "apps/angular-size-calculator",
+  },
+  {
+    id: "saturn-ring-tilt",
+    title: "Saturn Ring Tilt Calculator",
+    description:
+      "Calculate the apparent tilt angle and open appearance of Saturn's ring system relative to Earth over time.",
+    group: "space",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-25",
+    path: "/saturn-ring-tilt",
+    source: "apps/saturn-ring-tilt",
   },
 
   // Maths & Physics
@@ -222,11 +318,47 @@ export const TOOLS: Tool[] = [
     description:
       "Four gravitational limits in one calculator: escape velocity, Hill sphere, Roche limit and Schwarzschild radius.",
     group: "maths-physics",
-    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    tech: STACK,
     status: "active",
     updated: "2026-10-11",
     path: "/physical-limits",
     source: "apps/physical-limits",
+  },
+  {
+    id: "chilli-heat-scale",
+    title: "Chilli Heat Scale Explorer",
+    description:
+      "Slide along the Scoville scale, compare 14 peppers, find your comfort zone with a short quiz and estimate how much pepper a sauce needs.",
+    group: "maths-physics",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-25",
+    path: "/chilli-heat-scale",
+    source: "apps/chilli-heat-scale",
+  },
+  {
+    id: "cup-delta",
+    title: "Cup Delta",
+    description:
+      "Calculate extraction yield, brew ratios, and TDS for espresso and filter coffee.",
+    group: "maths-physics",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-25",
+    path: "/cup-delta",
+    source: "apps/cup-delta",
+  },
+  {
+    id: "escape-velocity",
+    title: "Escape Velocity Calculator",
+    description:
+      "Calculate the escape velocity and gravitational binding energy for planets and celestial bodies.",
+    group: "maths-physics",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-24",
+    path: "/escape-velocity",
+    source: "apps/escape-velocity",
   },
 
   // Sustainability & Climate
@@ -248,7 +380,7 @@ export const TOOLS: Tool[] = [
     description:
       "Estimate greenhouse-gas emissions for a flight from origin and destination airports, cabin class and trip type. A modelled estimate, not a measurement.",
     group: "sustainability",
-    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    tech: STACK,
     status: "active",
     updated: "2026-10-23",
     path: "/flight-emissions",
@@ -260,11 +392,35 @@ export const TOOLS: Tool[] = [
     description:
       "Record electricity and gas use, estimate annual emissions, compare against UK benchmarks and identify practical reduction opportunities.",
     group: "sustainability",
-    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    tech: STACK,
     status: "in-progress",
     updated: "2026-10-23",
     path: "/home-energy-baseline",
     source: "apps/home-energy-baseline",
+  },
+  {
+    id: "greenhouse-effect",
+    title: "Greenhouse Effect Model",
+    description:
+      "Interactive zero-dimensional energy balance climate model demonstrating radiative forcing and greenhouse gas warming.",
+    group: "sustainability",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-24",
+    path: "/greenhouse-effect",
+    source: "apps/greenhouse-effect",
+  },
+  {
+    id: "carbon-intensity",
+    title: "Carbon Intensity Tracker",
+    description:
+      "Monitor real-time regional grid carbon intensity and low-carbon generation mixes.",
+    group: "sustainability",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-25",
+    path: "/carbon-intensity",
+    source: "apps/carbon-intensity",
   },
 
   // Focus & Wellbeing
@@ -274,11 +430,23 @@ export const TOOLS: Tool[] = [
     description:
       "Pick a short, enjoyable or restorative break from your own menu, filtered by type, time and place. Your menu stays in your browser.",
     group: "productivity",
-    tech: ["TypeScript", "Vite", "Cloudflare Workers"],
+    tech: STACK,
     status: "active",
     updated: "2026-10-12",
     path: "/dopamine-menu",
     source: "apps/dopamine-menu",
+  },
+  {
+    id: "waiting-on-tracker",
+    title: "Waiting-On Tracker",
+    description:
+      "Keep track of what you are waiting on and see what needs a nudge today. Snooze, resolve and reopen items, with a calm mode. Your list stays in your browser.",
+    group: "productivity",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-26",
+    path: "/waiting-on-tracker",
+    source: "apps/waiting-on-tracker",
   },
   {
     id: "habit-streak",
@@ -286,7 +454,7 @@ export const TOOLS: Tool[] = [
     description:
       "Track simple daily habits with streaks, weekly summaries and local-browser storage. No account required.",
     group: "productivity",
-    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    tech: STACK,
     status: "in-progress",
     updated: "2026-10-23",
     path: "/habit-streak",
@@ -297,7 +465,7 @@ export const TOOLS: Tool[] = [
     title: "Context Switcher",
     description: "Quickly switch between workspace contexts and environments.",
     group: "productivity",
-    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    tech: STACK,
     status: "in-progress",
     updated: "2026-10-24",
     path: "/context-switcher",
@@ -347,11 +515,35 @@ export const TOOLS: Tool[] = [
     description:
       "Check a page’s title, description, Open Graph, Twitter card, canonical URL and robots directives against common SEO and sharing requirements.",
     group: "web-dev",
-    tech: ["JavaScript", "Vite", "Cloudflare Workers"],
+    tech: STACK,
     status: "active",
     updated: "2026-10-24",
     path: "/seo-meta-tag",
     source: "apps/seo-meta-tag",
+  },
+  {
+    id: "marketing-dash",
+    title: "Marketing Dashboard",
+    description:
+      "Overview of campaign performance metrics, funnel conversion rates, and channel ROI.",
+    group: "web-dev",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-24",
+    path: "/marketing-dash",
+    source: "apps/marketing-dash",
+  },
+  {
+    id: "marketing-funnel",
+    title: "Marketing Funnel Calculator",
+    description:
+      "Model conversion rates, lead volumes, and customer acquisition costs across marketing funnel stages.",
+    group: "web-dev",
+    tech: STACK,
+    status: "active",
+    updated: "2026-10-24",
+    path: "/marketing-funnel",
+    source: "apps/marketing-funnel",
   },
   {
     id: "page-weight",

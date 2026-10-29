@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cup Delta</title>
+<meta name="description" content="A private, offline coffee tasting and brew-experiment tool. No account, no tracking.">
+<meta name="theme-color" content="#f6f4f0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17140f" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="top-in">
+    <p class="brand"><span class="mark" aria-hidden="true">Δ</span> Cup Delta</p>
+    <p class="count" id="count">Private and offline</p>
+  </div>
+  <nav id="nav" class="nav" aria-label="Main"></nav>
+</header>
+<main id="main" class="main"></main>
+<p id="live" class="sr" role="status" aria-live="polite"></p>
+<noscript><p class="main">Cup Delta needs JavaScript. It still sends nothing anywhere.</p></noscript>
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>

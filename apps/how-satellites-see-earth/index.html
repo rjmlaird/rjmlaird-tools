@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Satellites See Earth — Spectral Bands and Climate</title>
+<style>
+:root{--ink:#0B0F1A;--ink2:#0F1520;--card:#141B29;--lift:#1A2236;--w:#EDEAE3;--mb:#9AA4B8;--m:#8A98B2;--teal:#00C2A8;--amber:#F5A623;--violet:#A78BFA;--coral:#FF8080;--green:#4ADE80;--sky:#38BDF8;--td:rgba(0,194,168,.13);--bd:rgba(255,255,255,.11);--bm:rgba(255,255,255,.2);--focus:#7FE6D4;--font-display:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;--font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;--radius:6px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);color:var(--w);font-family:var(--font-body);line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:82rem;margin:0 auto;padding:2.5rem 1.5rem 4rem}
+.kicker{display:flex;align-items:center;gap:.7rem;margin-bottom:1rem;font-family:var(--font-display);font-size:.75rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--teal)}
+.kicker::before{content:"";width:26px;height:1px;background:var(--teal)}
+h1{font-family:var(--font-display);font-size:clamp(2rem,4.6vw,3.2rem);line-height:1.08;letter-spacing:-.025em;margin-bottom:1rem}
+.lead{max-width:54rem;color:var(--mb);font-size:1.05rem;line-height:1.75;margin-bottom:2rem}
+.layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(340px,.95fr);gap:1.5rem;align-items:start}
+@media(max-width:1020px){.layout{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--bd);border-left:3px solid var(--teal);border-radius:var(--radius);padding:1.25rem}
+.panel h2{font-family:var(--font-display);font-size:1.15rem;margin-bottom:.9rem}
+.controls{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
+.chip{font:inherit;font-size:.85rem;padding:.45rem .85rem;border:1px solid var(--bm);border-radius:999px;background:transparent;color:var(--mb);cursor:pointer;min-height:44px}
+.chip[aria-pressed=true]{background:var(--td);border-color:var(--teal);color:var(--w)}
+.chip:hover,.chip:focus-visible{border-color:var(--teal)}
+.stage{border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden;background:#05070d}
+.stage canvas{display:block;width:100%;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.8rem}
+.legend span{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--mb)}
+.swatch{width:14px;height:14px;border-radius:3px;border:1px solid var(--bm)}
+.info h3{font-family:var(--font-display);font-size:1.4rem;color:var(--teal);margin-bottom:.5rem}
+.info p{color:var(--mb);margin-bottom:1rem}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem;margin-bottom:1.25rem}
+@media(max-width:540px){.facts{grid-template-columns:1fr}}
+.fact{background:var(--lift);border:1px solid var(--bd);border-radius:var(--radius);padding:.75rem}
+.fact b{display:block;font-family:var(--font-display);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mb);margin-bottom:.2rem}
+.plain-list{list-style:none;display:grid;gap:.55rem}
+.plain-list li{position:relative;padding-left:1.25rem;color:var(--mb);line-height:1.65}
+.plain-list li::before{content:"";position:absolute;left:0;top:.72em;width:.5rem;height:1px;background:var(--teal)}
+.plain-list strong{color:var(--w);font-weight:600}
+.subhead{font-family:var(--font-display);font-size:.75rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mb);margin:1.25rem 0 .6rem}
+.note{margin-top:1.5rem;padding:1rem 1.25rem;background:var(--ink2);border:1px solid var(--bd);border-radius:var(--radius);color:var(--mb);font-size:.92rem}
+.note strong{color:var(--w)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<p class="kicker">Earth Observation Explainer</p>
+<h1>How satellites see Earth</h1>
+<p class="lead">Satellites do not simply take photographs. They measure reflected and emitted energy in selected wavelength bands, then combine those measurements to reveal vegetation, water, clouds, fire, land use and climate-related change.</p>
+<div class="layout">
+<section class="panel">
+<div class="controls" role="group" aria-label="Choose a satellite view">
+<button class="chip band-chip" data-band="true" aria-pressed="true">True colour</button>
+<button class="chip band-chip" data-band="vegetation" aria-pressed="false">Vegetation</button>
+<button class="chip band-chip" data-band="water" aria-pressed="false">Water & flood</button>
+<button class="chip band-chip" data-band="fire" aria-pressed="false">Fire & burn scar</button>
+<button class="chip band-chip" data-band="thermal" aria-pressed="false">Thermal</button>
+<button class="chip band-chip" data-band="moisture" aria-pressed="false">Soil moisture</button>
+</div>
+<div class="stage"><canvas id="scene" width="900" height="560" role="img" aria-label="Mock satellite image showing how different spectral bands reveal different Earth features"></canvas></div>
+<div class="legend" id="legend"></div>
+<p class="note"><strong>MVP data notice:</strong> this demonstration uses a synthetic landscape and simulated spectral responses. It is designed to explain the principles behind satellite imagery; it does not display real Copernicus Sentinel data. A later version can use Copernicus Browser or Sentinel Hub data layers.</p>
+</section>
+<aside class="panel info" id="info" aria-live="polite"></aside>
+</div>
+</main>
+<script>
+const canvas=document.getElementById("scene"),ctx=canvas.getContext("2d"),info=document.getElementById("info"),legend=document.getElementById("legend");
+let band="true";
+const bands={
+ true:{title:"True colour",rgb:["B04","B03","B02"],description:"This approximate natural-colour view uses red, green and blue light, similar to what human eyes see from space.",science:["Red light is mainly reflected by bare soil and some vegetation.","Green light is reflected by healthy plant leaves.","Blue light is scattered by the atmosphere and can make images look hazy.","True colour is intuitive, but it can hide information that is obvious in other bands."],uses:["Identifying land cover at a glance","Tracking large floods and sediment plumes","Communicating satellite imagery to non-specialists"],legend:[["#2f6b34","Vegetation"],["#8a6a3b","Bare soil / urban"],["#1d4e89","Water"],["#d9d9d9","Cloud"]]},
+ vegetation:{title:"Vegetation",rgb:["B08","B04","B03"],description:"Healthy vegetation reflects near-infrared light strongly while absorbing red light for photosynthesis. This makes vegetation appear bright and easy to distinguish from soil or water.",science:["Chlorophyll absorbs red and blue light for photosynthesis.","Leaf structure reflects much of the near-infrared radiation.","The contrast between near-infrared and red light underpins vegetation indices such as NDVI.","Lower vegetation signal can indicate drought stress, harvest, deforestation or seasonal change."],uses:["Monitoring crops, forests and grasslands","Detecting deforestation and land-cover change","Supporting drought and food-security analysis"],legend:[["#00C2A8","Dense vegetation"],["#A3E635","Sparse vegetation"],["#8a6a3b","Bare soil"],["#1d4e89","Water"]]},
+ water:{title:"Water & flood",rgb:["B08","B11","B04"],description:"Water absorbs near-infrared and shortwave-infrared radiation very strongly, so it appears dark while land remains brighter. This makes flooded areas especially clear.",science:["Clear water absorbs most near-infrared and shortwave-infrared radiation.","Wet soil reflects less shortwave-infrared radiation than dry soil.","Turbid floodwater may appear brighter because it contains sediment.","Comparing images before and after heavy rain can reveal the extent of inundation."],uses:["Mapping flood extent after storms","Monitoring rivers, lakes and reservoirs","Assessing wetland and coastal change"],legend:[["#0b2b4a","Open water / flood"],["#2f6b34","Vegetation"],["#8a6a3b","Dry land"],["#d9d9d9","Cloud"]]},
+ fire:{title:"Fire & burn scar",rgb:["B12","B08","B04"],description:"Shortwave-infrared bands can distinguish active fire and freshly burned ground from unburned vegetation. In this simplified view, active fire appears bright and burned land appears dark red-brown.",science:["Hot fires emit strongly in the shortwave-infrared part of the spectrum.","Burned vegetation reflects differently from living vegetation in the near-infrared.","A burn scar often remains visible after the flames have gone.","Repeated observations can track recovery, smoke and subsequent erosion risk."],uses:["Detecting active fires and burn scars","Supporting emergency response","Monitoring post-fire vegetation recovery"],legend:[["#FF8080","Active fire / hot area"],["#5b2b18","Burn scar"],["#00C2A8","Unburned vegetation"],["#d9d9d9","Smoke / cloud"]]},
+ thermal:{title:"Thermal",rgb:["THERMAL","THERMAL","THERMAL"],description:"Thermal infrared measures heat emitted by the surface rather than reflected sunlight. It can reveal urban heat, wildfire hotspots and temperature differences between land and water.",science:["All warm objects emit infrared radiation.","Warmer surfaces generally emit more radiation, following the Stefan–Boltzmann relationship.","Thermal sensors can work at night because they measure emitted heat rather than reflected sunlight.","Coarse pixel size is common because thermal energy is harder to measure with high spatial detail."],uses:["Mapping urban heat islands","Detecting fire hotspots","Monitoring sea-surface and land-surface temperature"],legend:[["#FF8080","Hotter"],[ "#F5A623","Warm"],[ "#38BDF8","Cooler"],[ "#1d4e89","Water"]]},
+ moisture:{title:"Soil moisture",rgb:["B11","B08","B04"],description:"Shortwave-infrared radiation is sensitive to water content in soil and vegetation. Darker areas in this simplified view indicate wetter soil or vegetation; brighter areas suggest dryness.",science:["Wet soil absorbs more shortwave-infrared radiation than dry soil.","Vegetation water content also changes its shortwave-infrared reflectance.","Moisture patterns can reveal irrigation, drought stress and recent rainfall.","Soil moisture is important for agriculture, drought early warning and flood forecasting."],uses:["Monitoring drought and irrigation","Supporting agricultural planning","Identifying areas vulnerable to wildfire or land degradation"],legend:[["#1d4e89","Wetter"],["#4ADE80","Moist vegetation"],["#F5A623","Dry soil"],["#d9d9d9","Cloud"]]}
+};
+function drawScene(){
+ const W=canvas.width,H=canvas.height;
+ ctx.clearRect(0,0,W,H);
+ // Sky / background
+ ctx.fillStyle="#05070d";ctx.fillRect(0,0,W,H);
+ // Base landscape: generate deterministic mock terrain
+ const terrain=[];
+ for(let y=0;y<H;y+=10){for(let x=0;x<W;x+=10){
+  const n=Math.sin(x*.012)*Math.cos(y*.017)+Math.sin((x+y)*.006)*.5;
+  let type="vegetation";
+  if(y>400&&x>560)type="water";
+  else if(n>0.85)type="urban";
+  else if(n>0.55)type="soil";
+  else if(n<-0.72)type="water";
+  terrain.push([x,y,type]);
+ }}
+ const palette={
+  true:{vegetation:"#2f6b34",soil:"#8a6a3b",water:"#1d4e89",urban:"#7b7f87",fire:"#5b2b18",cloud:"#d9d9d9"},
+  vegetation:{vegetation:"#00C2A8",soil:"#8a6a3b",water:"#0b2b4a",urban:"#6b7280",fire:"#365314",fireScar:"#365314"},
+  water:{vegetation:"#2f6b34",soil:"#8a6a3b",water:"#0b2b4a",urban:"#6b7280",fire:"#5b2b18"},
+  fire:{vegetation:"#00C2A8",soil:"#8a6a3b",water:"#0b2b4a",urban:"#6b7280",fire:"#FF8080"},
+  thermal:{vegetation:"#1d4e89",soil:"#F5A623",water:"#1d4e89",urban:"#FF8080",fire:"#FF8080"},
+  moisture:{vegetation:"#4ADE80",soil:"#F5A623",water:"#1d4e89",urban:"#6b7280",fire:"#5b2b18"}
+ };
+ const colors=palette[band];
+ terrain.forEach(([x,y,type])=>{
+  ctx.fillStyle=colors[type]||"#334155";
+  ctx.fillRect(x,y,10,10);
+ });
+ // River / flood feature
+ ctx.fillStyle=colors.water;
+ ctx.beginPath();ctx.moveTo(0,430);
+ for(let x=0;x<=W;x+=20){ctx.lineTo(x,410+Math.sin(x*.012)*35);}
+ ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
+ // Clouds
+ ctx.fillStyle=band==="true"?"rgba(217,217,217,.85)":"rgba(217,217,217,.35)";
+ [[130,90,80],[330,60,60],[620,120,95]].forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();});
+ // Fire and burn scar in fire view
+ if(band==="fire"){
+  ctx.fillStyle="rgba(255,128,128,.9)";
+  [[520,220],[555,245],[590,205]].forEach(([x,y])=>{ctx.beginPath();ctx.arc(x,y,10,0,7);ctx.fill();});
+  ctx.fillStyle="rgba(91,43,24,.75)";
+  ctx.beginPath();ctx.ellipse(560,300,115,70,0,0,7);ctx.fill();
+ }
+ // Thermal hotspots
+ if(band==="thermal"){
+  ctx.fillStyle="rgba(255,128,128,.9)";
+  [[520,220],[555,245],[590,205]].forEach(([x,y])=>{ctx.beginPath();ctx.arc(x,y,12,0,7);ctx.fill();});
+ }
+ // Labels
+ ctx.fillStyle="rgba(237,234,227,.92)";ctx.font="700 20px Space Grotesk, sans-serif";
+ ctx.fillText(bands[band].title,24,42);
+ ctx.fillStyle="rgba(154,164,184,.95)";ctx.font="12px Inter, sans-serif";
+ ctx.fillText("Mock Sentinel-style scene · not real satellite data",24,64);
+ // Band mapping
+ ctx.fillStyle="#EDEAE3";ctx.font="700 14px Space Grotesk, sans-serif";
+ ctx.fillText(`RGB mapping: ${bands[band].rgb.join(" · ")}`,24,H-28);
+}
+const content={
+ true:{title:"True colour",facts:[["Bands used","Red, green and blue"],["What it shows","Familiar natural-colour view"],["Main limitation","Some useful information is invisible"],["Climate relevance","Land cover, floods and sediment"]]},
+ vegetation:{title:"Vegetation",facts:[["Bands used","Near-infrared, red, green"],["What it shows","Healthy and sparse vegetation"],["Key principle","Leaves reflect near-infrared strongly"],["Climate relevance","Drought, forests, crops and land change"]]},
+ water:{title:"Water & flood",facts:[["Bands used","Near-infrared, shortwave-infrared, red"],["What it shows","Open water and inundated land"],["Key principle","Water absorbs near-infrared strongly"],["Climate relevance","Flood mapping and water resources"]]},
+ fire:{title:"Fire & burn scar",facts:[["Bands used","Shortwave-infrared, near-infrared, red"],["What it shows","Active fire and burned ground"],["Key principle","Hot targets and burned vegetation have distinct spectral signals"],["Climate relevance","Wildfire monitoring and recovery"]]},
+ thermal:{title:"Thermal",facts:[["Bands used","Thermal infrared"],["What it shows","Emitted heat rather than reflected light"],["Key principle","Warmer objects emit more radiation"],["Climate relevance","Land-surface temperature and urban heat"]]},
+ moisture:{title:"Soil moisture",facts:[["Bands used","Shortwave-infrared, near-infrared, red"],["What it shows","Wet versus dry soil and vegetation"],["Key principle","Water absorbs shortwave-infrared radiation"],["Climate relevance","Drought, agriculture and wildfire risk"]]}
+};
+function show(){
+ const b=bands[band],c=content[band];
+ info.innerHTML=`<h3>${c.title}</h3><p>${b.description}</p>
+ <div class="facts">${c.facts.map(f=>`<div class="fact"><b>${f[0]}</b>${f[1]}</div>`).join("")}</div>
+ <p class="subhead">Science</p><ul class="plain-list">${b.science.map(t=>`<li>${t}</li>`).join("")}</ul>
+ <p class="subhead">Climate and environmental uses</p><ul class="plain-list">${b.uses.map(t=>`<li>${t}</li>`).join("")}</ul>`;
+ legend.innerHTML=b.legend.map(([color,label])=>`<span><i class="swatch" style="background:${color}"></i>${label}</span>`).join("");
+}
+document.querySelectorAll(".band-chip").forEach(btn=>btn.addEventListener("click",()=>{
+ document.querySelectorAll(".band-chip").forEach(b=>b.setAttribute("aria-pressed","false"));
+ btn.setAttribute("aria-pressed","true");band=btn.dataset.band;drawScene();show();
+}));
+drawScene();show();
+</script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flavour Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EDF0EB;--sf:#fff;--ink:#1D2420;--mut:#55625A;--ln:#C8D1C8;--ac:#5B2A6E;--acs:#EBDDF1;--on:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141A16;--sf:#1D2620;--ink:#E9F0EA;--mut:#A3B3A8;--ln:#34443A;--ac:#D6A4EA;--acs:#33253A;--on:#1A1020}}
+:root[data-theme="dark"]{--bg:#141A16;--sf:#1D2620;--ink:#E9F0EA;--mut:#A3B3A8;--ln:#34443A;--ac:#D6A4EA;--acs:#33253A;--on:#1A1020}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1.0625rem/1.55 "Atkinson Hyperlegible",system-ui,sans-serif}
+.wrap{max-width:44rem;margin:0 auto;padding:1.25rem 1rem 4rem}
+h1,h2,h3{font-family:"DM Serif Display",Georgia,serif;font-weight:400;line-height:1.15;margin:0}
+h1{font-size:2.5rem}h2{font-size:1.4rem;margin-bottom:.4rem}h3{font-size:1.05rem;margin:1rem 0 .3rem;font-family:"Atkinson Hyperlegible",system-ui,sans-serif;font-weight:700}
+.tag,.hint{color:var(--mut)}.tag{margin:.25rem 0 1rem}.hint{font-size:.9rem}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:1rem;margin:.9rem 0}
+label{font-weight:700}
+input[type=text]{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--ln);border-radius:6px;padding:.55rem .7rem;margin:.2rem 0 .3rem}
+.chip{font:inherit;font-size:.95rem;background:var(--sf);color:var(--ink);border:1.5px solid var(--ln);border-radius:99px;padding:.3rem .8rem;margin:.15rem .15rem .15rem 0;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ac);border-color:var(--ac);color:var(--on);font-weight:700}
+.chip[aria-pressed="true"]::before{content:"✓ "}
+.chip.tab{border-radius:6px;border-left-width:8px}
+.chip.tab[aria-expanded="true"]{border-color:var(--ink);border-width:2.5px;border-left-width:8px;font-weight:700}
+.chip small{color:var(--mut)}
+fieldset{border:0;padding:0;margin:.4rem 0}legend{font-weight:700;color:var(--mut);font-size:.9rem;padding:0}
+.btn{font:700 1rem inherit;background:var(--ac);color:var(--on);border:2px solid var(--ac);border-radius:8px;padding:.6rem 1.1rem;cursor:pointer}
+.btn.sec{background:none;color:var(--ink);border-color:var(--ln)}.btn.sm{padding:.3rem .65rem;font-size:.9rem}
+.acts{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.6rem}
+#chart svg{display:block;width:100%;max-width:30rem;margin:0 auto;height:auto}
+#chart text{fill:var(--ink);font:700 12px "Atkinson Hyperlegible",system-ui,sans-serif}
+#chart .gl{fill:var(--mut);font-weight:400;font-size:10px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap;padding:.5rem 0;border-bottom:1px dashed var(--ln)}
+.row:last-child{border:0}
+.sw{display:inline-block;width:.7rem;height:1.1rem;border-radius:2px;margin-right:.5rem;vertical-align:middle;border:1.5px solid var(--ink)}
+.seg{display:inline-flex}.seg button{font:inherit;font-size:.85rem;border:1.5px solid var(--ln);background:var(--sf);color:var(--ink);padding:.2rem .55rem;cursor:pointer}
+.seg button:first-child{border-radius:6px 0 0 6px}.seg button:last-child{border-radius:0 6px 6px 0}.seg button+button{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);font-weight:700}
+.sum{font-size:1.1rem}
+.scores{display:flex;flex-wrap:wrap;gap:.3rem .9rem;margin:.6rem 0;padding:0;list-style:none;font-size:.9rem}
+.msg{color:var(--ac);font-weight:700;min-height:1.4rem}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Flavour Profile</h1>
+<p class="tag">Pick what you taste, see the shape of the cup.</p>
+
+<div class="card">
+<label for="name">Coffee name <span class="hint">(optional)</span></label>
+<input type="text" id="name" autocomplete="off" placeholder="e.g. Kenya AA, filter">
+<div id="chart" role="group" aria-label="Flavour profile chart"></div>
+<p class="sum" id="sum" aria-live="polite"></p>
+<ul class="scores" id="scores" aria-label="Score for each flavour family"></ul>
+<div id="list"></div>
+<div class="acts"><button class="btn" id="save" type="button">Save profile</button><button class="btn sec" id="copy" type="button">Copy summary</button><button class="btn sec" id="ex" type="button">Load an example</button><button class="btn sec" id="clr" type="button">Clear</button></div>
+<p class="msg" id="msg" role="status"></p>
+</div>
+
+<div class="card">
+<h2>Add flavours</h2>
+<p class="hint">Choose a family, then tap what you taste. Tap again to remove. Flavour words are comparisons: strawberry means the cup reminds you of strawberry, not that strawberry was added.</p>
+<div id="fams" role="group" aria-label="Flavour families"></div>
+<div id="subs"></div>
+</div>
+
+<div class="card">
+<h2>Saved profiles</h2>
+<div id="saved"></div>
+<p class="hint">Saved only in this browser. No account, no tracking. The flavour list is an original starter vocabulary, inspired by public coffee-tasting frameworks; it is not a copy of any published wheel.</p>
+</div>
+</div>
+
+<script>
+const FL={"Fruity":{"Citrus":["lemon","lime","orange peel","grapefruit"],"Berry":["blackcurrant","strawberry","blueberry","raspberry"],"Orchard and stone":["apple","pear","peach","apricot","plum"],"Tropical and dried":["pineapple","mango","raisin","date","fig"]},
+"Floral":{"Blossom":["jasmine","orange blossom","elderflower"],"Tea-like":["black tea","chamomile","bergamot"]},
+"Sweet":{"Caramelised":["brown sugar","caramel","molasses","toffee"],"Light sweetness":["honey","vanilla","maple","marshmallow"]},
+"Nutty and cocoa":{"Nuts":["almond","hazelnut","peanut","walnut"],"Cocoa and malt":["milk chocolate","dark chocolate","cocoa nib","malt"]},
+"Roasted":{"Toasted":["toast","biscuit","cereal"],"Burnt":["smoke","ashy","charred","tobacco"]},
+"Spices":{"Warm":["cinnamon","clove","nutmeg","cardamom"],"Sharp":["black pepper","ginger","anise"]},
+"Sour and fermented":{"Bright acids":["tart","tangy","vinegar"],"Fermented":["winey","boozy","yoghurt-like","funky"]},
+"Green and vegetal":{"Green":["grassy","herbal","green pepper","hay"],"Woody and earthy":["woody","cedar","earthy"]},
+"Other":{"Faults":["papery","cardboard","flat","rubbery","stale"],"Mouthfeel":["drying","astringent","harsh","watery"]}};
+const COL={"Fruity":"#D1495B","Floral":"#B07CC6","Sweet":"#E0A030","Nutty and cocoa":"#8A5A3C","Roasted":"#6B5A52","Spices":"#D9703A","Sour and fermented":"#3A9E92","Green and vegetal":"#5B9A4A","Other":"#7C8A94"};
+const LN={"Nutty and cocoa":["Nutty &","cocoa"],"Sour and fermented":["Sour &","fermented"],"Green and vegetal":["Green &","vegetal"],"Other":["Faults &","mouthfeel"]};
+const FAMS=Object.keys(FL),FAM={};FAMS.forEach(f=>Object.values(FL[f]).flat().forEach(d=>FAM[d]=f));
+const IL=["","light","clear","strong"];
+const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const SK="flavour-profiles-v1";let saved=[];try{saved=JSON.parse(localStorage.getItem(SK))||[]}catch(e){}
+const persist=()=>{try{localStorage.setItem(SK,JSON.stringify(saved))}catch(e){}};
+let sel={},fam=null,ov=null;
+
+const scores=s=>{const o=Object.fromEntries(FAMS.map(f=>[f,0]));Object.entries(s).forEach(([d,v])=>{if(FAM[d])o[FAM[d]]+=v});return o};
+
+/* ---- rose chart ---- */
+const CX=220,CY=200,R0=26,R=112,N=FAMS.length,ST=2*Math.PI/N,GAP=.035;
+const P=(a,r)=>[CX+r*Math.sin(a),CY-r*Math.cos(a)].map(x=>x.toFixed(1)).join(" ");
+const rad=sc=>R0+(R-R0)*Math.sqrt(Math.min(sc,9)/9);
+const sector=(i,r)=>{const a0=i*ST+GAP,a1=(i+1)*ST-GAP;return `M${P(a0,R0)}L${P(a0,r)}A${r} ${r} 0 0 1 ${P(a1,r)}L${P(a1,R0)}A${R0} ${R0} 0 0 0 ${P(a0,R0)}Z`};
+function chart(){const sc=scores(sel),osc=ov?scores(ov.sel):null;
+let g=[3,6,9].map(v=>`<circle cx="${CX}" cy="${CY}" r="${rad(v).toFixed(1)}" fill="none" stroke="var(--ln)" stroke-dasharray="3 4"/><text class="gl" x="${CX+3}" y="${(CY-rad(v)-2).toFixed(1)}">${v}${v===9?"+":""}</text>`).join("");
+FAMS.forEach((f,i)=>{const v=sc[f];if(v>0)g+=`<path d="${sector(i,rad(v))}" fill="${COL[f]}" fill-opacity=".88" stroke="var(--ink)" stroke-width="1.5"/>`;else g+=`<path d="${sector(i,R0+3)}" fill="none" stroke="var(--ln)"/>`});
+if(osc)FAMS.forEach((f,i)=>{if(osc[f]>0)g+=`<path d="${sector(i,rad(osc[f]))}" fill="none" stroke="var(--ink)" stroke-width="2" stroke-dasharray="5 4"/>`});
+FAMS.forEach((f,i)=>{const a=(i+.5)*ST,s=Math.sin(a),lines=LN[f]||[f],lx=CX+(R+14)*s,ly=CY-(R+14)*Math.cos(a),an=s>.3?"start":s<-.3?"end":"middle";
+g+=`<text text-anchor="${an}">${lines.map((l,k)=>`<tspan x="${lx.toFixed(1)}" y="${(ly+(k-(lines.length-1)/2)*13+4).toFixed(1)}">${esc(l)}</tspan>`).join("")}</text>`;
+if(sc[f]>0){const r=Math.max(rad(sc[f])-9,R0+8);g+=`<text text-anchor="middle" x="${P(a,r).split(" ")[0]}" y="${(+P(a,r).split(" ")[1]+4).toFixed(1)}" style="fill:#fff;font-size:12px;paint-order:stroke;stroke:#000;stroke-width:3px">${sc[f]}</text>`}});
+const any=Object.keys(sel).length;
+const lbl=any?"Flavour profile: "+FAMS.filter(f=>sc[f]).map(f=>`${f} ${sc[f]}`).join(", "):"Empty flavour profile";
+$("#chart").innerHTML=`<svg viewBox="0 0 440 400" role="img" aria-label="${esc(lbl)}">${g}${any?"":`<text text-anchor="middle" x="${CX}" y="${CY+4}" class="gl" style="font-size:11px">pick flavours below</text>`}</svg>`;
+return sc}
+
+/* ---- summary, list ---- */
+function summary(sc){const fs=FAMS.filter(f=>sc[f]>0).sort((a,b)=>sc[b]-sc[a]);if(!fs.length)return"";const tot=fs.reduce((t,f)=>t+sc[f],0),low=f=>f.toLowerCase();
+let s=`${fs[0]} leads`+(fs[1]?`, supported by ${low(fs[1])}${fs[2]?` and ${low(fs[2])}`:""}`:"")+". ";
+s+=fs.length===1?"A focused profile, built around one family. ":sc[fs[0]]/tot>=.5?"A focused profile with one clear centre. ":"A layered profile spread across several families. ";
+const top=Object.entries(sel).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,4).map(([d,v])=>`${d} (${IL[v]})`);
+if(FAM[top[0]?.split(" (")[0]]&&fs.includes("Other")&&Object.keys(sel).some(d=>["papery","cardboard","flat","rubbery","stale"].includes(d)))s+="Note: some selected notes are usually read as faults. ";
+return s+"Strongest notes: "+top.join(", ")+"."}
+function draw(){const sc=chart(),s=summary(sc);$("#sum").textContent=s||"Your profile will appear here as soon as you pick a flavour.";
+$("#scores").innerHTML=FAMS.filter(f=>sc[f]).map(f=>`<li><span class="sw" style="background:${COL[f]}"></span>${esc(f)} ${sc[f]}</li>`).join("");
+const L=Object.keys(sel).sort((a,b)=>FAMS.indexOf(FAM[a])-FAMS.indexOf(FAM[b])||a.localeCompare(b));
+$("#list").innerHTML=L.length?`<h3>Selected notes</h3>`+L.map(d=>`<div class="row"><span><span class="sw" style="background:${COL[FAM[d]]}"></span>${esc(d)}</span><span class="seg" role="group" aria-label="Intensity of ${esc(d)}">${[1,2,3].map(v=>`<button type="button" data-d="${esc(d)}" data-v="${v}" aria-pressed="${sel[d]===v}">${IL[v]}</button>`).join("")}</span><button type="button" class="btn sec sm" data-rm="${esc(d)}" aria-label="Remove ${esc(d)}">Remove</button></div>`).join(""):"";
+fams()}
+$("#list").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const d=b.dataset;if(d.rm){delete sel[d.rm];draw();syncChips();$("#msg").textContent=""}else if(d.d){sel[d.d]=+d.v;draw();const n=document.querySelector(`#list [data-d="${CSS.escape(d.d)}"][data-v="${d.v}"]`);n&&n.focus()}});
+
+/* ---- selector ---- */
+function fams(){$("#fams").innerHTML=FAMS.map(f=>{const n=Object.keys(sel).filter(d=>FAM[d]===f).length;return `<button type="button" class="chip tab" style="border-left-color:${COL[f]}" data-f="${esc(f)}" aria-expanded="${fam===f}">${esc(f)}${n?` <small>(${n})</small>`:""}</button>`}).join("");if(fam)$(`#fams [data-f="${CSS.escape(fam)}"]`).blur?.()}
+function subs(){$("#subs").innerHTML=fam?Object.entries(FL[fam]).map(([s,ds])=>`<fieldset><legend>${esc(s)}</legend>${ds.map(d=>`<button type="button" class="chip" data-c="${esc(d)}" aria-pressed="${d in sel}">${esc(d)}</button>`).join("")}</fieldset>`).join(""):`<p class="hint">No family chosen yet.</p>`}
+function syncChips(){document.querySelectorAll("#subs .chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.c in sel))}
+$("#fams").addEventListener("click",e=>{const b=e.target.closest("[data-f]");if(!b)return;const f=b.dataset.f;fam=fam===f?null:f;fams();subs();$(`#fams [data-f="${CSS.escape(f)}"]`).focus()});
+$("#subs").addEventListener("click",e=>{const b=e.target.closest("[data-c]");if(!b)return;const d=b.dataset.c;d in sel?delete sel[d]:sel[d]=2;$("#msg").textContent="";draw();syncChips();b.focus()});
+$("#fams").addEventListener("keydown",e=>{const k=e.key;if(!["ArrowRight","ArrowLeft","ArrowDown","ArrowUp"].includes(k))return;const bs=[...$("#fams").querySelectorAll("button")],i=bs.indexOf(e.target);if(i<0)return;e.preventDefault();bs[(i+(k==="ArrowRight"||k==="ArrowDown"?1:-1)+bs.length)%bs.length].focus()});
+
+/* ---- actions ---- */
+const say=t=>$("#msg").textContent=t;
+$("#clr").onclick=()=>{sel={};ov=null;$("#name").value="";say("");draw();syncChips();renderSaved()};
+$("#ex").onclick=()=>{sel={"blueberry":3,"jasmine":2,"lemon":2,"honey":2,"milk chocolate":1};$("#name").value="Example: natural Ethiopian";fam="Fruity";subs();draw();say("")};
+$("#save").onclick=()=>{if(!Object.keys(sel).length){say("Pick at least one flavour before saving.");return}
+saved.unshift({id:Date.now().toString(36),name:$("#name").value.trim()||"Untitled coffee",date:new Date().toISOString(),sel:{...sel}});persist();renderSaved();say("Saved.")};
+$("#copy").onclick=async()=>{if(!Object.keys(sel).length){say("Pick at least one flavour first.");return}
+const t=`${$("#name").value.trim()||"Coffee"} – flavour profile\n${summary(scores(sel))}`;try{await navigator.clipboard.writeText(t);say("Summary copied.")}catch(e){say("Copy isn’t available here. Select the summary text above instead.")}};
+function renderSaved(){$("#saved").innerHTML=saved.length?saved.map(p=>`<div class="row"><span><strong>${esc(p.name)}</strong><br><span class="hint">${new Date(p.date).toLocaleDateString("en-GB",{day:"numeric",month:"short"})} · ${Object.keys(p.sel).length} notes</span></span><span class="acts" style="margin:0"><button class="btn sec sm" data-load="${p.id}">Load</button><button class="btn sec sm" data-ov="${p.id}" aria-pressed="${ov&&ov.id===p.id}">${ov&&ov.id===p.id?"Hide overlay":"Overlay"}</button><button class="btn sec sm" data-del="${p.id}">Delete</button></span></div>`).join(""):`<p>No saved profiles yet. Build one above and tap “Save profile”. Save two, then overlay one on the other to compare cups.</p>`}
+$("#saved").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const d=b.dataset,p=saved.find(x=>x.id===(d.load||d.ov||d.del));
+if(d.load){sel={...p.sel};$("#name").value=p.name;draw();syncChips();window.scrollTo(0,0)}
+else if(d.ov){ov=ov&&ov.id===p.id?null:p;draw();renderSaved();if(ov)say(`Dashed outline: ${p.name}.`);else say("")}
+else if(d.del){if(d.arm){saved=saved.filter(x=>x.id!==p.id);if(ov&&ov.id===p.id)ov=null;persist();draw();renderSaved()}else{b.dataset.arm=1;b.textContent="Tap again";setTimeout(()=>{b.dataset.arm="";b.textContent="Delete"},3500)}}});
+draw();subs();renderSaved();
+</script>
+</body>
+</html>

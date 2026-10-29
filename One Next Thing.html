@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>One Next Thing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F0EEF8;--sf:#fff;--ink:#1E1A38;--mut:#565279;--ln:#CFCBE6;--ac:#4A3DB0;--acs:#E4E0F7;--on:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17152A;--sf:#211F3A;--ink:#EDEBFA;--mut:#B1AED0;--ln:#3A3760;--ac:#A99CFF;--acs:#2D2A52;--on:#15123A}}
+:root[data-theme="dark"]{--bg:#17152A;--sf:#211F3A;--ink:#EDEBFA;--mut:#B1AED0;--ln:#3A3760;--ac:#A99CFF;--acs:#2D2A52;--on:#15123A}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);min-height:100%}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:400 1.125rem/1.6 "Lexend",system-ui,sans-serif}
+.wrap{max-width:34rem;margin:0 auto;padding:1.25rem 1.1rem 3rem}
+.brand{font-weight:600;color:var(--mut);font-size:1rem;margin:0 0 2rem}
+h1{font-weight:600;font-size:1.9rem;line-height:1.25;margin:0 0 1rem;outline:0}
+.big{font-size:1.65rem;line-height:1.4;font-weight:600;margin:.2rem 0 1.5rem}
+.soft{color:var(--mut)}.small{font-size:.95rem}
+:focus-visible{outline:4px solid var(--ac);outline-offset:3px;border-radius:8px}
+textarea{width:100%;min-height:8rem;font:inherit;font-size:1.3rem;color:var(--ink);background:var(--sf);border:3px solid var(--ln);border-radius:16px;padding:1rem;resize:vertical;margin:.3rem 0 1rem}
+textarea:focus{border-color:var(--ac);outline:0}
+.btn{display:block;width:100%;min-height:3.6rem;font:600 1.15rem "Lexend",system-ui,sans-serif;border-radius:16px;border:3px solid var(--ac);background:var(--ac);color:var(--on);padding:.8rem 1rem;margin:.7rem 0;cursor:pointer;text-align:center}
+.btn.sec{background:var(--sf);color:var(--ink);border-color:var(--ln)}
+.btn.opt{text-align:left;background:var(--sf);color:var(--ink);border-color:var(--ln)}
+.btn.opt small{display:block;font-weight:400;color:var(--mut);font-size:.95rem}
+.btn:hover{border-color:var(--ink)}
+.link{background:none;border:0;color:var(--mut);font:inherit;font-size:.95rem;text-decoration:underline;cursor:pointer;padding:.8rem .2rem;min-height:2.75rem}
+.card{background:var(--sf);border:2px solid var(--ln);border-radius:16px;padding:1.2rem;margin:0 0 1.2rem}
+.ringbox{position:relative;width:15rem;height:15rem;margin:.5rem auto 1.5rem}
+.ringbox svg{width:100%;height:100%}
+.ringbox .t{position:absolute;inset:0;display:grid;place-items:center;font-size:3.2rem;font-weight:600;font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.note{background:var(--acs);border-radius:12px;padding:.8rem 1rem;margin:0 0 1.2rem}
+@media (prefers-reduced-motion:no-preference){.ring{transition:stroke-dashoffset .3s linear}main>*{animation:in .25s ease-out}@keyframes in{from{opacity:0}}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<p class="brand">One Next Thing</p>
+<main id="app"></main>
+</div>
+<script type="application/json" id="rb">
+{"barriers":{
+"too_vague":["Write “{task}” as one line: verb + object + where. For example: “Email Sam about Friday, from my inbox”.","Say out loud what “done” would look like for “{task}”, then type it as one sentence.","Write down the very first thing you would touch or open to start “{task}”.","Write three words that describe “{task}” on a scrap of paper. Circle the one that feels most urgent."],
+"too_big":["Open the relevant file, website or document and find the first piece of information you need.","Write only the first step of “{task}” on a sticky note. Ignore all the other steps.","Set a five-minute timer and put everything you need for “{task}” in one place.","Pick the smallest piece of “{task}” you could finish today and write only that piece down."],
+"boring":["Set a five-minute timer and do the least unpleasant part of “{task}”.","Put on one song, then start “{task}” and stop when the song ends.","Stand up, move to a different spot from usual, and do five minutes of “{task}”.","Do the first two minutes of “{task}” as badly as you can, on purpose."],
+"scary":["Open the thing for “{task}” without committing to finish it. Just look at it for one minute.","Write the worst realistic outcome of “{task}” in one sentence, then the smallest step that makes it less likely.","Tell one person, or a note to yourself, that you’re about to look at “{task}”. Nothing more.","Open “{task}” and read only the first line or the first item. Then you’re allowed to close it."]},
+"categories":[
+{"id":"email","keywords":["email","e-mail","message","reply","respond","text","whatsapp","dm"],"actions":["Open your drafts and write only the subject line.","Open a new message and type the recipient’s name and one word about what it’s for.","Write the first sentence of the message badly. You can fix it later.","Open the message you need to answer and read it once, without replying."]},
+{"id":"call","keywords":["call","phone","ring","appointment","booking","dentist","doctor","gp"],"actions":["Find the phone number or booking page and write it on a note. Don’t call yet.","Write the one thing you need to say or ask, in one sentence.","Open the booking page or contact details and leave them on screen.","Type the number into your phone. Pressing call is optional."]},
+{"id":"admin","keywords":["tax","form","hmrc","invoice","bill","paperwork","insurance","application","passport","expenses","receipt","council","bank","benefits"],"actions":["Open the relevant site or document and locate one required reference number or document.","Put the paperwork or login details where you can see them, on top of your keyboard or desk.","Open the form and read only its first page. Write down one thing you still need.","Search for the exact name of the form or page and open it in a tab. Stop there."]},
+{"id":"cleaning","keywords":["clean","tidy","washing","dishes","laundry","kitchen","hoover","vacuum","declutter","bathroom","bins"],"actions":["Clear one surface: put each thing on it where it belongs or into a bin bag.","Set a five-minute timer and put away only the things that are in the wrong room.","Collect every cup, plate and wrapper you can see and carry them to the kitchen.","Fill the sink or put one load in the machine, then stop."]},
+{"id":"coding","keywords":["code","coding","bug","deploy","repo","refactor","commit","function","api","pull request","script","css","html","javascript","python","typescript"],"actions":["Open the project and run it once. Write down the first error or oddity you see.","Open the file you’ll change and add a comment saying what you’re about to do.","Write one failing test or one line of pseudocode for the first piece.","Find the one function or file involved and read just that, without editing."]},
+{"id":"writing","keywords":["write","draft","newsletter","blog","essay","article","report","post","intro","chapter"],"actions":["Open the document and write one bad first sentence.","Open the document, type a title, then three rough bullet points of what it should say.","Write the sentence you would say to a friend about this, exactly as you’d say it.","Open the document and add a heading for each part you already know it needs."]},
+{"id":"research","keywords":["research","look into","find out","compare","read about","learn","investigate","look up","explore"],"actions":["Open a search and type the exact question you want answered. Read only the first paragraph of the first result.","Open a blank note and write the three questions you’d like answered.","Open one source you already trust and find one fact that helps.","Write down what you already know about this, in three lines."]}]}
+</script>
+<script>
+const RB=JSON.parse(document.getElementById("rb").textContent),KEY="one-next-thing-v1",APP=document.getElementById("app");
+let S={tasks:[],draft:""};
+try{const r=localStorage.getItem(KEY);if(r)S={...S,...JSON.parse(r)}}catch(e){}
+const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const uid=()=>crypto.randomUUID?crypto.randomUUID():"id-"+Date.now().toString(36)+Math.random().toString(36).slice(2);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const BAR=[["too_vague","Too vague","I don’t know where to start"],["too_big","Too big","It feels like too much"],["boring","Boring","I can’t make myself care"],["scary","Scary / emotional","I’m dreading it"]];
+const SEC=300,C=2*Math.PI*96;
+let cur=null,idx=0,screen="home",T=null,timerId=null;
+
+/* ---- rule engine: local, deterministic ---- */
+function category(txt){const t=txt.toLowerCase();return RB.categories.find(c=>c.keywords.some(k=>new RegExp("(^|[^a-z])"+k+"([^a-z]|$)").test(t)))}
+function pool(t){const b=RB.barriers[t.barrier],c=category(t.raw_input);if(!c)return b;const a=t.barrier==="too_vague"?[c.actions,b]:[b,c.actions],o=[];for(let i=0;i<4;i++){o.push(a[0][i],a[1][i])}return o}
+const short=s=>{s=s.trim().replace(/\s+/g," ");return s.length>60?s.slice(0,57)+"…":s};
+const fill=(t,i)=>{const p=pool(t);return p[((i%p.length)+p.length)%p.length].replace(/\{task\}/g,short(t.raw_input))};
+const setAction=()=>{cur.next_action=fill(cur,idx);persist()};
+
+/* ---- screens ---- */
+const V={
+home:()=>`<h1 id="h" tabindex="-1" data-f>What’s on your mind?</h1><p class="soft small">Anything works: a task, a worry, half a thought.</p>
+<label class="sr" for="inp">What’s on your mind?</label><textarea id="inp" placeholder="e.g. tax return, email Sam, clean kitchen">${esc(S.draft)}</textarea>
+<p class="small" id="hint" role="status" style="color:var(--ac);min-height:1.5rem"></p>
+<button class="btn" data-a="next">Next</button><p class="soft small">Everything stays on this device. No account, no tracking.</p>`,
+welcome:()=>{const t=last();return `<h1 id="h" tabindex="-1" data-f>Welcome back.</h1><p class="big" style="font-weight:400">You do not need to catch up.</p>
+${t?`<p class="soft">Last thing: “${esc(short(t.raw_input))}”</p>`:""}<button class="btn" data-a="cont">Continue last thing</button><button class="btn sec" data-a="new">Give me something new</button>`},
+barrier:()=>`<h1 id="h" tabindex="-1" data-f>Why is this hard?</h1><p class="soft">“${esc(short(cur.raw_input))}”. Optional: pick one, or skip.</p>
+${BAR.map(([k,l,h])=>`<button class="btn opt" data-a="bar" data-k="${k}">${l}<small>${h}</small></button>`).join("")}<button class="link" data-a="bar" data-k="too_vague">Not sure, just show me</button>`,
+suggest:()=>`<h1 id="h" tabindex="-1" data-f class="soft small" style="font-size:1rem;font-weight:400">Your next thing</h1>
+${cur.resume_note?`<div class="note small">You wrote: “${esc(cur.resume_note)}”</div>`:""}<p class="big" id="act">${esc(cur.next_action)}</p>
+<button class="btn" data-a="start">Start 5 minutes</button><button class="btn sec" data-a="another">Give me another</button><button class="btn sec" data-a="done">Done</button><button class="btn sec" data-a="saveq">Save where I left off</button>
+<button class="link" data-a="rebar">Change why it’s hard</button>`,
+timer:()=>`<h1 id="h" tabindex="-1" data-f class="soft small" style="font-size:1rem;font-weight:400">Five minutes. Just this:</h1><p style="font-weight:600;margin:0 0 1rem">${esc(cur.next_action)}</p>
+<div class="ringbox"><svg viewBox="0 0 220 220" aria-hidden="true"><circle cx="110" cy="110" r="96" fill="none" stroke="var(--ln)" stroke-width="14"/><circle class="ring" id="ring" cx="110" cy="110" r="96" fill="none" stroke="var(--ac)" stroke-width="14" stroke-linecap="round" transform="rotate(-90 110 110)" stroke-dasharray="${C}" stroke-dashoffset="0"/></svg><div class="t" id="tt" role="timer">5:00</div></div>
+<p class="sr" id="sr" role="status"></p><button class="btn sec" data-a="done">Done</button><button class="btn sec" data-a="saveq">Stop and save where I left off</button>`,
+end:()=>`<h1 id="h" tabindex="-1" data-f>Time’s up.</h1><p class="soft">That was five minutes of real effort. What now?</p><button class="btn" data-a="keep">Keep going</button><button class="btn sec" data-a="saveq">Stop and save where I left off</button>`,
+save:()=>`<h1 id="h" tabindex="-1" data-f>Save where I left off</h1><div class="card small">${esc(cur.next_action)}</div>
+<label for="rn" style="font-weight:600">Next time, start with… <span class="soft">(optional)</span></label><textarea id="rn" style="min-height:6rem" placeholder="e.g. the second paragraph, or the blue folder">${esc(cur.resume_note||"")}</textarea>
+<button class="btn" data-a="savego">Save</button><button class="link" data-a="back">Go back</button>`,
+saved:()=>`<h1 id="h" tabindex="-1" data-f>Saved.</h1><p class="big" style="font-weight:400">There’s nothing to catch up on. You can close this whenever you like.</p><button class="btn" data-a="new">Start something else</button>`,
+doneS:()=>`<h1 id="h" tabindex="-1" data-f>Done.</h1><p class="big" style="font-weight:400">That’s one thing off your mind.</p><button class="btn" data-a="new">Pick something else</button>`};
+function go(s){if(timerId&&s!=="timer"){clearInterval(timerId);timerId=null;document.title="One Next Thing"}screen=s;APP.innerHTML=V[s]();const f=APP.querySelector("[data-f]");
+if(s==="home"){const i=$i("inp");i.focus();i.setSelectionRange(i.value.length,i.value.length)}else if(s==="save"){$i("rn").focus()}else f&&f.focus();window.scrollTo(0,0);if(s==="timer")tick(),timerId=setInterval(tick,250)}
+const $i=id=>document.getElementById(id),last=()=>[...S.tasks].reverse().find(t=>t.status!=="done");
+
+/* ---- timer (wall-clock based, so it stays right if the tab sleeps) ---- */
+function startRound(){cur.status="active";cur.timer_seconds=(cur.timer_seconds&&cur.status==="active"&&T?cur.timer_seconds:0)+SEC;persist();T={end:Date.now()+SEC*1e3};go("timer")}
+function tick(){const rem=Math.max(0,T.end-Date.now()),s=Math.ceil(rem/1e3),m=Math.floor(s/60),tt=$i("tt");if(!tt)return;
+tt.textContent=m+":"+String(s%60).padStart(2,"0");$i("ring").style.strokeDashoffset=(C*(1-rem/(SEC*1e3))).toFixed(1);document.title=tt.textContent+" · One Next Thing";
+if(s>0&&s%60===0&&tt.dataset.l!==String(s)){tt.dataset.l=s;$i("sr").textContent=m+(m===1?" minute":" minutes")+" left"}
+if(rem<=0){clearInterval(timerId);timerId=null;go("end")}}
+
+/* ---- actions ---- */
+const A={
+next(){const v=$i("inp").value.trim();if(!v){$i("hint").textContent="Type anything, even one word.";$i("inp").focus();return}
+cur={id:uid(),raw_input:v,barrier:"too_vague",next_action:"",created_at:new Date().toISOString(),status:"suggested",timer_seconds:300,resume_note:null};idx=0;setAction();S.tasks.push(cur);S.draft="";persist();go("barrier")},
+bar(el){cur.barrier=el.dataset.k;idx=0;setAction();go("suggest")},
+rebar(){go("barrier")},
+another(){idx++;setAction();go("suggest")},
+start(){cur.timer_seconds=0;startRound()},
+keep(){startRound()},
+done(){cur.status="done";persist();go("doneS")},
+saveq(){go("save")},
+back(){go(T&&cur.status==="active"&&screen==="save"&&T.end>Date.now()?"timer":"suggest")},
+savego(){const n=$i("rn").value.trim();cur.resume_note=n||null;cur.status="saved";persist();go("saved")},
+new(){cur=null;go("home")},
+cont(){cur=last();if(!cur){go("home");return}const p=pool(cur);let i=p.findIndex((_,k)=>fill(cur,k)===cur.next_action);idx=i<0?0:i;if(i<0)setAction();go("suggest")}};
+APP.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(b&&A[b.dataset.a])A[b.dataset.a](b)});
+APP.addEventListener("input",e=>{if(e.target.id==="inp"){S.draft=e.target.value;persist();const h=$i("hint");if(h)h.textContent=""}});
+APP.addEventListener("keydown",e=>{if(e.target.id==="inp"&&e.key==="Enter"&&!e.shiftKey){e.preventDefault();A.next()}});
+go(last()?"welcome":"home");
+</script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Thread — one thread at a time</title>
+<style>
+:root{--bg:#FBF7F1;--sf:#fff;--ink:#1F2430;--mut:#5B6272;--ln:#DDD5C7;--ac:#00796B;--on:#fff;--acs:#DDF3EF;--focus:#005B50;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0B0F1A;--sf:#141B29;--ink:#EDEAE3;--mut:#9AA4B8;--ln:rgba(255,255,255,.16);--ac:#00C2A8;--on:#0B0F1A;--acs:rgba(0,194,168,.13);--focus:#7FE6D4}}
+:root[data-theme="dark"]{--bg:#0B0F1A;--sf:#141B29;--ink:#EDEAE3;--mut:#9AA4B8;--ln:rgba(255,255,255,.16);--ac:#00C2A8;--on:#0B0F1A;--acs:rgba(0,194,168,.13);--focus:#7FE6D4}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);min-height:100%;color-scheme:light dark}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:400 1.125rem/1.55 "Space Grotesk","Inter",system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:34rem;margin:0 auto;padding:1rem 1.1rem 3rem}
+h1{font-size:1.75rem;line-height:1.25;margin:.4rem 0 1rem;outline:0}
+h2{font-size:1.15rem;margin:1.5rem 0 .5rem}
+p{margin:.3rem 0}.mut{color:var(--mut)}.sm{font-size:.95rem}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.top{display:flex;gap:.5rem;justify-content:space-between;margin-bottom:.5rem}
+.btn{display:block;width:100%;min-height:3.5rem;margin:.5rem 0;padding:.8rem 1rem;border:1.5px solid var(--ln);border-radius:16px;background:var(--sf);color:var(--ink);font:inherit;font-weight:600;text-align:left;cursor:pointer}
+.btn:hover{border-color:var(--ac)}
+.p{background:var(--ac);color:var(--on);border-color:var(--ac);text-align:center}
+.lk{display:inline-block;width:auto;min-height:2.75rem;margin:0;padding:.5rem .9rem;text-align:center;font-weight:500;font-size:1rem}
+.row{display:flex;gap:.5rem;flex-wrap:wrap}.row .btn{flex:1 1 7rem;text-align:center;margin:.3rem 0}
+.card,.note{background:var(--sf);border:1.5px solid var(--ln);border-radius:20px;padding:1rem 1.1rem;margin:0 0 1.2rem}
+.note{background:var(--acs);border-color:transparent}
+.k{font-size:.85rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:.2rem 0 0}
+.n{font-size:1.3rem;font-weight:600;line-height:1.4;margin:.2rem 0 .8rem}
+.big{font-size:1.5rem;font-weight:600;line-height:1.4;margin:.4rem 0 1.2rem}
+input,textarea,select{width:100%;font:inherit;color:var(--ink);background:var(--sf);border:1.5px solid var(--ln);border-radius:14px;padding:.8rem 1rem;margin:.3rem 0 .8rem}
+textarea{min-height:6.5rem}label{display:block;font-weight:600;margin-top:.5rem}
+.ring{display:block;margin:1rem auto}.tt{font-size:2.6rem;font-weight:600;text-align:center;margin:-8.6rem 0 6rem;font-variant-numeric:tabular-nums}
+.dot{display:inline-block;width:.7rem;height:.7rem;border-radius:50%;background:var(--ac);margin-right:.5rem}
+@media (prefers-reduced-motion:no-preference){.dot{animation:pl 2.4s ease-in-out infinite}@keyframes pl{50%{opacity:.25}}main>*{animation:in .25s ease-out}@keyframes in{from{opacity:0}}}
+details{margin:.8rem 0}summary{cursor:pointer;min-height:2.75rem;font-weight:600}
+.sr{position:absolute;left:-9999px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top" id="top"></div>
+<main id="app"></main>
+<p class="sr" id="live" role="status" aria-live="polite"></p>
+</div>
+<script>
+/* ============ RULEBOOK (local, deterministic; merges Stuck Decoder + One Next Thing ideas) ============ */
+const BAR=[['too_vague','Too vague'],['too_big','Too big'],['boring','Boring'],['scary','Scary'],['no_energy','No energy'],['dont_know','Don’t know how'],['too_many','Too many options']];
+const RB={
+too_vague:["Write the task as: verb + object + where.","Say out loud what “done” looks like, then type it as one sentence.","Write the first thing you would touch or open to start.","Write three words about it on paper. Circle the most urgent one.","Finish this on a sticky note: “The first visible thing I’ll do is…”"],
+too_big:["Open the relevant file, website or document and find the first piece of information you need.","Write only the first step on a sticky note. Ignore the rest.","Put everything you need in one place on your desk.","Write down the smallest piece you could finish today. Only that piece.","Open the thing and scroll to the end, then stop."],
+boring:["Set a five-minute timer and do the least unpleasant part.","Put on one song and work until it ends.","Stand up, move to a different spot, and do five minutes there.","Do the first two minutes as badly as you can, on purpose.","Pour a drink first, then sit down with the thing open."],
+scary:["Open the thing without committing to completing it.","Read only the first line or item. Then you’re allowed to close it.","Write the worst realistic outcome in one sentence, then the smallest step that makes it less likely.","Write “I’m about to look at this” on a note, or tell one person. Nothing more.","Open it in draft mode and write DRAFT at the top."],
+no_energy:["Choose a two-minute version of this task.","Do the easiest visible piece: open the file, fill a glass of water, or write one line.","Set a two-minute timer and allow yourself to stop when it ends.","Put the materials within reach, then sit somewhere comfortable.","Take a screenshot or photo of where things stand so it’s ready."],
+dont_know:["Write one specific question you need answered.","Find one example of someone else doing this.","Open the tool or document and look only for the first required field or step.","Search the exact name of the thing and open the first result. Stop there.","Write what you already know about it, in three lines."],
+too_many:["Choose between exactly two options.","Pick the option closest to your left hand and ignore the rest for now.","Write all options on paper, then cross out all but two.","Set a two-minute timer and choose the first reasonable option.","Pick the option that takes the fewest clicks or steps."]};
+const CATA={
+email:["Open your drafts and write only the subject line.","Open a new message and type the recipient’s name and one word about what it’s for.","Open the message you need to answer and read it once, without replying."],
+admin:["Open the relevant site or document and locate one required reference or document.","Put the paperwork or login details on top of your keyboard where you can see them.","Open the form and read only its first page. Write down one thing you still need."],
+call:["Find the phone number or booking page and write it on a note. Don’t call yet.","Write the one thing you need to say or ask, in one sentence.","Type the number into your phone. Pressing call is optional."],
+cleaning:["Clear one surface: put each thing where it belongs or into a bin bag.","Set a five-minute timer and put away only the things in the wrong room.","Collect every cup, plate and wrapper you can see and carry them to the kitchen."],
+coding:["Open the project and run it once. Write down the first error or oddity.","Open the file you’ll change and add a comment saying what you’re about to do.","Find the one function or file involved and read just that, without editing."],
+writing:["Open the document and write one bad first sentence.","Open the document, type a title, then three rough bullet points.","Write the sentence you’d say to a friend about this, exactly as you’d say it."],
+research:["Type the exact question you want answered into a search. Read only the first paragraph of the first result.","Open a blank note and write the three questions you’d like answered.","Write what you already know about this, in three lines."]};
+const CAT=[['email',/\b(e-?mail|message|reply|respond|text|whatsapp|dm)\b/],['admin',/\b(tax|form|hmrc|invoice|bill|paperwork|insurance|application|passport|expenses?|receipt|council|bank)\b/],['call',/\b(call|phone|ring|appointment|book(ing)?|dentist|doctor|gp)\b/],['cleaning',/\b(clean|tidy|washing|dishes|laundry|kitchen|hoover|vacuum|declutter|bathroom|bins?)\b/],['coding',/\b(code|coding|bug|debug|deploy|repo|refactor|commit|api|script|css|html|website|javascript|python|typescript)\b/],['writing',/\b(write|draft|newsletter|blog|essay|article|report|intro|chapter)\b/],['research',/\b(research|plan|planning|look into|find out|compare|learn|investigate|look up)\b/]];
+const category=t=>(CAT.find(c=>c[1].test(t.toLowerCase()))||[])[0];
+function pool(text,bar){const g=RB[bar],c=CATA[category(text)]||[],o=[];const [a,b]=bar==='too_vague'?[g,c]:[c,g];for(let i=0;i<Math.max(a.length,b.length);i++){if(a[i])o.push(a[i]);if(b[i])o.push(b[i])}return o}
+const TPL={'End work':'Close the laptop and write tomorrow’s first step on a sticky note.','Start deep work':'Close extra tabs and open the one file you need.','Leave house':'Put keys, phone and wallet by the door.','Return from distraction':'Look at your current thread and do its next action.','Start admin':'Open the site or document you need first.','Start creative work':'Open a blank page and make one bad line.'};
+
+/* ============ STATE / SHARED THREAD MODEL ============ */
+const KEY='thread-v1';let S={threads:[],urges:[],sessions:[],timer:null,theme:'auto'},scr='home',T={},tick=null;
+try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const now=()=>new Date().toISOString(),$=s=>document.querySelector(s),val=k=>($('[data-k="'+k+'"]')||{}).value?.trim()||'';
+const uid=()=>crypto.randomUUID?crypto.randomUUID():'t'+Date.now()+Math.random().toString(16).slice(2);
+const E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const act=()=>S.threads.find(t=>t.status==='active');
+const lastPaused=()=>S.threads.filter(t=>t.status==='paused').sort((a,b)=>b.last_touched_at.localeCompare(a.last_touched_at))[0];
+const byId=id=>S.threads.find(t=>t.id===id);
+/* Only one thread may be active: creating/activating pauses any other */
+function mk(o){const st=o.status||'active';if(st==='active')S.threads.forEach(x=>{if(x.status==='active')x.status='paused'});
+ const t={id:uid(),moment:'stuck',raw_input:'',barrier:null,next_action:'',status:st,created_at:now(),last_touched_at:now(),resume_note:'',energy:null,tags:[],link:'',confusion:'',...o,status:st};S.threads.push(t);save();return t}
+function setStatus(t,st){if(st==='active')S.threads.forEach(x=>{if(x.status==='active'&&x!==t)x.status='paused'});t.status=st;t.last_touched_at=now();save()}
+/* begin(): start a thread; if one is already active, never force classification — offer three choices, Park default */
+function begin(o,timer){if(act()){T.pend=o;T.pendTimer=timer;return go('intake')}mk(o);timer?startTimer(5):go('focus')}
+function startTimer(m,mode){S.timer={end:Date.now()+m*60000,len:m,mode:mode||'focus'};save();go('timer')}
+const title=t=>t.raw_input||t.next_action;
+
+/* ============ VIEWS ============ */
+const b=(a,t,c,v)=>`<button class="btn ${c||''}" data-a="${a}"${v!=null?` data-v="${E(v)}"`:''}>${t}</button>`;
+const card=a=>`<section class="card" aria-label="Current thread"><p class="k">Current thread</p><p class="n">${E(title(a))}</p><p class="k">Next action</p><p class="n">${E(a.next_action)}</p><div class="row">${b('focus','Continue','p')}${b('pause','Pause')}${b('done','Done')}</div></section>`;
+const V={
+home(){const a=act(),l=!a&&lastPaused();return `<h1 tabindex="-1">What do you need right now?</h1>${a?card(a):''}
+${l?`<div class="note"><b>Welcome back. You do not need to catch up.</b><p>${E(title(l))}</p><p class="n">${E(l.next_action)}</p>${l.resume_note?`<p class="sm mut">Where you left off: ${E(l.resume_note)}</p>`:''}${b('resume','Continue last thing','p',l.id)}${b('stuck','Start something new')}</div>`:''}
+${b('stuck','I’m stuck')}${b('resumeCard','I was interrupted')}${b('cap','I have no energy')}${b('urgeNow','I keep getting distracted')}${b('trans','I need to switch tasks')}${b('decider','I can’t choose')}${b('bd','I need someone alongside me')}
+<p style="margin-top:1.5rem">${b('more','More','lk')}</p>`},
+resumeCard(){const t=act()||lastPaused();if(!t)return `<h1 tabindex="-1">Nothing to pick up</h1><p class="mut">No interrupted thread yet. Nothing is lost.</p>${b('stuck','Start with what’s stuck','p')}`;
+ return `<h1 tabindex="-1">Welcome back. You do not need to catch up.</h1><div class="card"><p class="k">Thread</p><p class="n">${E(title(t))}</p><p class="k">Next action</p><p class="n">${E(t.next_action)}</p>${t.resume_note?`<p class="k">Where you left off</p><p>${E(t.resume_note)}</p>`:''}${t.link?`<p class="sm">Link / file: ${E(t.link)}</p>`:''}${t.confusion?`<p class="sm mut">Was confusing: ${E(t.confusion)}</p>`:''}</div>${b('resume','Continue last thing','p',t.id)}${b('stuck','Start something new')}`},
+focus(){const a=act();if(!a)return V.home();return `<h1 tabindex="-1">Here’s one small next step.</h1><div class="card"><p class="k">${E(title(a))}</p><p class="big">${E(a.next_action)}</p></div>${b('t5','Try this for five minutes','p')}${b('urgeNow','I feel an urge')}${b('pause','Stop and save where I left off')}${b('done','Done')}`},
+timer(){const s=S.timer;if(!s)return V.focus();const a=act(),rem=Math.max(0,Math.ceil((s.end-Date.now())/1000)),bd=s.mode==='bd';
+ if(rem<=0)return bd?`<h1 tabindex="-1">Session finished.</h1><p class="mut">You stayed alongside the work. That counts.</p>${b('bdFinish','Copy a finish update','p')}${b('timerClose','Back to Home')}`:`<h1 tabindex="-1">Time. You can stop here. Nothing is lost.</h1><p class="big">${E(a?a.next_action:'')}</p>${b('keep','Keep going','p')}${b('pause','Stop and save where I left off')}`;
+ const C=2*Math.PI*90,off=C*(1-rem/(s.len*60));return `<h1 tabindex="-1">${bd?'<span class="dot"></span>Working alongside you':'Try this for five minutes.'}</h1><p class="big">${E(bd?(T.bd?.what||''):(a?a.next_action:''))}</p>
+<svg class="ring" width="220" height="220" viewBox="0 0 220 220" aria-hidden="true"><circle cx="110" cy="110" r="90" fill="none" stroke="var(--ln)" stroke-width="12"/><circle id="rg" cx="110" cy="110" r="90" fill="none" stroke="var(--ac)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 110 110)"/></svg><div class="tt" id="tt" role="timer">${fmt(rem)}</div>
+${bd?b('timerClose','End session early'):b('urgeNow','I feel an urge')+b('pause','Stop and save where I left off')}`},
+intake(){const o=T.pend;return `<h1 tabindex="-1">You already have a thread going.</h1><p class="mut">New thought: “${E(o.next_action)}”. Where should it go?</p>${b('iPark','Park for later','p')}${b('iAdd','Add to current thread')}${b('iNew','Start new thread')}`},
+save(){const t=T.saveThread||act()||lastPaused();if(!t)return V.home();return `<h1 tabindex="-1">You can stop here. Nothing is lost.</h1><label for="f1">Exact next physical action</label><input id="f1" data-k="next" value="${E(t.next_action)}">
+<label for="f2">Where I left off (one line)</label><input id="f2" data-k="left" value="${E(t.resume_note)}"><details><summary>A few optional extras</summary><label for="f3">Link, file or tab</label><input id="f3" data-k="link" value="${E(t.link)}"><label for="f4">What was confusing me?</label><input id="f4" data-k="conf" value="${E(t.confusion)}"><label for="f5">Energy this needs</label><select id="f5" data-k="en"><option value="">Not set</option>${['low','medium','high'].map(e=>`<option ${t.energy===e?'selected':''}>${e}</option>`).join('')}</select></details>${b('saveDo','Save where I left off','p')}`},
+stuck(){const s=T.st||(T.st={step:0});if(s.step===0)return `<h1 tabindex="-1">What are you avoiding?</h1><input aria-label="What are you avoiding?" data-k="avoid" value="${E(s.text||'')}" placeholder="e.g. tax return, email Sam, clean kitchen" autocomplete="off"><p class="sm mut">Type or paste anything.</p>${b('stNext','Next','p')}`;
+ if(s.step===1)return `<h1 tabindex="-1">What’s making this hard?</h1><p class="mut">“${E(s.text)}”</p>${BAR.map(x=>b('stBar',x[1],'',x[0])).join('')}`;
+ const iv=s.pool[s.i%s.pool.length];return `<h1 tabindex="-1">Here’s one small next step.</h1><div class="card"><p class="big">${E(iv)}</p></div>${b('stTry','Try this','p')}${b('stAnother','Give me another')}${s.bar==='too_many'?b('deciderFrom','Compare two at a time'):''}<div class="row">${b('stDone','Done')}${b('stSave','Save for later')}</div>`},
+cap(){const lv={fumes:['low'],low:['low'],okay:['low','medium'],good:['low','medium','high']};if(!T.cap)return `<h1 tabindex="-1">How much capacity do you have?</h1>${[['fumes','Running on fumes'],['low','Low'],['okay','Okay'],['good','Good']].map(x=>b('capSet',x[1],'',x[0])).join('')}`;
+ const m=S.threads.filter(t=>['active','paused'].includes(t.status)&&lv[T.cap].includes(t.energy||'medium')).sort((a,b)=>b.last_touched_at.localeCompare(a.last_touched_at)).slice(0,3);
+ return m.length?`<h1 tabindex="-1">These fit right now.</h1><p class="mut">You don’t have to do them all. One is plenty.</p>${m.map(t=>`<div class="card"><p class="k">${E(title(t))}</p><p class="n">${E(t.next_action)}</p>${b('resume','Start this','p',t.id)}</div>`).join('')}`
+ :`<h1 tabindex="-1">Nothing needs doing at this level.</h1>${b('cap2','Choose a two-minute version of something','p')}${b('capNew','Start a new low-energy thread')}${b('capRest','Rest without logging anything')}`},
+capNew(){return `<h1 tabindex="-1">What’s the smallest thing?</h1><input aria-label="Smallest thing" data-k="small" placeholder="e.g. Fill a glass of water" autocomplete="off">${b('capNewDo','Start it','p')}`},
+urge(){return `<h1 tabindex="-1">I feel an urge</h1><label for="u1">What I wanted to do</label><input id="u1" data-k="want" autocomplete="off"><label for="u2">What I was avoiding</label><input id="u2" data-k="avoid" value="${E((act()||{}).raw_input||'')}" autocomplete="off"><label for="u3">Intensity</label><select id="u3" data-k="int"><option>low</option><option>medium</option><option>high</option></select>${b('urgeSave','Save and go back','p')}${b('urgeBack','Cancel')}`},
+trans(){const s=T.tr||(T.tr={step:0});
+ if(s.step===0)return `<h1 tabindex="-1">Close one thing, open another.</h1>${Object.keys(TPL).map(k=>b('trTpl',k,'',k)).join('')}<p>${b('trTpl','Skip templates','lk','')}</p>`;
+ if(s.step===1)return `<h1 tabindex="-1">Close</h1><p class="mut">Write one line about where you are stopping.</p><input aria-label="Where you are stopping" data-k="close" autocomplete="off">${b('trClose','Next','p')}`;
+ if(s.step===2)return `<h1 tabindex="-1">Reset</h1><p class="big">Breathe, stretch, drink some water, or look out of a window.</p><div class="tt" style="margin:1rem 0" id="tt" role="timer">${fmt(Math.max(0,Math.ceil((s.rEnd-Date.now())/1000)))}</div>${b('trReset','Next','p')}`;
+ return `<h1 tabindex="-1">Open</h1><p class="mut">What is your first physical action in the next context?</p><input aria-label="First physical action" data-k="open" value="${E(s.tpl?TPL[s.tpl]:'')}" autocomplete="off">${b('trOpen','Start','p')}`},
+decider(){const d=T.dc||(T.dc={});if(!d.opts)return `<h1 tabindex="-1">What are the options?</h1><textarea aria-label="Options, one per line" data-k="opts" placeholder="One per line, or paste a list">${E(d.raw||'')}</textarea>${b('dcStart','Compare two at a time','p')}`;
+ if(d.win)return `<h1 tabindex="-1">Do this next:</h1><div class="card"><p class="big">${E(d.win)}</p></div>${b('dcGo','Make it my thread','p')}`;
+ if(d.neither)return `<h1 tabindex="-1">What would make this easier?</h1><p class="mut">Choose one.</p>${[['smaller','Smaller'],['clearer','Clearer'],['later','Later'],['delegated','Delegated']].map(x=>b('dcN',x[1],'',x[0])).join('')}`;
+ return `<h1 tabindex="-1">Pick one.</h1>${b('dcPick',E(d.opts[d.c]),'p','c')}${b('dcPick',E(d.opts[d.n]),'p','n')}${b('dcNeither','Neither','lk')}`},
+dcTip(){return `<h1 tabindex="-1">${E(T.dc.tipT)}</h1><p class="big">${E(T.dc.tip)}</p>${b('decider','Back to the options','p')}`},
+bd(){const x=T.bd||(T.bd={});if(!x.intent)return `<h1 tabindex="-1">What are you working on?</h1><input aria-label="What are you working on" data-k="what" value="${E(x.what||(act()||{}).next_action||'')}" autocomplete="off"><p class="k">Session length</p><div class="row">${[10,25,50].map(n=>`<button class="btn ${(x.len||25)===n?'p':''}" data-a="bdLen" data-v="${n}" aria-pressed="${(x.len||25)===n}">${n} min</button>`).join('')}</div>${b('bdMake','Make my intention','p')}`;
+ return `<h1 tabindex="-1">Your intention</h1><div class="card"><p class="big">${E(x.intent)}</p></div>${b('bdStart','Start silent timer','p')}${b('bdCopy','Copy intention','',x.intent)}${b('bdCopy','Copy a start update','','Starting now: '+x.intent)}`},
+more(){const u=S.urges,w=u.filter(e=>Date.now()-new Date(e.at)<6048e5),top=(arr)=>{const c={};arr.filter(Boolean).forEach(v=>c[v.toLowerCase()]=(c[v.toLowerCase()]||0)+1);return Object.entries(c).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—'};
+ const win=h=>h<5?'night':h<12?'morning':h<17?'afternoon':h<22?'evening':'night',pend=u.filter(e=>!e.outcome).slice(-3);
+ const hist=S.threads.filter(t=>t.status!=='active').sort((a,b)=>b.last_touched_at.localeCompare(a.last_touched_at)).slice(0,15);
+ return `<h1 tabindex="-1">More</h1><h2>Urge patterns this week</h2><p>Most common urge: <b>${E(top(w.map(e=>e.want)))}</b></p><p>Most common avoided task: <b>${E(top(w.map(e=>e.avoid)))}</b></p><p>Most common time window: <b>${w.length?E(top(w.map(e=>win(new Date(e.at).getHours()))))  :'—'}</b></p>
+ ${pend.length?`<h2>How did it go?</h2>${pend.map(e=>`<div class="card"><p>${E(e.want||'An urge')}</p><div class="row">${['Resisted','Gave in','Delayed','Redirected'].map(o=>`<button class="btn" data-a="outcome" data-v="${e.id}|${o}">${o}</button>`).join('')}</div></div>`).join('')}`:''}
+ <details><summary>History (${hist.length})</summary>${hist.map(t=>`<div class="card"><p class="k">${t.status}</p><p>${E(title(t))}</p>${t.status!=='done'?b('resume','Pick this up','',t.id):''}</div>`).join('')||'<p class="mut">Nothing yet.</p>'}</details>
+ <details><summary>Settings</summary><label for="th">Theme</label><select id="th" data-a="theme"><option value="auto">Match my device</option><option value="light" ${S.theme==='light'?'selected':''}>Light</option><option value="dark" ${S.theme==='dark'?'selected':''}>Dark</option></select><p class="sm mut">${S.sessions.length} co-working session${S.sessions.length===1?'':'s'} logged on this device.</p>${b('wipe','Clear everything on this device')}</details>`}};
+
+/* ============ ENGINE ============ */
+const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+function go(s){scr=s;render()}
+function render(){clearInterval(tick);const home=scr==='home';
+ $('#top').innerHTML=(home?'<span class="mut">Thread · one thread at a time</span>':b('home','← Home','lk'))+(!home&&act()&&!['focus','timer','intake'].includes(scr)?b('focus','Current thread','lk'):'');
+ $('#app').innerHTML=V[scr]();const f=$('#app h1');f&&f.focus({preventScroll:true});window.scrollTo(0,0);
+ if((scr==='timer'&&S.timer)||(scr==='trans'&&T.tr?.step===2))tick=setInterval(()=>{const end=scr==='timer'?S.timer?.end:T.tr?.rEnd;if(!end)return;const r=Math.max(0,Math.ceil((end-Date.now())/1000));if(r<=0&&scr==='timer')return render();const t=$('#tt');t&&(t.textContent=fmt(r));const g=$('#rg');if(g&&S.timer){const C=2*Math.PI*90;g.setAttribute('stroke-dashoffset',C*(1-r/(S.timer.len*60)))}},1000)}
+function applyTheme(){S.theme==='auto'?document.documentElement.removeAttribute('data-theme'):document.documentElement.dataset.theme=S.theme}
+const say=m=>{$('#live').textContent=m};
+function copy(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>say('Copied.')).catch(()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');say('Copied.')}catch(e){say('Copy not available here.')}a.remove()})}
+const pickTimer=()=>{S.timer=null;save()};
+
+const A={
+go:v=>go(v),home:()=>{T={};go('home')},stuck:()=>{T={st:{step:0}};go('stuck')},resumeCard:()=>go('resumeCard'),cap:()=>{T={};go('cap')},trans:()=>{T={tr:{step:0}};go('trans')},decider:()=>{T={dc:{}};go('decider')},bd:()=>{T={bd:{}};go('bd')},more:()=>go('more'),
+focus:()=>act()?(S.timer?go('timer'):go('focus')):go('home'),
+resume:id=>{const t=byId(id);if(t){setStatus(t,'active');T={};go('focus')}},
+t5:()=>startTimer(5),keep:()=>startTimer(5),timerClose:()=>{pickTimer();A.home()},
+pause:()=>{const t=act();if(!t)return;T.saveThread=t;pickTimer();go('save')},
+saveDo:()=>{const t=T.saveThread;if(!t)return;t.next_action=val('next')||t.next_action;t.resume_note=val('left');t.link=val('link');t.confusion=val('conf');t.energy=val('en')||null;setStatus(t,'paused');T={};go('home')},
+done:()=>{const t=act();if(t){setStatus(t,'done');pickTimer()}T={};say('Nice. Nothing else needed right now.');go('home')},
+/* intake choices */
+iPark:()=>{mk({...T.pend,status:'parked'});T={};go('home')},iAdd:()=>{const a=act();a.resume_note=(a.resume_note?a.resume_note+' ':'')+'Also: '+T.pend.next_action;a.last_touched_at=now();save();T={};go('focus')},iNew:()=>{const tm=T.pendTimer;mk(T.pend);T={};tm?startTimer(5):go('focus')},
+/* stuck decoder */
+stNext:()=>{const v=val('avoid');if(!v)return say('Type anything to continue.');T.st={step:1,text:v};go('stuck')},
+stBar:v=>{const s=T.st;s.bar=v;s.pool=pool(s.text,v);s.i=0;s.step=2;go('stuck')},
+stAnother:()=>{T.st.i++;go('stuck')},
+stTry:()=>{const s=T.st;begin({moment:'stuck',raw_input:s.text,barrier:s.bar,next_action:s.pool[s.i%s.pool.length]},true)},
+stDone:()=>{const s=T.st;mk({moment:'stuck',raw_input:s.text,barrier:s.bar,next_action:s.pool[s.i%s.pool.length],status:'done'});T={};go('home')},
+stSave:()=>{const s=T.st;mk({moment:'stuck',raw_input:s.text,barrier:s.bar,next_action:s.pool[s.i%s.pool.length],status:'parked'});T={};say('Saved for later.');go('home')},
+deciderFrom:()=>{const t=T.st.text;T={dc:{raw:t.split(/,|\n| or /).map(x=>x.trim()).filter(Boolean).join('\n')}};go('decider')},
+/* capacity */
+capSet:v=>{T.cap=v;go('cap')},cap2:()=>{T={st:{step:1,text:'something small'}};A.stBar('no_energy')},capNew:()=>go('capNew'),capRest:()=>{T={};say('Rest well. Nothing logged.');go('home')},
+capNewDo:()=>{const v=val('small');if(!v)return;T={};mk({moment:'low_energy',raw_input:v,next_action:v,energy:'low'});go('focus')},
+/* urge log */
+urgeNow:()=>{T.back=scr==='home'?'home':scr;go('urge')},urgeBack:()=>go(T.back||'home'),
+urgeSave:()=>{S.urges.push({id:uid(),at:now(),want:val('want'),avoid:val('avoid'),intensity:val('int'),outcome:null,tid:(act()||{}).id});save();say('Saved.');go(T.back||'home')},
+outcome:v=>{const[i,o]=v.split('|'),e=S.urges.find(x=>x.id===i);if(e){e.outcome=o;save()}go('more')},
+/* transition */
+trTpl:v=>{T.tr={step:1,tpl:v};go('trans')},
+trClose:()=>{const l=val('close'),a=act();if(a){if(l)a.resume_note=l;setStatus(a,'paused');pickTimer()}T.tr.step=2;T.tr.rEnd=Date.now()+90000;go('trans')},
+trReset:()=>{T.tr.step=3;go('trans')},
+trOpen:()=>{const v=val('open');if(!v)return say('Add a first action.');T={};mk({moment:'transitioning',raw_input:v,next_action:v});go('focus')},
+/* decider: pairwise king-of-the-hill */
+dcStart:()=>{const o=val('opts').split('\n').map(x=>x.trim()).filter(Boolean);if(o.length<2)return say('Add at least two options.');T.dc={opts:o,c:0,n:1}; go('decider')},
+dcPick:v=>{const d=T.dc;if(v==='n')d.c=d.n;d.n=Math.max(d.c,d.n)+1;if(d.n>=d.opts.length)d.win=d.opts[d.c];go('decider')},
+dcNeither:()=>{T.dc.neither=true;go('decider')},
+dcN:v=>{const d=T.dc,m={smaller:['Make it smaller','Write the two-minute version of whichever you’re leaning towards.'],clearer:['Make it clearer','Write one sentence on what each option would actually get you.'],later:['Move it to later','Park both options and pick again after a drink of water.'],delegated:['Hand it over','Write the one-line message asking someone else to choose or do it.']}[v];d.neither=false;d.tipT=m[0];d.tip=m[1];go('dcTip')},
+dcGo:()=>{const w=T.dc.win;T={};begin({moment:'undecided',raw_input:w,next_action:w},false)},
+/* body double */
+bdLen:v=>{T.bd.what=val('what')||T.bd.what;T.bd.len=+v;go('bd')},
+bdMake:()=>{const w=(val('what')||T.bd.what||'').replace(/[.\s]+$/,'');if(!w)return say('Add what you’re working on.');T.bd.what=w;T.bd.len=T.bd.len||25;T.bd.intent='I will '+w.charAt(0).toLowerCase()+w.slice(1)+'.';go('bd')},
+bdStart:()=>{S.sessions.push({at:now(),what:T.bd.what,len:T.bd.len});save();startTimer(T.bd.len,'bd')},
+bdCopy:v=>copy(v),bdFinish:()=>copy('Finished my session: '+(T.bd?.intent||'')),
+theme:(v,el)=>{S.theme=el.value;applyTheme();save()},
+wipe:()=>{if(confirm('Clear all threads and logs on this device?')){S={threads:[],urges:[],sessions:[],timer:null,theme:S.theme};save();T={};go('home')}}};
+document.addEventListener('click',e=>{const x=e.target.closest('[data-a]');if(x&&x.tagName!=='SELECT')A[x.dataset.a]?.(x.dataset.v,x)});
+document.addEventListener('change',e=>{if(e.target.dataset.a==='theme')A.theme(null,e.target)});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){const p=$('#app .btn.p');p&&p.click()}});
+applyTheme();go(S.timer&&act()?'timer':'home');
+</script>
+</body>
+</html>

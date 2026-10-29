@@ -1,9 +1,24 @@
-node_modules
-dist
-.wrangler
-*.log
+# Root archive folder
+/archive/
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs & local wrangler cache
+dist/
+**/dist/
+.wrangler/
+**/.wrangler/
+
+# Environment files
 .env
 .env.*
-.vscode
-.idea
+
+# Logs
+*.log
+
+# IDE & OS files
+.vscode/
+.idea/
 .DS_Store

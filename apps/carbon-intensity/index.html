@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GB Carbon Intensity Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0B0F1A;--card:#141B29;--lift:#1A2236;--w:#EDEAE3;--mb:#9AA4B8;--teal:#00C2A8;--amber:#F5A623;--violet:#A78BFA;--coral:#FF8080;--green:#4ADE80;--sky:#38BDF8;--bd:rgba(255,255,255,.11);--bm:rgba(255,255,255,.2);--focus:#7FE6D4;--radius:6px;
+--fd:"Space Grotesk",system-ui,sans-serif;--fb:"Inter",system-ui,sans-serif;--fm:"JetBrains Mono",ui-monospace,Menlo,monospace;
+--i-vl:#4ADE80;--i-l:#00C2A8;--i-m:#F5A623;--i-h:#FF8080;--i-vh:#E5484D}
+*{box-sizing:border-box;margin:0}
+body{background:var(--ink);color:var(--w);font:400 15px/1.6 var(--fb);padding:clamp(1rem,4vw,2.5rem)}
+.wrap{max-width:1320px;margin:auto}
+h1,h2{font-family:var(--fd);font-weight:700;letter-spacing:-.01em}
+h1{font-size:clamp(1.6rem,4vw,2.4rem)}h2{font-size:1.1rem;margin-bottom:.25rem}
+.sub{color:var(--mb);font-size:.88rem}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1rem;align-items:end;margin-bottom:1.5rem}
+.eyebrow{font:600 .72rem var(--fm);letter-spacing:.12em;text-transform:uppercase;color:var(--teal)}
+button,input{font:inherit;color:inherit}
+.btn{background:var(--lift);border:1px solid var(--bm);border-radius:var(--radius);padding:.4rem .8rem;cursor:pointer}
+.btn:hover{border-color:var(--teal)}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.grid{display:grid;gap:1rem;grid-template-columns:repeat(12,1fr)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:var(--radius);padding:1.1rem;min-width:0}
+.s4{grid-column:span 4}.s5{grid-column:span 5}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}
+@media(max-width:900px){.s4,.s5,.s7,.s8{grid-column:span 12}}
+.big{font:700 clamp(3rem,8vw,4.5rem)/1 var(--fd)}
+.unit{font:400 .85rem var(--fm);color:var(--mb)}
+.pill{display:inline-block;font:600 .75rem var(--fm);text-transform:uppercase;letter-spacing:.06em;padding:.15rem .6rem;border-radius:99px;color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-top:1rem}
+.stats div{background:var(--lift);border-radius:var(--radius);padding:.5rem .6rem}
+.stats b{display:block;font:600 1.1rem var(--fm)}.stats span{font-size:.72rem;color:var(--mb)}
+svg text{fill:var(--mb);font:11px var(--fm)}
+.legend{display:flex;gap:1rem;flex-wrap:wrap;font-size:.8rem;color:var(--mb);margin:.4rem 0}
+.legend i{display:inline-block;width:.7rem;height:.7rem;border-radius:2px;margin-right:.35rem;vertical-align:-1px}
+.mix-row{display:grid;grid-template-columns:5.2rem 1fr 3rem;gap:.5rem;align-items:center;font-size:.85rem;margin:.28rem 0}
+.bar{height:.7rem;background:var(--lift);border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;border-radius:99px;transition:width .5s}
+.mix-row em{font:normal .8rem var(--fm);text-align:right}
+.mixwrap{display:flex;gap:1.25rem;align-items:center;flex-wrap:wrap}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tile{aspect-ratio:1.25;border:2px solid transparent;border-radius:var(--radius);padding:.4rem;text-align:left;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;line-height:1.15}
+.tile span{font:600 .68rem var(--fm)}.tile b{font:700 1.15rem var(--fm)}
+.tile[aria-pressed=true]{border-color:var(--w)}
+.tile.empty{visibility:hidden}
+.keybar{display:flex;gap:.8rem;flex-wrap:wrap;font-size:.75rem;color:var(--mb);margin-top:.7rem}
+.keybar i{display:inline-block;width:.7rem;height:.7rem;border-radius:2px;margin-right:.3rem}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+td,th{padding:.35rem .4rem;border-bottom:1px solid var(--bd);text-align:left}
+th{color:var(--mb);font-weight:600;font-size:.75rem}td:nth-child(2){font-family:var(--fm)}
+.row{display:flex;gap:.5rem;flex-wrap:wrap;margin:.6rem 0}
+input{background:var(--lift);border:1px solid var(--bm);border-radius:var(--radius);padding:.4rem .7rem;width:8rem}
+#tip{position:fixed;pointer-events:none;background:var(--lift);border:1px solid var(--bm);border-radius:var(--radius);padding:.35rem .6rem;font:.75rem var(--fm);display:none;z-index:5}
+.err{color:var(--coral);font-size:.85rem;margin:.5rem 0}
+footer{margin-top:1.5rem;font-size:.78rem;color:var(--mb)}
+a{color:var(--teal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><div class="eyebrow">Live data · NESO Carbon Intensity API</div><h1>Great Britain carbon intensity</h1><p class="sub" id="upd">Loading…</p></div>
+  <button class="btn" id="refresh">↻ Refresh</button>
+</header>
+<div id="err" class="err" role="alert"></div>
+
+<div class="grid">
+  <section class="card s4" aria-labelledby="h-now">
+    <h2 id="h-now">Current intensity</h2>
+    <div><span class="big" id="now">–</span> <span class="unit">gCO₂/kWh</span></div>
+    <p style="margin-top:.5rem"><span class="pill" id="idx">–</span> <span class="sub" id="fc"></span></p>
+    <div class="stats"><div><b id="mn">–</b><span>48h min</span></div><div><b id="av">–</b><span>48h avg</span></div><div><b id="mx">–</b><span>48h max</span></div></div>
+    <p class="sub" id="green" style="margin-top:.9rem"></p>
+  </section>
+
+  <section class="card s8" aria-labelledby="h-fc">
+    <h2 id="h-fc">Carbon intensity forecast (−24h to +48h)</h2>
+    <div class="legend"><span><i style="background:var(--amber)"></i>Actual</span><span><i style="background:var(--sky)"></i>Forecast</span><span><i style="background:var(--w)"></i>Now</span></div>
+    <div id="chart"></div>
+  </section>
+
+  <section class="card s5" aria-labelledby="h-mix">
+    <h2 id="h-mix">Current GB generation mix</h2>
+    <p class="sub" id="mixsub">National</p>
+    <div class="mixwrap"><div id="donut"></div><div id="bars" style="flex:1;min-width:12rem"></div></div>
+    <p class="sub" id="lowc" style="margin-top:.6rem"></p>
+  </section>
+
+  <section class="card s7" aria-labelledby="h-reg">
+    <h2 id="h-reg">Regional intensity <span class="sub">(schematic map of the 14 DNO regions, tap to see mix)</span></h2>
+    <div class="tiles" id="tiles" style="margin-top:.6rem"></div>
+    <div class="keybar" id="key"></div>
+    <div class="row"><input id="pc" placeholder="Postcode e.g. LE1" aria-label="Outward postcode" maxlength="4"><button class="btn" id="pcgo">Look up</button><button class="btn" id="natbtn">Show national mix</button></div>
+    <p class="sub" id="pcout"></p>
+  </section>
+
+  <section class="card s12" aria-labelledby="h-tab">
+    <h2 id="h-tab">Regions ranked by forecast intensity</h2>
+    <table><thead><tr><th>#</th><th>gCO₂/kWh</th><th>Region</th><th>Index</th></tr></thead><tbody id="tbody"></tbody></table>
+  </section>
+</div>
+<footer>Data: <a href="https://carbonintensity.org.uk">National Energy System Operator Carbon Intensity API</a>, licensed CC BY 4.0. Electricity generation emissions only. Indicative values.</footer>
+</div>
+<div id="tip"></div>
+
+<script>
+const API="https://api.carbonintensity.org.uk";
+const IC={"very low":"var(--i-vl)","low":"var(--i-l)","moderate":"var(--i-m)","high":"var(--i-h)","very high":"var(--i-vh)"};
+const FUEL={gas:"#F5A623",coal:"#6B7280",biomass:"#A3763D",nuclear:"#A78BFA",hydro:"#38BDF8",imports:"#FF8080",other:"#9AA4B8",wind:"#00C2A8",solar:"#FACC15"};
+const LOWC=["nuclear","wind","solar","hydro","biomass"];
+// [regionid, row, col]
+const LAYOUT=[[1,0,1],[2,1,1],[3,2,1],[4,2,2],[6,3,0],[5,3,1],[7,4,0],[8,4,1],[9,4,2],[10,4,3],[11,5,0],[12,5,1],[13,5,2],[14,5,3]];
+const $=id=>document.getElementById(id);
+let state={nat:null,regions:[],sel:null,series:[]};
+
+const j=async p=>{const r=await fetch(API+p,{headers:{Accept:"application/json"}});if(!r.ok)throw new Error(p+" "+r.status);return (await r.json()).data};
+const iso=d=>d.toISOString().slice(0,16)+"Z";
+const idxColor=i=>IC[i]||"var(--mb)";
+const fmtT=d=>d.toLocaleString("en-GB",{weekday:"short",hour:"2-digit",minute:"2-digit"});
+
+async function load(){
+  $("err").textContent="";$("upd").textContent="Loading…";
+  try{
+    const now=new Date();now.setMinutes(now.getMinutes()<30?0:30,0,0);
+    const [cur,gen,reg,past,fut]=await Promise.all([
+      j("/intensity"),j("/generation"),j("/regional"),
+      j(`/intensity/${iso(now)}/pt24h`),j(`/intensity/${iso(now)}/fw48h`)]);
+    state.cur=cur[0];state.gen=gen.generationmix;
+    state.regions=reg[0].regions.filter(r=>r.regionid<=14);
+    const m=new Map();[...past,...fut].forEach(p=>m.set(p.from,p));
+    state.series=[...m.values()].sort((a,b)=>a.from<b.from?-1:1).map(p=>({t:new Date(p.from),a:p.intensity.actual,f:p.intensity.forecast}));
+    state.nowT=now;
+    $("upd").textContent="Updated "+new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})+" · refreshes every 5 min";
+    render();
+  }catch(e){
+    $("err").textContent="Couldn’t load live data ("+e.message+"). This page needs internet access to api.carbonintensity.org.uk and must be opened as a local file or hosted on your own site, not inside a sandboxed preview.";
+    $("upd").textContent="Offline";
+  }
+}
+
+function render(){
+  const c=state.cur.intensity,v=c.actual??c.forecast;
+  $("now").textContent=v;$("now").style.color=idxColor(c.index);
+  const p=$("idx");p.textContent=c.index;p.style.background=idxColor(c.index);
+  $("fc").textContent="Forecast "+c.forecast;
+  const fut=state.series.filter(s=>s.t>=state.nowT&&s.f!=null);
+  const fs=fut.map(s=>s.f);
+  $("mn").textContent=Math.min(...fs);$("mx").textContent=Math.max(...fs);
+  $("av").textContent=Math.round(fs.reduce((a,b)=>a+b,0)/fs.length);
+  // greenest 3h window
+  let best=null;const W=6;
+  for(let i=0;i+W<=fut.length;i++){const a=fut.slice(i,i+W).reduce((s,x)=>s+x.f,0)/W;if(!best||a<best.a)best={a,i}}
+  if(best){const s=fut[best.i].t,e=new Date(fut[best.i+W-1].t.getTime()+30*6e4);
+    $("green").innerHTML=`<b style="color:var(--green)">Greenest 3h window:</b> ${fmtT(s)} – ${e.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})} (avg ${Math.round(best.a)} gCO₂/kWh). Best time for EV charging or laundry.`}
+  chart();tiles();mix();table();
+}
+
+function chart(){
+  const S=state.series,W=800,H=300,m={l:42,r:12,t:10,b:28};
+  const vals=S.flatMap(s=>[s.a,s.f]).filter(x=>x!=null);
+  const y1=Math.ceil(Math.max(...vals)/50)*50,y0=Math.max(0,Math.floor(Math.min(...vals)/50)*50-50);
+  const t0=S[0].t,t1=S[S.length-1].t;
+  const X=t=>m.l+(t-t0)/(t1-t0)*(W-m.l-m.r),Y=v=>m.t+(1-(v-y0)/(y1-y0))*(H-m.t-m.b);
+  const path=k=>{let d="",on=false;S.forEach(s=>{if(s[k]==null){on=false;return}d+=(on?"L":"M")+X(s.t).toFixed(1)+","+Y(s[k]).toFixed(1);on=true});return d};
+  let g="";
+  for(let v=y0;v<=y1;v+=50)g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="rgba(255,255,255,.08)"/><text x="${m.l-6}" y="${Y(v)+4}" text-anchor="end">${v}</text>`;
+  const d0=new Date(t0);d0.setHours(24,0,0,0);
+  for(let d=d0;d<=t1;d=new Date(d.getTime()+864e5)){g+=`<line x1="${X(d)}" x2="${X(d)}" y1="${m.t}" y2="${H-m.b}" stroke="rgba(255,255,255,.12)" stroke-dasharray="3 4"/><text x="${X(d)+4}" y="${H-10}">${d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric"})}</text>`}
+  const nx=X(state.nowT);
+  $("chart").innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Carbon intensity forecast chart">${g}
+  <path d="${path("f")}" fill="none" stroke="var(--sky)" stroke-width="2"/><path d="${path("a")}" fill="none" stroke="var(--amber)" stroke-width="2.2"/>
+  <line x1="${nx}" x2="${nx}" y1="${m.t}" y2="${H-m.b}" stroke="var(--w)" stroke-width="1.2"/>
+  <line id="hl" y1="${m.t}" y2="${H-m.b}" stroke="var(--bm)" style="display:none"/><rect id="ov" x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}" fill="transparent"/></svg>`;
+  const svg=$("chart").firstChild,ov=$("ov"),hl=$("hl");
+  ov.addEventListener("pointermove",e=>{
+    const r=svg.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*W;
+    const t=t0.getTime()+(px-m.l)/(W-m.l-m.r)*(t1-t0);
+    const s=S.reduce((a,b)=>Math.abs(b.t-t)<Math.abs(a.t-t)?b:a);
+    hl.setAttribute("x1",X(s.t));hl.setAttribute("x2",X(s.t));hl.style.display="";
+    const tp=$("tip");tp.style.display="block";tp.style.left=Math.min(e.clientX+12,innerWidth-170)+"px";tp.style.top=(e.clientY-50)+"px";
+    tp.innerHTML=`${fmtT(s.t)}<br>Forecast ${s.f??"–"} · Actual ${s.a??"–"}`});
+  ov.addEventListener("pointerleave",()=>{$("tip").style.display="none";hl.style.display="none"});
+}
+
+function tiles(){
+  const R=Object.fromEntries(state.regions.map(r=>[r.regionid,r]));
+  const cells=[];for(let r=0;r<6;r++)for(let c=0;c<4;c++)cells.push(`<div class="tile empty" data-p="${r}-${c}"></div>`);
+  const T=$("tiles");T.innerHTML=cells.join("");
+  LAYOUT.forEach(([id,r,c])=>{const reg=R[id];if(!reg)return;
+    const b=document.createElement("button");b.className="tile";b.style.background=idxColor(reg.intensity.index);
+    b.setAttribute("aria-pressed",state.sel===id);b.setAttribute("aria-label",`${reg.shortname}: ${reg.intensity.forecast} gCO2/kWh, ${reg.intensity.index}`);
+    b.innerHTML=`<span>${reg.shortname}</span><b>${reg.intensity.forecast}</b>`;
+    b.onclick=()=>{state.sel=state.sel===id?null:id;tiles();mix()};
+    T.children[r*4+c].replaceWith(b)});
+  $("key").innerHTML=Object.entries(IC).map(([k,v])=>`<span><i style="background:${v}"></i>${k}</span>`).join("");
+}
+
+function mix(){
+  const reg=state.regions.find(r=>r.regionid===state.sel);
+  const data=(reg?reg.generationmix:state.gen).map(x=>({fuel:x.fuel,perc:x.perc})).sort((a,b)=>b.perc-a.perc);
+  $("mixsub").textContent=reg?reg.dnoregion+" — "+reg.shortname:"National (Great Britain)";
+  const R=60,C=2*Math.PI*R;let off=0,segs="";
+  data.filter(d=>d.perc>0).forEach(d=>{const l=d.perc/100*C;segs+=`<circle r="${R}" cx="80" cy="80" fill="none" stroke="${FUEL[d.fuel]||"#999"}" stroke-width="26" stroke-dasharray="${l} ${C-l}" stroke-dashoffset="${-off}" transform="rotate(-90 80 80)"><title>${d.fuel} ${d.perc}%</title></circle>`;off+=l});
+  const low=data.filter(d=>LOWC.includes(d.fuel)).reduce((s,d)=>s+d.perc,0);
+  $("donut").innerHTML=`<svg viewBox="0 0 160 160" width="160" height="160" role="img" aria-label="Generation mix donut">${segs}<text x="80" y="78" text-anchor="middle" style="font:700 22px var(--fd);fill:var(--w)">${low.toFixed(0)}%</text><text x="80" y="95" text-anchor="middle" style="font-size:9px">low-carbon</text></svg>`;
+  $("bars").innerHTML=data.map(d=>`<div class="mix-row"><span style="text-transform:capitalize">${d.fuel}</span><div class="bar"><i style="width:${d.perc}%;background:${FUEL[d.fuel]||"#999"}"></i></div><em>${d.perc}%</em></div>`).join("");
+  $("lowc").textContent="Low-carbon = nuclear, wind, solar, hydro and biomass.";
+}
+
+function table(){
+  $("tbody").innerHTML=[...state.regions].sort((a,b)=>a.intensity.forecast-b.intensity.forecast).map((r,i)=>`<tr><td>${i+1}</td><td>${r.intensity.forecast}</td><td>${r.dnoregion}</td><td><span class="pill" style="background:${idxColor(r.intensity.index)}">${r.intensity.index}</span></td></tr>`).join("");
+}
+
+$("pcgo").onclick=async()=>{
+  const v=$("pc").value.trim().toUpperCase().replace(/\s/g,"");if(!v)return;
+  try{const d=await j("/regional/postcode/"+encodeURIComponent(v)),r=d[0].data[0],i=r.intensity;
+    $("pcout").innerHTML=`<b>${d[0].shortname}</b>: ${i.forecast} gCO₂/kWh (<span style="color:${idxColor(i.index)}">${i.index}</span>)`;
+    state.sel=d[0].regionid<=14?d[0].regionid:null;tiles();mix()}
+  catch(e){$("pcout").textContent="Postcode not found (use the outward part only, e.g. LE1)."}
+};
+$("pc").addEventListener("keydown",e=>{if(e.key==="Enter")$("pcgo").click()});
+$("natbtn").onclick=()=>{state.sel=null;tiles();mix()};
+$("refresh").onclick=load;
+load();setInterval(load,300000);
+</script>
+</body>
+</html>

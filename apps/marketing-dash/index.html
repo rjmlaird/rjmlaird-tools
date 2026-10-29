@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-900 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketing Funnel Analytics Dashboard</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Chart.js for visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            },
+            positive: '#10b981',
+            negative: '#ef4444',
+            warning: '#f59e0b',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar for smooth modern UX */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* Tooltip styling */
+    .has-tooltip {
+      position: relative;
+    }
+    .tooltip {
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+    .has-tooltip:hover .tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* Funnel bar transitions */
+    .funnel-bar {
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans overflow-x-hidden antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- TOP HEADER / NAVBAR -->
+  <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-30 px-4 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center space-x-3">
+      <div class="p-2 bg-brand-600/20 text-brand-500 rounded-lg border border-brand-500/30">
+        <i data-lucide="filter" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <h1 class="text-xl font-bold tracking-tight text-white">FunnelPulse</h1>
+          <span class="px-2 py-0.5 text-xs font-semibold bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-full">B2B SaaS</span>
+        </div>
+        <p class="text-xs text-slate-400">Marketing Funnel & Conversion Intelligence</p>
+      </div>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="flex items-center flex-wrap gap-2 sm:gap-3">
+      <!-- Attribution Selector -->
+      <div class="flex items-center bg-slate-900/80 border border-slate-700/80 rounded-lg px-2.5 py-1.5 text-xs">
+        <i data-lucide="git-merge" class="w-3.5 h-3.5 text-slate-400 mr-2"></i>
+        <span class="text-slate-400 mr-1.5 hidden sm:inline">Model:</span>
+        <select id="attribution-model" onchange="updateDashboard()" class="bg-transparent text-slate-200 font-medium focus:outline-none cursor-pointer">
+          <option value="last-touch" class="bg-slate-800">Last-Touch</option>
+          <option value="first-touch" class="bg-slate-800">First-Touch</option>
+          <option value="linear" class="bg-slate-800" selected>Linear Multi-Touch</option>
+          <option value="w-shaped" class="bg-slate-800">W-Shaped Multi-Touch</option>
+        </select>
+      </div>
+
+      <!-- Stage Configurator Trigger -->
+      <button onclick="openStageConfig()" class="flex items-center space-x-1.5 px-3 py-1.5 bg-slate-700/60 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-600/60 transition">
+        <i data-lucide="sliders" class="w-3.5 h-3.5 text-slate-300"></i>
+        <span>Configure Stages</span>
+      </button>
+
+      <!-- Export Button -->
+      <button onclick="exportDataCSV()" class="flex items-center space-x-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-medium rounded-lg transition shadow-sm">
+        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+        <span>Export CSV</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 p-4 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">
+
+    <!-- GLOBAL FILTER BAR -->
+    <section class="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+      <div class="flex flex-wrap items-center gap-3">
+        
+        <!-- Date Range -->
+        <div class="flex items-center space-x-2 bg-slate-900 border border-slate-700/70 rounded-lg px-3 py-1.5 text-xs">
+          <i data-lucide="calendar" class="w-4 h-4 text-brand-500"></i>
+          <label class="text-slate-400">Timeframe:</label>
+          <select id="filter-date" onchange="updateDashboard()" class="bg-transparent text-slate-200 font-medium focus:outline-none cursor-pointer">
+            <option value="7d" class="bg-slate-800">Last 7 Days</option>
+            <option value="30d" class="bg-slate-800" selected>Last 30 Days</option>
+            <option value="90d" class="bg-slate-800">Last 90 Days</option>
+            <option value="ytd" class="bg-slate-800">Year to Date</option>
+          </select>
+        </div>
+
+        <!-- Channel Filter -->
+        <div class="flex items-center space-x-2 bg-slate-900 border border-slate-700/70 rounded-lg px-3 py-1.5 text-xs">
+          <i data-lucide="share-2" class="w-4 h-4 text-brand-500"></i>
+          <label class="text-slate-400">Channel:</label>
+          <select id="filter-channel" onchange="updateDashboard()" class="bg-transparent text-slate-200 font-medium focus:outline-none cursor-pointer">
+            <option value="all" class="bg-slate-800">All Channels</option>
+            <option value="Paid Search" class="bg-slate-800">Paid Search</option>
+            <option value="Organic Search" class="bg-slate-800">Organic Search</option>
+            <option value="Paid Social" class="bg-slate-800">Paid Social</option>
+            <option value="Email" class="bg-slate-800">Email Marketing</option>
+            <option value="Referral" class="bg-slate-800">Referral</option>
+            <option value="Direct" class="bg-slate-800">Direct Traffic</option>
+          </select>
+        </div>
+
+        <!-- Device Filter -->
+        <div class="flex items-center space-x-2 bg-slate-900 border border-slate-700/70 rounded-lg px-3 py-1.5 text-xs">
+          <i data-lucide="monitor" class="w-4 h-4 text-brand-500"></i>
+          <label class="text-slate-400">Device:</label>
+          <select id="filter-device" onchange="updateDashboard()" class="bg-transparent text-slate-200 font-medium focus:outline-none cursor-pointer">
+            <option value="all" class="bg-slate-800">All Devices</option>
+            <option value="Desktop" class="bg-slate-800">Desktop</option>
+            <option value="Mobile" class="bg-slate-800">Mobile</option>
+            <option value="Tablet" class="bg-slate-800">Tablet</option>
+          </select>
+        </div>
+
+        <!-- Region Filter -->
+        <div class="flex items-center space-x-2 bg-slate-900 border border-slate-700/70 rounded-lg px-3 py-1.5 text-xs">
+          <i data-lucide="globe" class="w-4 h-4 text-brand-500"></i>
+          <label class="text-slate-400">Region:</label>
+          <select id="filter-region" onchange="updateDashboard()" class="bg-transparent text-slate-200 font-medium focus:outline-none cursor-pointer">
+            <option value="all" class="bg-slate-800">Global (All)</option>
+            <option value="North America" class="bg-slate-800">North America</option>
+            <option value="Europe" class="bg-slate-800">Europe</option>
+            <option value="Asia Pacific" class="bg-slate-800">Asia Pacific</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Compare & Reset -->
+      <div class="flex items-center space-x-3">
+        <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer">
+          <input type="checkbox" id="compare-period" checked onchange="updateDashboard()" class="rounded bg-slate-900 border-slate-700 text-brand-600 focus:ring-brand-500 h-4 w-4">
+          <span>Compare to Prev. Period</span>
+        </label>
+        <button onclick="resetFilters()" class="text-xs text-slate-400 hover:text-slate-200 underline">Reset</button>
+      </div>
+    </section>
+
+    <!-- EXECUTIVE SUMMARY KPI CARDS -->
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-base font-semibold text-white flex items-center gap-2">
+          <i data-lucide="layout-dashboard" class="w-4 h-4 text-brand-500"></i> Executive KPI Summary
+        </h2>
+        <span class="text-xs text-slate-400">Hover metrics for business context tooltips</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4" id="kpi-cards-container">
+        <!-- Dynamically Populated KPI Cards -->
+      </div>
+    </section>
+
+    <!-- BOTTLENECKS & AI DIAGNOSTICS SECTION -->
+    <section class="bg-slate-800/60 border border-slate-700/70 rounded-xl p-5 relative overflow-hidden">
+      <div class="absolute -right-10 -top-10 w-40 h-40 bg-brand-500/5 rounded-full blur-2xl pointer-events-none"></div>
+      
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="p-1 bg-amber-500/10 text-amber-400 rounded">
+              <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+            </span>
+            <h2 class="text-base font-semibold text-white">Funnel Bottlenecks & Diagnostic Insights</h2>
+          </div>
+          <p class="text-xs text-slate-400 mt-1">Automated anomaly detection identifying revenue leakage points & recommended optimizations</p>
+        </div>
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> Auto-diagnosed
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="bottleneck-cards-container">
+        <!-- Dynamically Populated Diagnostics -->
+      </div>
+    </section>
+
+    <!-- MAIN FUNNEL VISUALIZATION SECTION -->
+    <section class="bg-slate-800/40 border border-slate-700/60 rounded-xl p-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-700/60 mb-6 gap-3">
+        <div>
+          <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+            <i data-lucide="filter" class="w-5 h-5 text-brand-500"></i> Stage-by-Stage Marketing Funnel
+          </h2>
+          <p class="text-xs text-slate-400">Click any stage bar to open detailed cohort, channel, and traffic source diagnostics</p>
+        </div>
+        <div class="flex items-center space-x-2 text-xs text-slate-400">
+          <span class="inline-block w-3 h-3 bg-brand-500 rounded-sm"></span>
+          <span>Stage Progression</span>
+          <span class="inline-block w-3 h-3 bg-rose-500/40 rounded-sm ml-2"></span>
+          <span>Drop-off</span>
+        </div>
+      </div>
+
+      <!-- Funnel Horizontal Visualization Container -->
+      <div class="space-y-4" id="funnel-visualization-container">
+        <!-- Dynamically Rendered Funnel Stage Bars -->
+      </div>
+    </section>
+
+    <!-- CHANNEL & CAMPAIGN PERFORMANCE TABLE -->
+    <section class="bg-slate-800/40 border border-slate-700/60 rounded-xl p-5 space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+            <i data-lucide="bar-chart-3" class="w-5 h-5 text-brand-500"></i> Acquisition Channels & Campaign Breakdown
+          </h2>
+          <p class="text-xs text-slate-400">Cost per acquisition, revenue performance, and attribution model calculations</p>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <!-- Search Table -->
+          <div class="relative">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5"></i>
+            <input type="text" id="table-search" oninput="updateDashboard()" placeholder="Search channels..." class="bg-slate-900 border border-slate-700 text-xs text-slate-200 pl-8 pr-3 py-1.5 rounded-lg focus:outline-none focus:border-brand-500 w-44 sm:w-60">
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Container -->
+      <div class="overflow-x-auto rounded-lg border border-slate-700/60">
+        <table class="w-full text-left text-xs text-slate-300">
+          <thead class="bg-slate-900/90 text-slate-400 font-medium uppercase tracking-wider border-b border-slate-700">
+            <tr>
+              <th scope="col" class="py-3 px-4">Channel / Campaign</th>
+              <th scope="col" class="py-3 px-4 text-right">Sessions</th>
+              <th scope="col" class="py-3 px-4 text-right">Leads</th>
+              <th scope="col" class="py-3 px-4 text-right">Conv. Rate %</th>
+              <th scope="col" class="py-3 px-4 text-right">Spend ($)</th>
+              <th scope="col" class="py-3 px-4 text-right">CPL ($)</th>
+              <th scope="col" class="py-3 px-4 text-right">CAC ($)</th>
+              <th scope="col" class="py-3 px-4 text-right">Revenue ($)</th>
+              <th scope="col" class="py-3 px-4 text-right">ROAS</th>
+            </tr>
+          </thead>
+          <tbody id="channels-table-body" class="divide-y divide-slate-700/50 bg-slate-800/20">
+            <!-- Dynamically Populated Table Rows -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="p-3 bg-amber-500/5 border border-amber-500/20 rounded-lg flex items-start space-x-2.5 text-xs text-amber-300/90">
+        <i data-lucide="info" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+        <span><strong>Attribution Note:</strong> Figures are based on the selected <strong><span id="current-attribution-label">Linear Multi-Touch</span></strong> model. Attribution models represent algorithmic estimations based on touched buyer journey events, not deterministic absolute truths.</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- STAGE DETAIL SLIDE-OVER DRAWER -->
+  <div id="stage-drawer" class="fixed inset-0 z-50 overflow-hidden hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+    <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity" onclick="closeStageDrawer()"></div>
+
+    <div class="fixed inset-y-0 right-0 pl-10 max-w-full flex">
+      <div class="w-screen max-w-md bg-slate-900 border-l border-slate-700 p-6 flex flex-col justify-between overflow-y-auto shadow-2xl space-y-6">
+        <div>
+          <!-- Drawer Header -->
+          <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div>
+              <span class="text-xs text-brand-400 font-semibold uppercase tracking-wider">Stage Deep Dive</span>
+              <h3 class="text-xl font-bold text-white" id="drawer-stage-title">Awareness Stage</h3>
+            </div>
+            <button onclick="closeStageDrawer()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <!-- Stage Key Metrics Grid -->
+          <div class="grid grid-cols-2 gap-3 my-5">
+            <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-700/60">
+              <p class="text-xs text-slate-400">Total Entering Volume</p>
+              <p class="text-lg font-bold text-white mt-1" id="drawer-stage-volume">124,500</p>
+            </div>
+            <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-700/60">
+              <p class="text-xs text-slate-400">Progression Rate</p>
+              <p class="text-lg font-bold text-emerald-400 mt-1" id="drawer-stage-conv">34.2%</p>
+            </div>
+            <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-700/60">
+              <p class="text-xs text-slate-400">Avg Time in Stage</p>
+              <p class="text-lg font-bold text-slate-200 mt-1" id="drawer-stage-time">2.4 Days</p>
+            </div>
+            <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-700/60">
+              <p class="text-xs text-slate-400">Drop-off Volume</p>
+              <p class="text-lg font-bold text-rose-400 mt-1" id="drawer-stage-drop">81,921</p>
+            </div>
+          </div>
+
+          <!-- Drawer Breakdown Sections -->
+          <div class="space-y-5">
+            <div>
+              <h4 class="text-xs font-semibold uppercase text-slate-400 tracking-wider mb-2">Top Traffic Sources</h4>
+              <div class="space-y-2 text-xs" id="drawer-sources-list">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-xs font-semibold uppercase text-slate-400 tracking-wider mb-2">Top Converting Assets / URLs</h4>
+              <ul class="space-y-1.5 text-xs text-slate-300" id="drawer-top-assets">
+                <!-- Populated dynamically -->
+              </ul>
+            </div>
+
+            <div>
+              <h4 class="text-xs font-semibold uppercase text-slate-400 tracking-wider mb-2">Device Breakdown</h4>
+              <div class="h-32 w-full bg-slate-800/40 p-2 rounded-lg border border-slate-800">
+                <canvas id="drawerDeviceChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="closeStageDrawer()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700">
+          Close Breakdown
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGE CONFIGURATOR MODAL -->
+  <div id="config-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="closeStageConfig()"></div>
+    
+    <div class="bg-slate-900 border border-slate-700 rounded-xl max-w-lg w-full p-6 z-10 space-y-5 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i data-lucide="sliders" class="w-4 h-4 text-brand-500"></i> Configure Funnel Stages
+        </h3>
+        <button onclick="closeStageConfig()" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-400">
+        Reorder or toggle active marketing funnel stages. Changes will recalculate conversion progression dynamically.
+      </p>
+
+      <div class="space-y-2 max-h-60 overflow-y-auto pr-1" id="config-stage-list">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-slate-800">
+        <button onclick="resetStageDefaults()" class="text-xs text-slate-400 hover:text-slate-200 underline">Reset Defaults</button>
+        <div class="space-x-2">
+          <button onclick="closeStageConfig()" class="px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800 rounded-lg">Cancel</button>
+          <button onclick="saveStageConfig()" class="px-3 py-1.5 text-xs bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-medium">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-slate-900 border-t border-slate-800 py-4 px-6 text-center text-xs text-slate-500">
+    <p>FunnelPulse Analytics MVP &bull; Built according to standard B2B conversion funnel specs &bull; Powered by Chart.js & Tailwind CSS</p>
+  </footer>
+
+  <!-- APPLICATION LOGIC & DATA MODEL -->
+  <script>
+    // --- SEED DATA & STATE ---
+    
+    // Default Configurable Funnel Stages
+    let funnelStages = [
+      { id: 'awareness', name: '1. Awareness', description: 'Landing page sessions & web traffic', active: true, avgDays: '0.1' },
+      { id: 'interest', name: '2. Interest', description: 'Content views, CTAs & key site engagement', active: true, avgDays: '1.2' },
+      { id: 'lead_capture', name: '3. Lead Capture', description: 'Form submissions & resource downloads', active: true, avgDays: '3.5' },
+      { id: 'qualified_lead', name: '4. Qualified Lead', description: 'Marketing Qualified Leads (MQLs)', active: true, avgDays: '5.1' },
+      { id: 'opportunity', name: '5. Opportunity', description: 'Sales pipeline demo or discovery call', active: true, avgDays: '12.4' },
+      { id: 'conversion', name: '6. Conversion', description: 'Closed won deals & customer signups', active: true, avgDays: '21.0' },
+      { id: 'retention', name: '7. Retention', description: 'Repeat purchase, renewal, or referral', active: true, avgDays: '90.0' }
+    ];
+
+    // Base Channel Data Matrix
+    const baseChannelData = [
+      { channel: 'Paid Search', sessions: 48500, leads: 2910, convRate: 6.0, spend: 32000, cpl: 10.99, cac: 320.0, revenue: 128000, roas: 4.0 },
+      { channel: 'Organic Search', sessions: 39200, leads: 3136, convRate: 8.0, spend: 8500, cpl: 2.71, cac: 94.4, revenue: 142000, roas: 16.7 },
+      { channel: 'Paid Social', sessions: 28400, leads: 1136, convRate: 4.0, spend: 21500, cpl: 18.92, cac: 537.5, revenue: 58000, roas: 2.7 },
+      { channel: 'Email Marketing', sessions: 16200, leads: 2268, convRate: 14.0, spend: 2400, cpl: 1.05, cac: 34.2, revenue: 96000, roas: 40.0 },
+      { channel: 'Referral', sessions: 8900, leads: 979, convRate: 11.0, spend: 1500, cpl: 1.53, cac: 45.4, revenue: 48000, roas: 32.0 },
+      { channel: 'Direct Traffic', sessions: 14300, leads: 1144, convRate: 8.0, spend: 0, cpl: 0, cac: 0, revenue: 64000, roas: 0.0 }
+    ];
+
+    // Tooltip definitions
+    const metricTooltips = {
+      reach: "Total unique sessions or visitors landing across digital touchpoints.",
+      leads: "New contacts created via form submissions, gated assets, or demos.",
+      leadConv: "Percentage of total traffic that successfully converted into leads.",
+      overallConv: "End-to-end conversion percentage from initial visit to paying customer.",
+      spend: "Total invested marketing budget across all active channels & campaigns.",
+      cac: "Customer Acquisition Cost: Total Spend divided by total converted customers."
+    };
+
+    let drawerChartInstance = null;
+
+    // --- INITIALIZATION ---
+    window.onload = function() {
+      lucide.createIcons();
+      updateDashboard();
+    };
+
+    // --- MAIN UPDATE FUNCTION ---
+    function updateDashboard() {
+      const dateRange = document.getElementById('filter-date').value;
+      const channelFilter = document.getElementById('filter-channel').value;
+      const deviceFilter = document.getElementById('filter-device').value;
+      const comparePeriod = document.getElementById('compare-period').checked;
+      const attributionModel = document.getElementById('attribution-model').value;
+      const searchQuery = document.getElementById('table-search').value.toLowerCase();
+
+      // Update Attribution label in disclaimer
+      const modelLabels = {
+        'last-touch': 'Last-Touch',
+        'first-touch': 'First-Touch',
+        'linear': 'Linear Multi-Touch',
+        'w-shaped': 'W-Shaped Multi-Touch'
+      };
+      document.getElementById('current-attribution-label').innerText = modelLabels[attributionModel] || 'Multi-Touch';
+
+      // 1. Calculate Multipliers based on date range
+      let multiplier = 1.0;
+      if (dateRange === '7d') multiplier = 0.25;
+      if (dateRange === '90d') multiplier = 2.8;
+      if (dateRange === 'ytd') multiplier = 4.2;
+
+      // Filter channels table data
+      let filteredChannels = baseChannelData.filter(item => {
+        if (channelFilter !== 'all' && item.channel !== channelFilter) return false;
+        if (searchQuery && !item.channel.toLowerCase().includes(searchQuery)) return false;
+        return true;
+      });
+
+      // Recalculate Channel Matrix based on multiplier
+      let totalSessions = 0;
+      let totalLeads = 0;
+      let totalSpend = 0;
+      let totalRevenue = 0;
+
+      const renderedChannels = filteredChannels.map(ch => {
+        const sessions = Math.round(ch.sessions * multiplier);
+        const leads = Math.round(ch.leads * multiplier);
+        const spend = Math.round(ch.spend * multiplier);
+        const revenue = Math.round(ch.revenue * multiplier);
+        const cpl = leads > 0 ? (spend / leads).toFixed(2) : '0.00';
+        const cac = leads > 0 ? (spend / (leads * 0.12)).toFixed(1) : '0.00'; // ~12% lead to customer
+        const roas = spend > 0 ? (revenue / spend).toFixed(1) : 'N/A';
+        const convRate = sessions > 0 ? ((leads / sessions) * 100).toFixed(1) : '0.0';
+
+        totalSessions += sessions;
+        totalLeads += leads;
+        totalSpend += spend;
+        totalRevenue += revenue;
+
+        return { ...ch, sessions, leads, spend, revenue, cpl, cac, roas, convRate };
+      });
+
+      // 2. Render KPI Summary Cards
+      renderKPICards(totalSessions, totalLeads, totalSpend, totalRevenue, comparePeriod);
+
+      // 3. Calculate Funnel Stage Counts dynamically
+      const activeStages = funnelStages.filter(s => s.active);
+      const stageData = calculateFunnelStageVolumes(activeStages, totalSessions);
+
+      // 4. Render Funnel Visualization
+      renderFunnelChart(stageData);
+
+      // 5. Render Bottlenecks Insights
+      renderBottlenecks(stageData);
+
+      // 6. Render Channels Table
+      renderChannelsTable(renderedChannels);
+
+      // Refresh Icons
+      lucide.createIcons();
+    }
+
+    // --- FUNNEL STAGE CALCULATIONS ---
+    function calculateFunnelStageVolumes(stages, totalReach) {
+      // Standard realistic decay multipliers across stages
+      const defaultDecay = [1.0, 0.42, 0.12, 0.055, 0.024, 0.012, 0.004];
+      
+      let currentVolume = totalReach;
+      return stages.map((stage, idx) => {
+        const decayFactor = defaultDecay[idx] || (0.5 ** idx);
+        const volume = Math.round(totalReach * decayFactor);
+        return {
+          ...stage,
+          volume: volume
+        };
+      });
+    }
+
+    // --- RENDER KPI CARDS ---
+    function renderKPICards(sessions, leads, spend, revenue, compare) {
+      const totalCustomers = Math.round(leads * 0.12);
+      const overallConv = sessions > 0 ? ((totalCustomers / sessions) * 100).toFixed(2) : '0.00';
+      const leadConv = sessions > 0 ? ((leads / sessions) * 100).toFixed(1) : '0.0';
+      const cac = totalCustomers > 0 ? Math.round(spend / totalCustomers) : 0;
+
+      const kpis = [
+        { title: 'Total Reach / Sessions', value: sessions.toLocaleString(), change: '+12.4%', positive: true, tooltip: metricTooltips.reach },
+        { title: 'New Leads Captured', value: leads.toLocaleString(), change: '+8.1%', positive: true, tooltip: metricTooltips.leads },
+        { title: 'Lead Conv. Rate', value: `${leadConv}%`, change: '-0.4%', positive: false, tooltip: metricTooltips.leadConv },
+        { title: 'Overall Conv. Rate', value: `${overallConv}%`, change: '+0.15%', positive: true, tooltip: metricTooltips.overallConv },
+        { title: 'Total Marketing Spend', value: `$${spend.toLocaleString()}`, change: '+5.0%', positive: false, tooltip: metricTooltips.spend },
+        { title: 'Avg Customer Acq. Cost', value: `$${cac}`, change: '-4.2%', positive: true, tooltip: metricTooltips.cac }
+      ];
+
+      const container = document.getElementById('kpi-cards-container');
+      container.innerHTML = kpis.map(kpi => `
+        <div class="bg-slate-800/50 border border-slate-700/60 rounded-xl p-4 flex flex-col justify-between hover:border-slate-600 transition has-tooltip">
+          <!-- Tooltip Popup -->
+          <div class="tooltip absolute z-30 -top-12 left-2 bg-slate-950 text-slate-200 text-xs rounded py-1 px-2.5 border border-slate-700 shadow-xl max-w-xs pointer-events-none">
+            ${kpi.tooltip}
+          </div>
+
+          <div>
+            <span class="text-xs font-medium text-slate-400 tracking-wide">${kpi.title}</span>
+            <div class="text-xl font-bold text-white mt-1.5">${kpi.value}</div>
+          </div>
+
+          <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-700/40 text-xs">
+            ${compare ? `
+              <span class="flex items-center font-medium ${kpi.positive ? 'text-emerald-400' : 'text-rose-400'}">
+                <i data-lucide="${kpi.positive ? 'trending-up' : 'trending-down'}" class="w-3.5 h-3.5 mr-1"></i>
+                ${kpi.change}
+              </span>
+              <span class="text-slate-500 text-[10px]">vs prev period</span>
+            ` : `<span class="text-slate-500">Current Period</span>`}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // --- RENDER MAIN FUNNEL VISUALIZATION ---
+    function renderFunnelChart(stagesData) {
+      const container = document.getElementById('funnel-visualization-container');
+      if (!stagesData.length) {
+        container.innerHTML = `<p class="text-slate-400 text-xs py-4">No active stages configured.</p>`;
+        return;
+      }
+
+      const topVolume = stagesData[0].volume || 1;
+
+      container.innerHTML = stagesData.map((stage, idx) => {
+        const nextStage = stagesData[idx + 1];
+        const nextVolume = nextStage ? nextStage.volume : null;
+
+        // Stage calculations
+        const widthPercent = Math.max(((stage.volume / topVolume) * 100), 8).toFixed(1);
+        const conversionToNext = nextVolume !== null ? ((nextVolume / stage.volume) * 100).toFixed(1) : null;
+        const dropOffVolume = nextVolume !== null ? (stage.volume - nextVolume) : null;
+        const dropOffPercent = nextVolume !== null ? (100 - conversionToNext).toFixed(1) : null;
+
+        return `
+          <div class="group relative cursor-pointer" onclick="openStageDrawer('${stage.name}', ${stage.volume}, '${conversionToNext || '100'}%', '${dropOffVolume ? dropOffVolume.toLocaleString() : 0}', '${stage.avgDays}')">
+            <!-- Stage Header Line -->
+            <div class="flex items-center justify-between text-xs mb-1.5 px-1">
+              <div class="flex items-center space-x-2">
+                <span class="font-semibold text-slate-200">${stage.name}</span>
+                <span class="text-slate-400 font-normal">(${stage.description})</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <span class="text-slate-400">Avg Time: <strong class="text-slate-200">${stage.avgDays} days</strong></span>
+                <span class="font-bold text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700">${stage.volume.toLocaleString()} users</span>
+              </div>
+            </div>
+
+            <!-- Horizontal Bar Graphic -->
+            <div class="w-full bg-slate-900/80 rounded-lg h-9 p-1 flex items-center border border-slate-700/50 relative overflow-hidden group-hover:border-brand-500/50 transition">
+              <!-- Progression Bar -->
+              <div class="funnel-bar bg-gradient-to-r from-brand-600 to-brand-500 h-full rounded-md flex items-center justify-end pr-3 font-semibold text-xs text-white shadow-sm" style="width: ${widthPercent}%;">
+                ${widthPercent > 15 ? `${widthPercent}% of top` : ''}
+              </div>
+
+              <!-- Inline Drop-off Banner if applicable -->
+              ${dropOffVolume !== null ? `
+                <div class="ml-3 flex items-center space-x-2 text-xs text-slate-400">
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-500"></i>
+                  <span class="text-emerald-400 font-semibold">${conversionToNext}% converts</span>
+                  <span class="text-slate-600">|</span>
+                  <span class="text-rose-400">${dropOffPercent}% drop-off (-${dropOffVolume.toLocaleString()})</span>
+                </div>
+              ` : `
+                <div class="ml-3 text-xs text-slate-400 italic">Final Destination / Retention Stage</div>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- RENDER BOTTLENECK DIAGNOSTICS ---
+    function renderBottlenecks(stagesData) {
+      const container = document.getElementById('bottleneck-cards-container');
+      
+      // Calculate largest drop-off stage dynamically
+      let maxDropStage = null;
+      let maxDropCount = 0;
+
+      for (let i = 0; i < stagesData.length - 1; i++) {
+        const drop = stagesData[i].volume - stagesData[i + 1].volume;
+        if (drop > maxDropCount) {
+          maxDropCount = drop;
+          maxDropStage = stagesData[i];
+        }
+      }
+
+      const diagnostics = [
+        {
+          title: "Primary Volume Leakage Point",
+          stage: maxDropStage ? maxDropStage.name : "Interest to Lead Capture",
+          metric: `-${maxDropCount.toLocaleString()} user drop-off`,
+          diagnosis: "Highest absolute user abandonment occurs between initial engagement and lead capture forms.",
+          action: "Optimize landing page CTA friction, reduce form fields from 6 to 3, and test social sign-in."
+        },
+        {
+          title: "Paid Social CAC Inefficiency",
+          stage: "Paid Social Channel",
+          metric: "$537.50 CAC (vs $94.40 Organic)",
+          diagnosis: "Paid Social produces solid lead volume but struggles with downstream sales qualification.",
+          action: "Refine audience targeting parameters to focus on higher intent seniority roles."
+        },
+        {
+          title: "Sales Velocity Lag",
+          stage: "Opportunity → Conversion",
+          metric: "21.0 Days Avg Duration",
+          diagnosis: "Mid-funnel proposals are stalling in security & compliance review stages.",
+          action: "Implement automated email lead nurture sequences and pre-emptive compliance sheets."
+        }
+      ];
+
+      container.innerHTML = diagnostics.map(d => `
+        <div class="bg-slate-900/80 border border-slate-700/70 rounded-lg p-4 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex items-center justify-between text-xs mb-1">
+              <span class="text-amber-400 font-semibold uppercase tracking-wider">${d.title}</span>
+            </div>
+            <h4 class="text-sm font-bold text-white">${d.stage}</h4>
+            <div class="inline-block bg-rose-500/10 text-rose-400 text-xs font-semibold px-2 py-0.5 rounded border border-rose-500/20 mt-1">
+              ${d.metric}
+            </div>
+            <p class="text-xs text-slate-300 mt-2 leading-relaxed">${d.diagnosis}</p>
+          </div>
+
+          <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
+            <span class="text-[11px] text-slate-400 italic">Rec: ${d.action}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // --- RENDER CHANNELS TABLE ---
+    function renderChannelsTable(channels) {
+      const tbody = document.getElementById('channels-table-body');
+      
+      if (!channels.length) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-slate-500 text-xs">No matching channel data found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = channels.map(item => `
+        <tr class="hover:bg-slate-800/60 transition">
+          <td class="py-3 px-4 font-semibold text-white flex items-center space-x-2">
+            <span>${item.channel}</span>
+          </td>
+          <td class="py-3 px-4 text-right font-medium">${item.sessions.toLocaleString()}</td>
+          <td class="py-3 px-4 text-right font-medium">${item.leads.toLocaleString()}</td>
+          <td class="py-3 px-4 text-right">
+            <span class="px-2 py-0.5 rounded text-xs font-semibold bg-brand-500/10 text-brand-400 border border-brand-500/20">
+              ${item.convRate}%
+            </span>
+          </td>
+          <td class="py-3 px-4 text-right text-slate-300">$${item.spend.toLocaleString()}</td>
+          <td class="py-3 px-4 text-right text-slate-300">$${item.cpl}</td>
+          <td class="py-3 px-4 text-right text-slate-300">$${item.cac}</td>
+          <td class="py-3 px-4 text-right font-semibold text-emerald-400">$${item.revenue.toLocaleString()}</td>
+          <td class="py-3 px-4 text-right font-bold text-slate-200">${item.roas}x</td>
+        </tr>
+      `).join('');
+    }
+
+    // --- DRAWER SLIDE-OVER LOGIC ---
+    function openStageDrawer(stageName, volume, convRate, dropCount, avgDays) {
+      document.getElementById('drawer-stage-title').innerText = stageName || 'Awareness Stage';
+      document.getElementById('drawer-stage-volume').innerText = (volume || 124500).toLocaleString();
+      document.getElementById('drawer-stage-conv').innerText = convRate || '34.2%';
+      document.getElementById('drawer-stage-drop').innerText = dropCount || '81,921';
+      document.getElementById('drawer-stage-time').innerText = `${avgDays || '2.4'} Days`;
+
+      // Mock Traffic Sources list
+      const sourcesList = document.getElementById('drawer-sources-list');
+      sourcesList.innerHTML = `
+        <div class="flex justify-between items-center bg-slate-800 p-2 rounded">
+          <span class="text-slate-300">Google / Organic</span>
+          <span class="font-bold text-slate-100">42.1%</span>
+        </div>
+        <div class="flex justify-between items-center bg-slate-800 p-2 rounded">
+          <span class="text-slate-300">Google Ads / CPC</span>
+          <span class="font-bold text-slate-100">28.4%</span>
+        </div>
+        <div class="flex justify-between items-center bg-slate-800 p-2 rounded">
+          <span class="text-slate-300">LinkedIn Sponsored Post</span>
+          <span class="font-bold text-slate-100">16.8%</span>
+        </div>
+      `;
+
+      // Mock Top Landing Pages
+      const topAssets = document.getElementById('drawer-top-assets');
+      topAssets.innerHTML = `
+        <li class="flex items-center space-x-2 truncate"><i data-lucide="file-text" class="w-3.5 h-3.5 text-brand-500"></i><span class="truncate">/solutions/enterprise-analytics</span></li>
+        <li class="flex items-center space-x-2 truncate"><i data-lucide="file-text" class="w-3.5 h-3.5 text-brand-500"></i><span class="truncate">/blog/marketing-funnel-guide-2026</span></li>
+        <li class="flex items-center space-x-2 truncate"><i data-lucide="file-text" class="w-3.5 h-3.5 text-brand-500"></i><span class="truncate">/pricing</span></li>
+      `;
+
+      // Render Mini Device Pie Chart
+      renderDrawerDeviceChart();
+
+      document.getElementById('stage-drawer').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeStageDrawer() {
+      document.getElementById('stage-drawer').classList.add('hidden');
+    }
+
+    function renderDrawerDeviceChart() {
+      const ctx = document.getElementById('drawerDeviceChart').getContext('2d');
+      if (drawerChartInstance) drawerChartInstance.destroy();
+
+      drawerChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Desktop', 'Mobile', 'Tablet'],
+          datasets: [{
+            data: [64, 31, 5],
+            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 10 } } }
+          }
+        }
+      });
+    }
+
+    // --- STAGE CONFIGURATOR MODAL LOGIC ---
+    function openStageConfig() {
+      const container = document.getElementById('config-stage-list');
+      container.innerHTML = funnelStages.map((stage, idx) => `
+        <div class="flex items-center justify-between bg-slate-800 p-2.5 rounded-lg border border-slate-700 text-xs">
+          <div class="flex items-center space-x-3">
+            <input type="checkbox" id="config-stage-${idx}" ${stage.active ? 'checked' : ''} class="rounded bg-slate-900 border-slate-700 text-brand-600 focus:ring-brand-500 h-4 w-4">
+            <input type="text" id="config-name-${idx}" value="${stage.name}" class="bg-slate-900 border border-slate-700 text-slate-200 px-2 py-1 rounded text-xs focus:outline-none focus:border-brand-500 font-medium">
+          </div>
+          <span class="text-slate-500 text-[10px]">Stage ${idx + 1}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('config-modal').classList.remove('hidden');
+    }
+
+    function closeStageConfig() {
+      document.getElementById('config-modal').classList.add('hidden');
+    }
+
+    function saveStageConfig() {
+      funnelStages.forEach((stage, idx) => {
+        const checkbox = document.getElementById(`config-stage-${idx}`);
+        const nameInput = document.getElementById(`config-name-${idx}`);
+        if (checkbox && nameInput) {
+          stage.active = checkbox.checked;
+          stage.name = nameInput.value;
+        }
+      });
+
+      closeStageConfig();
+      updateDashboard();
+    }
+
+    function resetStageDefaults() {
+      funnelStages.forEach(s => s.active = true);
+      closeStageConfig();
+      updateDashboard();
+    }
+
+    function resetFilters() {
+      document.getElementById('filter-date').value = '30d';
+      document.getElementById('filter-channel').value = 'all';
+      document.getElementById('filter-device').value = 'all';
+      document.getElementById('filter-region').value = 'all';
+      document.getElementById('compare-period').checked = true;
+      document.getElementById('attribution-model').value = 'linear';
+      document.getElementById('table-search').value = '';
+      updateDashboard();
+    }
+
+    // --- CSV EXPORT LOGIC ---
+    function exportDataCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,Channel,Sessions,Leads,ConvRate,Spend,CPL,CAC,Revenue,ROAS\n";
+      baseChannelData.forEach(row => {
+        csvContent += `${row.channel},${row.sessions},${row.leads},${row.convRate}%,$${row.spend},$${row.cpl},$${row.cac},$${row.revenue},${row.roas}x\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "marketing_funnel_analytics.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>

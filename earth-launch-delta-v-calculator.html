@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Earth Launch Delta-v Calculator — tools.rjmlaird.co.uk</title>
+<meta name="description" content="Compare the delta-v needed to reach escape trajectory from real Earth launch sites, including the effect of latitude and launch direction.">
+<style>
+:root{
+  --ink:#0B0F1A; --ink2:#0F1520; --card:#141B29; --lift:#1A2236;
+  --w:#EDEAE3; --mb:#9AA4B8; --m:#8A98B2;
+  --teal:#00C2A8; --amber:#F5A623; --violet:#A78BFA; --coral:#FF8080; --green:#4ADE80; --sky:#38BDF8;
+  --td:rgba(0,194,168,.13); --tb:rgba(0,194,168,.26);
+  --bd:rgba(255,255,255,.11); --bm:rgba(255,255,255,.2); --focus:#7FE6D4;
+  --font-display:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --radius:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);color:var(--w);font-family:var(--font-body);line-height:1.6;min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:2rem 1.25rem 3rem}
+h1{font-family:var(--font-display);font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.2;margin-bottom:.5rem}
+.lede{color:var(--mb);max-width:62ch;margin-bottom:1.5rem}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.25rem}
+.tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+button{background:var(--td);border:1px solid var(--tb);border-radius:var(--radius);color:var(--teal);font-family:var(--font-display);font-weight:600;padding:.5rem .9rem;cursor:pointer;transition:background .2s}
+button:hover{background:var(--tb)}
+button.active{background:var(--teal);color:var(--ink);border-color:var(--teal)}
+button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+canvas{width:100%;height:auto;display:block;background:var(--ink2);border:1px solid var(--bd);border-radius:var(--radius);margin-bottom:1rem}
+.meta{display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1rem;font-size:.9rem;color:var(--mb)}
+.meta strong{color:var(--w);font-family:var(--font-display)}
+.result{background:var(--lift);border:1px solid var(--bd);border-radius:var(--radius);padding:1rem;margin-top:.5rem}
+.result div{margin-bottom:.5rem;font-size:.95rem;color:var(--mb)}
+.result strong{color:var(--w);font-family:var(--font-display);font-size:1.1rem}
+.note{font-size:.8rem;color:var(--m);margin-top:.75rem}
+footer{margin-top:2rem;font-size:.85rem;color:var(--m)}
+footer a{color:var(--teal);text-decoration:none}
+footer a:hover{text-decoration:underline}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Earth Launch Delta-v Calculator</h1>
+  <p class="lede">Compare the delta-v needed to reach escape trajectory from real Earth launch sites, including the effect of latitude and launch direction.</p>
+
+  <section class="card">
+    <div class="tabs" role="tablist">
+      <button class="active" data-site="canaveral">Cape Canaveral</button>
+      <button data-site="kourou">Kourou</button>
+      <button data-site="baikonur">Baikonur</button>
+      <button data-site="vandenberg">Vandenberg</button>
+      <button data-site="wenchang">Wenchang</button>
+    </div>
+    <canvas id="sky" width="880" height="340" role="img" aria-label="Illustration of Earth showing the selected launch site and eastward launch direction"></canvas>
+    <div class="meta">
+      <span>Site: <strong id="site">–</strong></span>
+      <span>Latitude: <strong id="lat">–</strong></span>
+      <span>Country: <strong id="country">–</strong></span>
+    </div>
+    <div class="result">
+      <div>Escape velocity (no rotation): <strong id="vesc">–</strong></div>
+      <div>Rotational speed at site: <strong id="vrot">–</strong></div>
+      <div>Effective delta-v to escape (due east): <strong id="dv">–</strong></div>
+      <div>Formula: <strong>Δv ≈ v_esc − v_rot (due east)</strong></div>
+    </div>
+    <p class="note">Escape velocity ignores atmosphere and other bodies. Rotational assist is largest at low-latitude, eastward-launch sites. This is a simplified model: real launch vehicles also need gravity and drag losses.</p>
+  </section>
+
+  <footer>
+    Part of <a href="https://tools.rjmlaird.co.uk/">tools.rjmlaird.co.uk</a> · <a href="https://rjmlaird.co.uk/">rjmlaird.co.uk</a>
+  </footer>
+</main>
+
+<script>
+const cv=document.getElementById("sky"),ctx=cv.getContext("2d");
+const siteEl=document.getElementById("site"),latEl=document.getElementById("lat"),countryEl=document.getElementById("country");
+const vescEl=document.getElementById("vesc"),vrotEl=document.getElementById("vrot"),dvEl=document.getElementById("dv");
+const G=6.674e-11,M=5.972e24,R=6371; // Earth
+const sites={
+ canaveral:{name:"Cape Canaveral",lat:28.3922,country:"USA"},
+ kourou:{name:"Kourou",lat:5.2389,country:"France (Guiana)"},
+ baikonur:{name:"Baikonur",lat:45.9650,country:"Kazakhstan"},
+ vandenberg:{name:"Vandenberg",lat:34.7420,country:"United States"},
+ wenchang:{name:"Wenchang",lat:19.6145,country:"China"}
+};
+let current="canaveral";
+function draw(){
+  const W=cv.width,H=cv.height,cx=W/2,cy=H/2;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#0F1520";ctx.fillRect(0,0,W,H);
+  const R=110;
+  const g=ctx.createRadialGradient(cx-R/3,cy-R/3,5,cx,cy,R);
+  g.addColorStop(0,"#4ADE80");g.addColorStop(1,"#1E3A5F");
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.fill();
+  // rotation axis
+  ctx.strokeStyle="rgba(255,255,255,.25)";ctx.lineWidth=1;
+  ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(cx,cy-R-30);ctx.lineTo(cx,cy+R+30);ctx.stroke();
+  ctx.setLineDash([]);
+  // site marker
+  const s=sites[current];
+  const latRad=s.lat*Math.PI/180;
+  const ly=cy-R*Math.sin(latRad);
+  const lx=R*Math.cos(latRad);
+  ctx.fillStyle="#00C2A8";
+  ctx.beginPath();ctx.arc(cx+lx*0.9,ly,6,0,Math.PI*2);ctx.fill();
+  // eastward launch arrow
+  ctx.strokeStyle="#00C2A8";ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(cx+lx*0.9+8,ly);ctx.lineTo(cx+lx*0.9+58,ly);ctx.stroke();
+  ctx.fillStyle="#00C2A8";ctx.font="12px Inter,sans-serif";ctx.textAlign="left";
+  ctx.fillText("Due-east launch",cx+lx*0.9+64,ly+4);
+  ctx.fillStyle="#9AA4B8";ctx.font="12px Inter,sans-serif";ctx.textAlign="center";
+  ctx.fillText("Earth",cx,cy+R+28);
+}
+function calc(){
+  const s=sites[current];
+  const vesc=Math.sqrt(2*G*M/(R*1000))/1000;
+  const omega=2*Math.PI/(23.934*3600);
+  const latRad=s.lat*Math.PI/180;
+  const vrot=omega*(R*1000)*Math.cos(latRad)/1000;
+  const dv=vesc-vrot;
+  siteEl.textContent=s.name;
+  latEl.textContent=s.lat.toFixed(2)+"°";
+  countryEl.textContent=s.country;
+  vescEl.textContent=vesc.toFixed(2)+" km/s";
+  vrotEl.textContent=vrot.toFixed(3)+" km/s";
+  dvEl.textContent=dv.toFixed(2)+" km/s";
+  draw();
+}
+document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{
+  current=b.dataset.site;
+  document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x===b));
+  calc();
+}));
+calc();
+</script>
+</body>
+</html>

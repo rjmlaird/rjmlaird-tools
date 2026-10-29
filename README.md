@@ -8,7 +8,7 @@ Plans and open decisions are in [PLANS.md](./PLANS.md).
 
 ## The tools
 
-23 tools in the catalogue: 17 active, 3 in progress, 3 planned. The catalogue itself is `apps/index/src/tools.ts`, the single source of truth for titles, descriptions, groups, status, tech and update dates.
+25 tools in the catalogue: 19 active, 3 in progress, 3 planned. The catalogue itself is `apps/index/src/tools.ts`, the single source of truth for titles, descriptions, groups, status, tech and update dates.
 
 | Group | Tool (`apps/<id>`) | Stack | Status |
 | --- | --- | --- | --- |
@@ -23,12 +23,14 @@ Plans and open decisions are in [PLANS.md](./PLANS.md).
 | | `moon-sun-calc` Moon & Sun Calculator | Vite | Active |
 | Maths & Physics | `unit-converter` Unit Converter (with JSON API) | Hono | Active |
 | | `physical-limits` Physical Limits | Vite | Active |
+| | `chilli-heat-scale` Chilli Heat Scale Explorer | Vite | Active |
 | Places & Infrastructure | `coordinate-converter` Coordinate Converter | Hono | Active |
 | | `postcode-lookup` Postcode Lookup | none yet | Planned |
 | Sustainability & Climate | `carbon-reduction-plan` Carbon Reduction Plan Builder | React + Vite | Active |
 | | `flight-emissions` Flight Emissions Estimator | Vite | Active |
 | | `home-energy-baseline` Home Energy Baseline | Vite | In progress |
 | Focus & Wellbeing | `dopamine-menu` Dopamine Menu | TypeScript + Vite | Active |
+| | `waiting-on-tracker` Waiting-On Tracker | Vite | Active |
 | | `habit-streak` Habit Streak Tracker | Vite | In progress |
 | | `context-switcher` Context Switcher | Vite | In progress |
 | Web & Development | `colour-contrast` Colour Contrast Checker | Hono | Active |

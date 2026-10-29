@@ -1,0 +1,19 @@
+{
+  "name": "@rjmlaird/marketing-funnel",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "pnpm run build && wrangler dev",
+    "deploy": "pnpm run build && wrangler deploy"
+  },
+  "dependencies": {
+    "@rjmlaird/ui": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^8.1.4",
+    "wrangler": "^4.149.0"
+  }
+}

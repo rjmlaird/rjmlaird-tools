@@ -7,7 +7,7 @@ Last reviewed: 25 October 2026.
 
 ## Where things stand
 
-- 23 tools in the catalogue: 17 active, 3 in progress, 3 planned.
+- 25 tools in the catalogue: 19 active, 3 in progress, 3 planned.
 - Recently done: removed the duplicate Meta Tag Checker; added light-path and field-of-view diagrams to the Astronomy
   Calculator; rebuilt the Light Pollution Estimator as a working model; corrected four wrong tech tags on the index and
   added a test that checks tech tags against each app's code.
